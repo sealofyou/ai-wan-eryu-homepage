@@ -1,0 +1,40 @@
+---
+import { Image } from "astro:assets";
+import techCover from "../assets/tech-cover-16x9-v1.png";
+import { projects } from "../data/projects";
+import SiteLayout from "../layouts/SiteLayout.astro";
+---
+
+<SiteLayout title="作品集" description="AI玩尔玉的项目、原型和研究实践。">
+  <header class="portfolio-hero">
+    <div class="portfolio-hero-copy">
+      <p class="eyebrow">作品集</p>
+      <h1>我做过的项目</h1>
+      <p>先放少量能讲清问题、过程和边界的项目。项目不靠数量撑场面。</p>
+    </div>
+    <Image
+      src={techCover}
+      alt="尔玉站在工作台与系统流程白板前"
+      widths={[900, 1400, 1800]}
+      sizes="100vw"
+      class="portfolio-cover"
+    />
+  </header>
+
+  <section class="project-list" aria-label="项目列表">
+    {projects.map((project) => (
+      <article class="project-row">
+        <div class="project-index">{project.index}</div>
+        <div class="project-body">
+          <p class="record-meta">{project.status}</p>
+          <h2>{project.title}</h2>
+          <p>{project.description}</p>
+          <ul>
+            {project.details.map((detail) => <li>{detail}</li>)}
+          </ul>
+        </div>
+        <span class="project-category">{project.category}</span>
+      </article>
+    ))}
+  </section>
+</SiteLayout>

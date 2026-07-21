@@ -1,0 +1,38 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getCollection, render } from "astro:content";
+import { Image } from "astro:assets";
+import qAvatar from "../../assets/q-avatar-v1.png";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { formatDate } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const notes = await getCollection("notes", ({ data }) => !data.draft);
+  return notes.map((note) => ({ params: { id: note.id }, props: { note } }));
+}
+
+interface Props {
+  note: CollectionEntry<"notes">;
+}
+
+const { note } = Astro.props as Props;
+const { Content } = await render(note);
+const typeLabels = { share: "分享", activity: "活动", project: "项目", note: "随记" } as const;
+---
+
+<SiteLayout title={note.data.title} description={note.data.description} theme="soft">
+  <article class="content-page">
+    <header class="content-header">
+      <div>
+        <a class="back-link" href="/notes/">← 返回时间笔记</a>
+        <p class="record-meta">{typeLabels[note.data.type]} · {formatDate(note.data.date)}</p>
+        <h1>{note.data.title}</h1>
+        <p class="content-description">{note.data.description}</p>
+      </div>
+      <Image src={qAvatar} alt="AI玩尔玉 Q 版形象" widths={[220, 360]} sizes="220px" />
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</SiteLayout>

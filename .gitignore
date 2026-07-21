@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+.omx/
+.playwright-cli/
+output/
+.DS_Store
+*.log
+*.tar.gz

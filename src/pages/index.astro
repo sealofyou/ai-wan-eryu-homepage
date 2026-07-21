@@ -1,0 +1,56 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import "../styles/desktop.css";
+---
+
+<SiteLayout
+  title="AI玩尔玉"
+  description="一张可以把玩的三维电脑桌面：在屏幕、键鼠、便利贴与徽章之间认识 AI玩尔玉。"
+  immersive
+>
+  <section class="desktop-experience" data-desktop-root aria-label="AI玩尔玉三维桌面主页">
+    <div class="scene-mount" data-scene-mount aria-hidden="true"></div>
+
+    <div class="scene-loading" data-scene-loading>
+      <span></span>
+      <p>正在点亮桌面</p>
+    </div>
+
+    <div class="webgl-fallback" data-webgl-fallback hidden>
+      <img src="/desktop/fallback-composition.png" alt="AI玩尔玉三维电脑桌面构图预览" />
+      <p>当前浏览器未能启动三维场景，请尝试开启硬件加速后刷新。</p>
+    </div>
+
+    <form class="mat-message-panel" data-message-panel hidden>
+      <label for="mat-message">桌面留言</label>
+      <div>
+        <input id="mat-message" maxlength="48" autocomplete="off" placeholder="留下一句话" />
+        <button type="submit">写下</button>
+      </div>
+    </form>
+
+    <p class="interaction-status" data-interaction-status aria-live="polite"></p>
+
+    <div class="semantic-controls" aria-label="桌面键盘操作入口">
+      <button type="button" data-screen="share">07.04 分享</button>
+      <button type="button" data-screen="activity">07.18 活动</button>
+      <button type="button" data-screen="recent">最近在做</button>
+      <button type="button" data-screen="home">返回主屏首页</button>
+      <button type="button" data-action="quote">更换每日格言</button>
+      <button type="button" data-action="badge">打开徽章故事</button>
+      <button type="button" data-mode="move">物件拖动模式</button>
+      <button type="button" data-mode="draw">鼠标垫书写模式</button>
+      <button type="button" data-mode="message">鼠标垫留言模式</button>
+      <button type="button" data-action="clear">清空鼠标垫笔迹</button>
+    </div>
+
+    <div class="desktop-only-note">桌面版体验准备中</div>
+  </section>
+
+  <script>
+    import { mountDesktopScene } from "../desktop/scene";
+
+    const root = document.querySelector<HTMLElement>("[data-desktop-root]");
+    if (root) mountDesktopScene(root);
+  </script>
+</SiteLayout>

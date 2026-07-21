@@ -1,0 +1,3 @@
+http://5.253.38.249 {
+    import eryu_static_site
+}
