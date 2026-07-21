@@ -14,6 +14,7 @@ import {
   type Point,
   type ScreenId,
 } from "./model";
+import { createKeyboardModel } from "./keyboard";
 
 type SceneAction =
   | `screen:${ScreenId}`
@@ -638,23 +639,7 @@ export function mountDesktopScene(root: HTMLElement) {
   keyLight.shadow.camera.bottom = -6;
   scene.add(keyLight);
 
-  const keyboard = addAction(new THREE.Group(), "keyboard");
-  const keyboardBase = roundedMesh(5.7, 0.3, 1.72, 0.16, warmWhite);
-  keyboardBase.castShadow = true;
-  keyboardBase.receiveShadow = true;
-  keyboard.add(keyboardBase);
-  const keyMaterial = new THREE.MeshStandardMaterial({ color: "#313331", roughness: 0.66 });
-  const keyAccent = new THREE.MeshStandardMaterial({ color: "#7c927f", roughness: 0.7 });
-  for (let row = 0; row < 5; row += 1) {
-    for (let column = 0; column < 18; column += 1) {
-      if (row === 4 && column > 4 && column < 11 && column % 2 === 0) continue;
-      const width = row === 4 && column === 7 ? 1.45 : 0.245;
-      const key = roundedMesh(width, 0.12, 0.245, 0.035, column === 17 && row === 0 ? keyAccent : keyMaterial);
-      key.position.set(-2.5 + column * 0.29, 0.2, -0.58 + row * 0.3);
-      key.castShadow = true;
-      keyboard.add(key);
-    }
-  }
+  const keyboard = addAction(createKeyboardModel(), "keyboard");
   world.add(keyboard);
 
   const mouse = addAction(new THREE.Group(), "mouse");
