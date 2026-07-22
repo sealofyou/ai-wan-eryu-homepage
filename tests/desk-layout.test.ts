@@ -8,7 +8,8 @@ describe("approved desktop composition layout", () => {
   it("turns the left monitor slightly toward the main viewing position", () => {
     expect(DESK_LAYOUT.leftMonitor.yaw).toBeGreaterThan(0.17);
     expect(DESK_LAYOUT.leftMonitor.yaw).toBeLessThan(0.24);
-    expect(DESK_LAYOUT.leftMonitor.roll).toBeGreaterThan(0.15);
+    expect(sceneSource).toContain("sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw");
+    expect(sceneSource).not.toContain("sideMonitor.rotation.z");
   });
 
   it("gives the left monitor a visible vertical support and stable foot", () => {
@@ -19,18 +20,20 @@ describe("approved desktop composition layout", () => {
     );
   });
 
-  it("keeps the small pegboard and separates a second leaning pegboard on the right", () => {
+  it("keeps the small pegboard and places a separate angled board on the desk edge", () => {
     const small = DESK_LAYOUT.pegboards.small;
     const large = DESK_LAYOUT.pegboards.large;
-    const smallRight = small.x + small.width / 2;
-    const largeLeft = large.x - large.width / 2;
 
+    expect(large.width).toBeGreaterThan(small.width);
+    expect(large.height).toBeGreaterThan(small.height);
     expect(large.x).toBeGreaterThan(small.x);
-    expect(largeLeft).toBeGreaterThan(smallRight);
-    expect(largeLeft).toBeGreaterThan(smallRight + 0.4);
-    expect(Math.abs(large.roll)).toBeGreaterThan(0.15);
+    expect(large.z).toBeGreaterThan(small.z + 1);
+    expect(large.y - large.height / 2).toBeGreaterThan(0.15);
+    expect(Math.abs(large.yaw)).toBeGreaterThan(0.35);
     expect(sceneSource).toContain("const angledPegboard = new THREE.Group()");
-    expect(sceneSource).toContain("angledPegboard.rotation.z = DESK_LAYOUT.pegboards.large.roll");
+    expect(sceneSource).toContain("angledPegboard.rotation.y = DESK_LAYOUT.pegboards.large.yaw");
+    expect(sceneSource).toContain("angledPegboard.add(angledBoard)");
+    expect(sceneSource).toContain("angledPegboard.add(hole)");
   });
 
   it("keeps the message interaction on the physical mat instead of the main screen", () => {

@@ -512,7 +512,6 @@ export function mountDesktopScene(root: HTMLElement) {
     DESK_LAYOUT.leftMonitor.center.z,
   );
   sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw;
-  sideMonitor.rotation.z = DESK_LAYOUT.leftMonitor.roll;
   world.add(sideMonitor);
 
   const sideFrame = roundedMesh(2.45, 4.75, 0.34, 0.14, charcoal);
@@ -541,7 +540,6 @@ export function mountDesktopScene(root: HTMLElement) {
     DESK_LAYOUT.leftMonitor.center.z,
   );
   sideSupport.rotation.y = DESK_LAYOUT.leftMonitor.yaw;
-  sideSupport.rotation.z = DESK_LAYOUT.leftMonitor.roll;
   const supportPost = roundedMesh(
     0.56,
     DESK_LAYOUT.leftMonitor.support.height,
@@ -684,7 +682,7 @@ export function mountDesktopScene(root: HTMLElement) {
     DESK_LAYOUT.pegboards.large.y,
     DESK_LAYOUT.pegboards.large.z,
   );
-  angledPegboard.rotation.z = DESK_LAYOUT.pegboards.large.roll;
+  angledPegboard.rotation.y = DESK_LAYOUT.pegboards.large.yaw;
   world.add(angledPegboard);
 
   const angledBoard = roundedMesh(
