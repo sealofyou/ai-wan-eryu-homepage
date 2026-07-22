@@ -32,16 +32,19 @@ describe("approved desktop composition layout", () => {
     expect(large.x).toBeGreaterThan(8);
     expect(large.width).toBeGreaterThan(5);
     expect(large.y - large.height / 2).toBeGreaterThan(0.15);
-    expect(Math.abs(large.yaw)).toBeGreaterThan(0.9);
+    expect(Math.abs(large.yaw)).toBeGreaterThan(1.5);
+    expect(Math.abs(Math.abs(large.yaw) - Math.PI / 2)).toBeLessThan(0.01);
     expect(sceneSource).toContain("const angledPegboard = new THREE.Group()");
     expect(sceneSource).toContain("angledPegboard.rotation.y = DESK_LAYOUT.pegboards.large.yaw");
     expect(sceneSource).toContain("angledPegboard.add(largeBoard)");
     expect(sceneSource).toContain("angledPegboard.add(hole)");
+    expect(sceneSource).toContain("messageBoardCanvas");
   });
 
   it("keeps the message interaction on the physical mat instead of the main screen", () => {
     expect(sceneSource).not.toContain("桌面留言：${state.message}");
     expect(sceneSource).not.toContain("const note = DESK_LAYOUT.matMessage");
-    expect(sceneSource).toContain("messageBoardCanvas");
+    expect(sceneSource).toContain('"message"');
+    expect(sceneSource).toContain("messageInput.focus()");
   });
 });

@@ -26,6 +26,7 @@ type SceneAction =
   | "mouse"
   | "keyboard"
   | "mat"
+  | "message"
   | "lamp";
 
 declare global {
@@ -202,8 +203,14 @@ export function mountDesktopScene(root: HTMLElement) {
   scene.fog = new THREE.Fog("#6d5c4b", 16, 28);
 
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 60);
-  const finalCamera = new THREE.Vector3(0.15, 5.5, 12.3);
-  camera.position.copy(reducedMotion ? finalCamera : new THREE.Vector3(0.15, 6.5, 15.2));
+  const baseAspect = 16 / 9;
+  const getFramedCamera = (aspect: number, intro = false) => {
+    const distance = clamp(12.3 * Math.pow(baseAspect / Math.max(aspect, 1.15), 2.2), 11.2, 17);
+    return new THREE.Vector3(0.15, intro ? 6.5 : 5.5, intro ? distance + 2.9 : distance);
+  };
+  let finalCamera = getFramedCamera(window.innerWidth / window.innerHeight);
+  let introCamera = getFramedCamera(window.innerWidth / window.innerHeight, true);
+  camera.position.copy(reducedMotion ? finalCamera : introCamera);
   camera.lookAt(0, 2.45, 0.3);
 
   const world = new THREE.Group();
@@ -248,7 +255,7 @@ export function mountDesktopScene(root: HTMLElement) {
   const mainCanvas = makeCanvas(1200, 680);
   const sideCanvas = makeCanvas(440, 880);
   const noteCanvas = makeCanvas(420, 300);
-  const messageBoardCanvas = makeCanvas(520, 360);
+  const messageBoardCanvas = makeCanvas(640, 440);
   const avatarImage = new Image();
   avatarImage.src = "/desktop/main-avatar.png";
 
@@ -431,10 +438,10 @@ export function mountDesktopScene(root: HTMLElement) {
       context.fillRect(28, y, canvas.width - 56, 2);
     }
     context.fillStyle = "#58431f";
-    context.font = '800 34px "Microsoft YaHei", sans-serif';
+    context.font = '800 38px "Microsoft YaHei", sans-serif';
     context.fillText("留言板", 30, 56);
     if (state.message) {
-      context.font = '600 26px "Microsoft YaHei", sans-serif';
+      context.font = '600 30px "Microsoft YaHei", sans-serif';
       wrapText(context, state.message, 30, 126, canvas.width - 60, 38);
     }
     texture.needsUpdate = true;
@@ -514,19 +521,19 @@ export function mountDesktopScene(root: HTMLElement) {
   sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw;
   world.add(sideMonitor);
 
-  const sideFrame = roundedMesh(2.45, 4.75, 0.34, 0.14, charcoal);
+  const sideFrame = roundedMesh(2.72, 5.2, 0.34, 0.14, charcoal);
   sideFrame.position.set(0, 0, 0);
   sideFrame.castShadow = true;
   sideMonitor.add(sideFrame);
   const sideScreen = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.17, 4.4),
+    new THREE.PlaneGeometry(2.44, 4.85),
     new THREE.MeshBasicMaterial({ map: sideCanvas.texture, toneMapped: false }),
   );
   sideScreen.position.set(0, 0, 0.19);
   sideMonitor.add(sideScreen);
   activities.forEach((activity, index) => {
     const hit = addAction(
-      new THREE.Mesh(new THREE.PlaneGeometry(1.92, 0.92), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })),
+      new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.02), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })),
       `screen:${activity.id}`,
     );
     hit.position.set(0, 0.8 - index * 1.1, 0.22);
@@ -625,7 +632,7 @@ export function mountDesktopScene(root: HTMLElement) {
       new THREE.PlaneGeometry(1.08, 1.34),
       new THREE.MeshBasicMaterial({ map: toyCanvas.texture, transparent: true, toneMapped: false }),
     ),
-    "badge",
+    "message",
   );
   toy.position.set(-6.45, 4.92, 0.255);
   world.add(toy);
@@ -653,13 +660,13 @@ export function mountDesktopScene(root: HTMLElement) {
   }
   const messageBoard = addAction(
     new THREE.Mesh(
-      new THREE.PlaneGeometry(0.92, 0.68),
+      new THREE.PlaneGeometry(1.2, 0.82),
       new THREE.MeshBasicMaterial({ map: messageBoardCanvas.texture, toneMapped: false }),
     ),
-    "badge",
+    "message",
   );
-  messageBoard.position.set(6.05, 4.45, -1.72);
-  messageBoard.rotation.z = -0.04;
+  messageBoard.position.set(6.45, 4.42, -1.72);
+  messageBoard.rotation.z = -0.02;
   world.add(messageBoard);
 
   const badgeColors = ["#86a28f", "#9d8797"];
@@ -807,7 +814,7 @@ export function mountDesktopScene(root: HTMLElement) {
       const active = action === `mode:${state.matMode}`;
       (mesh.material as THREE.MeshStandardMaterial).color.set(active ? "#759481" : "#353633");
     });
-    messagePanel.hidden = state.matMode !== "message";
+    messagePanel.hidden = false;
     if (state.matMode === "message") window.setTimeout(() => messageInput.focus(), 30);
   };
 
@@ -871,6 +878,10 @@ export function mountDesktopScene(root: HTMLElement) {
       state = cycleQuote(state);
       drawNote();
       announce(DAILY_QUOTES[state.quoteIndex]);
+    } else if (action === "message") {
+      setMode("message");
+      messageInput.focus();
+      announce("已选中洞洞板纸条，输入后按回车写入");
     } else if (action === "badge") {
       setScreen("badge");
     } else if (action === "clear") {
@@ -1015,7 +1026,7 @@ export function mountDesktopScene(root: HTMLElement) {
     const elapsed = time - startTime;
     if (!reducedMotion && elapsed < 1400) {
       const progress = 1 - Math.pow(1 - Math.min(elapsed / 1400, 1), 3);
-      camera.position.lerpVectors(new THREE.Vector3(0.15, 6.5, 15.2), finalCamera, progress);
+      camera.position.lerpVectors(introCamera, finalCamera, progress);
     } else {
       camera.position.x += (finalCamera.x + parallaxX - camera.position.x) * 0.035;
       camera.position.y += (finalCamera.y - parallaxY - camera.position.y) * 0.035;
@@ -1027,6 +1038,9 @@ export function mountDesktopScene(root: HTMLElement) {
   requestAnimationFrame(animate);
 
   const resize = () => {
+    const aspect = window.innerWidth / window.innerHeight;
+    finalCamera = getFramedCamera(aspect);
+    introCamera = getFramedCamera(aspect, true);
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);

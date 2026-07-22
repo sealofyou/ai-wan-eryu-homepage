@@ -19,7 +19,7 @@ export const DESK_LAYOUT = {
       x: 8.6,
       y: 4,
       z: 0.1,
-      yaw: -1.05,
+      yaw: -Math.PI / 2,
     },
   },
 } as const;
