@@ -512,6 +512,7 @@ export function mountDesktopScene(root: HTMLElement) {
     DESK_LAYOUT.leftMonitor.center.z,
   );
   sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw;
+  sideMonitor.rotation.z = DESK_LAYOUT.leftMonitor.roll;
   world.add(sideMonitor);
 
   const sideFrame = roundedMesh(2.45, 4.75, 0.34, 0.14, charcoal);
@@ -540,6 +541,7 @@ export function mountDesktopScene(root: HTMLElement) {
     DESK_LAYOUT.leftMonitor.center.z,
   );
   sideSupport.rotation.y = DESK_LAYOUT.leftMonitor.yaw;
+  sideSupport.rotation.z = DESK_LAYOUT.leftMonitor.roll;
   const supportPost = roundedMesh(
     0.56,
     DESK_LAYOUT.leftMonitor.support.height,
@@ -630,14 +632,28 @@ export function mountDesktopScene(root: HTMLElement) {
   toy.position.set(-6.45, 4.92, 0.255);
   world.add(toy);
 
-  const board = roundedMesh(2.35, 4.6, 0.25, 0.08, new THREE.MeshStandardMaterial({ color: "#292b29", roughness: 0.82 }));
-  board.position.set(6.45, 3.35, -1.98);
+  const board = roundedMesh(
+    DESK_LAYOUT.pegboards.small.width,
+    DESK_LAYOUT.pegboards.small.height,
+    0.25,
+    0.08,
+    new THREE.MeshStandardMaterial({ color: "#292b29", roughness: 0.82 }),
+  );
+  board.position.set(
+    DESK_LAYOUT.pegboards.small.x,
+    DESK_LAYOUT.pegboards.small.y,
+    DESK_LAYOUT.pegboards.small.z,
+  );
   board.castShadow = true;
   world.add(board);
   for (let x = -0.9; x <= 0.9; x += 0.3) {
     for (let y = -1.85; y <= 1.85; y += 0.32) {
       const hole = new THREE.Mesh(new THREE.CircleGeometry(0.035, 10), new THREE.MeshBasicMaterial({ color: "#111311" }));
-      hole.position.set(6.45 + x, 3.35 + y, -1.84);
+      hole.position.set(
+        DESK_LAYOUT.pegboards.small.x + x,
+        DESK_LAYOUT.pegboards.small.y + y,
+        DESK_LAYOUT.pegboards.small.z + 0.14,
+      );
       world.add(hole);
     }
   }
@@ -662,32 +678,32 @@ export function mountDesktopScene(root: HTMLElement) {
     world.add(badge);
   });
 
-  const largeBoard = roundedMesh(
+  const angledPegboard = new THREE.Group();
+  angledPegboard.position.set(
+    DESK_LAYOUT.pegboards.large.x,
+    DESK_LAYOUT.pegboards.large.y,
+    DESK_LAYOUT.pegboards.large.z,
+  );
+  angledPegboard.rotation.z = DESK_LAYOUT.pegboards.large.roll;
+  world.add(angledPegboard);
+
+  const angledBoard = roundedMesh(
     DESK_LAYOUT.pegboards.large.width,
     DESK_LAYOUT.pegboards.large.height,
     0.22,
     0.08,
     new THREE.MeshStandardMaterial({ color: "#555a55", roughness: 0.86 }),
   );
-  largeBoard.position.set(
-    DESK_LAYOUT.pegboards.large.x,
-    DESK_LAYOUT.pegboards.large.y,
-    DESK_LAYOUT.pegboards.large.z,
-  );
-  largeBoard.castShadow = true;
-  world.add(largeBoard);
-  for (let x = -2.4; x <= 2.4; x += 0.3) {
-    for (let y = -3.6; y <= 3.6; y += 0.32) {
+  angledBoard.castShadow = true;
+  angledPegboard.add(angledBoard);
+  for (let x = -1.45; x <= 1.45; x += 0.3) {
+    for (let y = -2.35; y <= 2.35; y += 0.32) {
       const hole = new THREE.Mesh(
         new THREE.CircleGeometry(0.035, 10),
         new THREE.MeshBasicMaterial({ color: "#272a27" }),
       );
-      hole.position.set(
-        DESK_LAYOUT.pegboards.large.x + x,
-        DESK_LAYOUT.pegboards.large.y + y,
-        DESK_LAYOUT.pegboards.large.z + 0.14,
-      );
-      world.add(hole);
+      hole.position.set(x, y, 0.14);
+      angledPegboard.add(hole);
     }
   }
 
