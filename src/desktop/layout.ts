@@ -1,6 +1,6 @@
 export const DESK_LAYOUT = {
   leftMonitor: {
-    yaw: 0.15,
+    yaw: 0.2,
     center: { x: -4.25, y: 3.68, z: -0.55 },
     support: {
       baseY: 0.26,
@@ -12,12 +12,6 @@ export const DESK_LAYOUT = {
   },
   pegboards: {
     small: { width: 2.35, height: 4.6 },
-    large: { width: 3.25, height: 5.1, x: 8.05, y: 3.45, z: -2.18 },
-  },
-  matMessage: {
-    x: 82,
-    y: 78,
-    width: 318,
-    height: 292,
+    large: { width: 5.2, height: 8.4, x: 8.05, y: 4.25, z: -2.38 },
   },
 } as const;

@@ -248,6 +248,7 @@ export function mountDesktopScene(root: HTMLElement) {
   const mainCanvas = makeCanvas(1200, 680);
   const sideCanvas = makeCanvas(440, 880);
   const noteCanvas = makeCanvas(420, 300);
+  const messageBoardCanvas = makeCanvas(520, 360);
   const avatarImage = new Image();
   avatarImage.src = "/desktop/main-avatar.png";
 
@@ -421,6 +422,24 @@ export function mountDesktopScene(root: HTMLElement) {
     texture.needsUpdate = true;
   };
 
+  const drawMessageBoard = () => {
+    const { context, canvas, texture } = messageBoardCanvas;
+    context.fillStyle = "#e5c76e";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "rgba(108,78,25,0.16)";
+    for (let y = 88; y < canvas.height; y += 54) {
+      context.fillRect(28, y, canvas.width - 56, 2);
+    }
+    context.fillStyle = "#58431f";
+    context.font = '800 34px "Microsoft YaHei", sans-serif';
+    context.fillText("留言板", 30, 56);
+    if (state.message) {
+      context.font = '600 26px "Microsoft YaHei", sans-serif';
+      wrapText(context, state.message, 30, 126, canvas.width - 60, 38);
+    }
+    texture.needsUpdate = true;
+  };
+
   const drawMat = () => {
     const { context, canvas, texture } = matCanvas;
     context.fillStyle = "#dfd8cc";
@@ -448,28 +467,6 @@ export function mountDesktopScene(root: HTMLElement) {
       });
       context.stroke();
     });
-    const note = DESK_LAYOUT.matMessage;
-    context.save();
-    context.translate(note.x, note.y);
-    context.rotate(-0.018);
-    context.fillStyle = "#e5c76e";
-    context.shadowColor = "rgba(62, 48, 28, 0.2)";
-    context.shadowBlur = 18;
-    context.shadowOffsetY = 8;
-    context.fillRect(0, 0, note.width, note.height);
-    context.shadowColor = "transparent";
-    context.fillStyle = "rgba(108,78,25,0.16)";
-    for (let y = 76; y < note.height - 18; y += 48) {
-      context.fillRect(24, y, note.width - 48, 2);
-    }
-    context.fillStyle = "#58431f";
-    context.font = '800 28px "Microsoft YaHei", sans-serif';
-    context.fillText("留言板", 24, 48);
-    context.font = '600 22px "Microsoft YaHei", sans-serif';
-    if (state.message) {
-      wrapText(context, state.message, 24, 112, note.width - 48, 34);
-    }
-    context.restore();
     texture.needsUpdate = true;
   };
 
@@ -644,13 +641,24 @@ export function mountDesktopScene(root: HTMLElement) {
       world.add(hole);
     }
   }
-  const badgeColors = ["#d7b56d", "#86a28f", "#9d8797"];
+  const messageBoard = addAction(
+    new THREE.Mesh(
+      new THREE.PlaneGeometry(0.92, 0.68),
+      new THREE.MeshBasicMaterial({ map: messageBoardCanvas.texture, toneMapped: false }),
+    ),
+    "badge",
+  );
+  messageBoard.position.set(6.05, 4.45, -1.72);
+  messageBoard.rotation.z = -0.04;
+  world.add(messageBoard);
+
+  const badgeColors = ["#86a28f", "#9d8797"];
   badgeColors.forEach((color, index) => {
     const badge = addAction(
       roundedMesh(0.58, 0.58, 0.08, 0.12, new THREE.MeshStandardMaterial({ color, roughness: 0.65 })),
       "badge",
     );
-    badge.position.set(6.05 + (index % 2) * 0.78, 4.45 - index * 0.82, -1.78);
+    badge.position.set(6.82 + (index % 2) * 0.22, 3.98 - index * 0.82, -1.78);
     world.add(badge);
   });
 
@@ -668,8 +676,8 @@ export function mountDesktopScene(root: HTMLElement) {
   );
   largeBoard.castShadow = true;
   world.add(largeBoard);
-  for (let x = -1.2; x <= 1.2; x += 0.3) {
-    for (let y = -2.1; y <= 2.1; y += 0.32) {
+  for (let x = -2.4; x <= 2.4; x += 0.3) {
+    for (let y = -3.6; y <= 3.6; y += 0.32) {
       const hole = new THREE.Mesh(
         new THREE.CircleGeometry(0.035, 10),
         new THREE.MeshBasicMaterial({ color: "#272a27" }),
@@ -797,6 +805,7 @@ export function mountDesktopScene(root: HTMLElement) {
     drawMainScreen();
     drawSideScreen();
     drawNote();
+    drawMessageBoard();
     drawMat();
     updatePositions();
     updateModeButtons();
@@ -950,8 +959,8 @@ export function mountDesktopScene(root: HTMLElement) {
     event.preventDefault();
     state = setMessage(state, messageInput.value.trim());
     drawMainScreen();
-    drawMat();
-    announce(state.message ? "留言已经写在桌面上" : "留言已清空");
+    drawMessageBoard();
+    announce(state.message ? "留言已经写在洞洞板上" : "留言已清空");
   });
 
   let parallaxX = 0;
@@ -976,10 +985,10 @@ export function mountDesktopScene(root: HTMLElement) {
     },
     setMatMode: setMode,
     setMessage: (message) => {
-      state = setMessage(state, message);
-      messageInput.value = state.message;
-      drawMainScreen();
-      drawMat();
+       state = setMessage(state, message);
+       messageInput.value = state.message;
+       drawMainScreen();
+       drawMessageBoard();
     },
     addStroke: (points) => {
       strokes.push(points.map((point) => ({ x: clamp(point.x, 0, 1), y: clamp(point.y, 0, 1) })));
