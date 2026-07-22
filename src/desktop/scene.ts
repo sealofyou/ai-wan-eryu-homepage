@@ -247,7 +247,8 @@ export function mountDesktopScene(root: HTMLElement) {
   let finalCamera = getFramedCamera(window.innerWidth / window.innerHeight);
   let introCamera = getFramedCamera(window.innerWidth / window.innerHeight, true);
   camera.position.copy(reducedMotion ? finalCamera : introCamera);
-  camera.lookAt(0, 2.45, 0.3);
+  const cameraTarget = new THREE.Vector3(0, 2.9, 0.3);
+  camera.lookAt(cameraTarget);
 
   const world = new THREE.Group();
   scene.add(world);
@@ -268,6 +269,12 @@ export function mountDesktopScene(root: HTMLElement) {
   desk.receiveShadow = true;
   desk.castShadow = true;
   world.add(desk);
+
+  const deskApron = roundedMesh(16.15, 2.7, 0.48, 0.18, wood);
+  deskApron.position.set(0, -1.82, 4.38);
+  deskApron.receiveShadow = true;
+  deskApron.castShadow = true;
+  world.add(deskApron);
 
   const matCanvas = makeCanvas(1400, 460);
   const strokes: Point[][] = [];
@@ -789,54 +796,58 @@ export function mountDesktopScene(root: HTMLElement) {
   world.add(keyboard);
 
   const mouse = addAction(new THREE.Group(), "mouse");
-  const mouseBody = new THREE.Mesh(new THREE.SphereGeometry(0.54, 40, 24), charcoal);
-  mouseBody.scale.set(0.92, 0.42, 1.28);
-  mouseBody.position.y = -0.04;
+  const mouseBody = new THREE.Mesh(new THREE.SphereGeometry(0.55, 40, 24), charcoal);
+  mouseBody.scale.set(0.84, 0.38, 1.2);
+  mouseBody.position.set(0.05, -0.05, 0.02);
   mouseBody.castShadow = true;
   mouse.add(mouseBody);
 
-  const rearHump = new THREE.Mesh(new THREE.SphereGeometry(0.43, 32, 18), charcoalSoft);
-  rearHump.scale.set(0.9, 0.5, 0.95);
-  rearHump.position.set(0, 0.04, 0.22);
+  const rearHump = new THREE.Mesh(new THREE.SphereGeometry(0.45, 36, 20), charcoalSoft);
+  rearHump.scale.set(0.82, 0.46, 0.96);
+  rearHump.position.set(0.04, 0.02, 0.2);
   rearHump.castShadow = true;
   mouse.add(rearHump);
 
-  [-0.16, 0.16].forEach((x) => {
-    const button = roundedMesh(0.31, 0.06, 0.44, 0.05, charcoalSoft);
-    button.position.set(x, 0.15, -0.34);
-    button.castShadow = true;
-    mouse.add(button);
-  });
+  const clickDeck = roundedMesh(0.64, 0.035, 0.4, 0.075, charcoalSoft);
+  clickDeck.position.set(0.03, 0.115, -0.34);
+  clickDeck.castShadow = true;
+  mouse.add(clickDeck);
 
-  const centerSpine = roundedMesh(0.14, 0.1, 0.7, 0.05, charcoal);
-  centerSpine.position.set(0, 0.2, -0.13);
+  const clickSeam = roundedMesh(0.018, 0.012, 0.32, 0.006, charcoal);
+  clickSeam.position.set(0.03, 0.14, -0.34);
+  mouse.add(clickSeam);
+
+  const centerSpine = roundedMesh(0.1, 0.055, 0.46, 0.035, charcoal);
+  centerSpine.position.set(0.03, 0.17, -0.19);
   mouse.add(centerSpine);
 
-  const mouseWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.13, 20), paleGreen);
+  const mouseWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.12, 20), paleGreen);
   mouseWheel.rotation.z = Math.PI / 2;
-  mouseWheel.position.set(0, 0.28, -0.27);
+  mouseWheel.position.set(0.03, 0.23, -0.28);
   mouse.add(mouseWheel);
 
-  const dpiButton = roundedMesh(0.13, 0.07, 0.2, 0.04, paleGreen);
-  dpiButton.position.set(0, 0.23, 0.02);
+  const dpiButton = roundedMesh(0.1, 0.045, 0.15, 0.03, charcoalSoft);
+  dpiButton.position.set(0.03, 0.19, -0.02);
   mouse.add(dpiButton);
 
-  [-0.49, 0.49].forEach((x) => {
-    const lightStrip = roundedMesh(0.025, 0.035, 0.5, 0.012, paleGreen);
-    lightStrip.position.set(x * 0.96, -0.12, 0.12);
-    mouse.add(lightStrip);
-  });
-
-  [-0.08, 0.14].forEach((z) => {
-    const sideButton = roundedMesh(0.055, 0.09, 0.15, 0.025, charcoalSoft);
-    sideButton.position.set(-0.48, 0.07, z);
+  [-0.07, 0.12].forEach((z) => {
+    const sideButton = roundedMesh(0.05, 0.075, 0.13, 0.02, charcoalSoft);
+    sideButton.position.set(-0.43, 0.035, z);
     mouse.add(sideButton);
   });
 
-  const rearLogo = roundedMesh(0.12, 0.035, 0.12, 0.025, paleGreen);
-  rearLogo.position.set(0, 0.26, 0.37);
-  rearLogo.rotation.y = Math.PI / 4;
-  mouse.add(rearLogo);
+  const mouseLogo = new THREE.Group();
+  const mouseLogoMaterial = new THREE.MeshBasicMaterial({ color: "#d8cfbd", toneMapped: false });
+  const logoStem = roundedMesh(0.025, 0.018, 0.12, 0.008, mouseLogoMaterial);
+  logoStem.position.x = -0.035;
+  mouseLogo.add(logoStem);
+  [-0.045, 0, 0.045].forEach((z, index) => {
+    const bar = roundedMesh(index === 1 ? 0.075 : 0.095, 0.018, 0.022, 0.007, mouseLogoMaterial);
+    bar.position.set(0.005, 0, z);
+    mouseLogo.add(bar);
+  });
+  mouseLogo.position.set(0.04, 0.2, 0.32);
+  mouse.add(mouseLogo);
   world.add(mouse);
 
   const modeButtons: Array<{ label: string; action: SceneAction; x: number }> = [
@@ -1102,7 +1113,7 @@ export function mountDesktopScene(root: HTMLElement) {
       camera.position.x += (finalCamera.x + parallaxX - camera.position.x) * 0.035;
       camera.position.y += (finalCamera.y - parallaxY - camera.position.y) * 0.035;
     }
-    camera.lookAt(0, 2.45, 0.3);
+    camera.lookAt(cameraTarget);
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
   };

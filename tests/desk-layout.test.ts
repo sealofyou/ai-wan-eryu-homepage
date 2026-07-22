@@ -54,7 +54,8 @@ describe("approved desktop composition layout", () => {
     expect(sceneSource).toContain("drawImageCover(context, avatarImage, 48, 52, 440, 576)");
     expect(sceneSource).toContain("const rearHump");
     expect(sceneSource).toContain("const dpiButton");
-    expect(sceneSource).toContain("const lightStrip");
-    expect(sceneSource).toContain("const rearLogo");
+    expect(sceneSource).toContain("const sideButton");
+    expect(sceneSource).toContain("const mouseLogo");
+    expect(sceneSource).toContain("const deskApron");
   });
 });

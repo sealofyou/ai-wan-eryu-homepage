@@ -142,44 +142,44 @@ export const createKeyboardModel = () => {
   const unit = worldWidth / layout.width;
   const worldDepth = layout.depth * unit;
 
-  const shell = new THREE.MeshStandardMaterial({ color: "#e7e0d3", roughness: 0.72, metalness: 0.06 });
-  const shellEdge = new THREE.MeshStandardMaterial({ color: "#c8c1b5", roughness: 0.78 });
-  const plate = new THREE.MeshStandardMaterial({ color: "#232522", roughness: 0.76, metalness: 0.14 });
-  const dark = new THREE.MeshStandardMaterial({ color: "#30322f", roughness: 0.68 });
-  const darkTop = new THREE.MeshStandardMaterial({ color: "#3b3d39", roughness: 0.62 });
-  const utility = new THREE.MeshStandardMaterial({ color: "#4b4e49", roughness: 0.66 });
-  const utilityTop = new THREE.MeshStandardMaterial({ color: "#5a5d57", roughness: 0.62 });
+  const shell = new THREE.MeshStandardMaterial({ color: "#ded6c8", roughness: 0.58, metalness: 0.16 });
+  const shellEdge = new THREE.MeshStandardMaterial({ color: "#aaa397", roughness: 0.72, metalness: 0.08 });
+  const plate = new THREE.MeshStandardMaterial({ color: "#181917", roughness: 0.72, metalness: 0.18 });
+  const dark = new THREE.MeshStandardMaterial({ color: "#171816", roughness: 0.7 });
+  const darkTop = new THREE.MeshStandardMaterial({ color: "#262725", roughness: 0.62 });
+  const utility = new THREE.MeshStandardMaterial({ color: "#292b28", roughness: 0.68 });
+  const utilityTop = new THREE.MeshStandardMaterial({ color: "#383a36", roughness: 0.62 });
   const accent = new THREE.MeshStandardMaterial({ color: "#829b88", roughness: 0.64 });
   const accentTop = new THREE.MeshStandardMaterial({ color: "#94ad9a", roughness: 0.58 });
 
-  const base = roundedMesh(worldWidth + 0.18, 0.3, worldDepth + 0.22, 0.16, shell);
-  base.position.y = 0.02;
+  const base = roundedMesh(worldWidth + 0.18, 0.22, worldDepth + 0.22, 0.13, shell);
+  base.position.y = -0.01;
   base.castShadow = true;
   base.receiveShadow = true;
   group.add(base);
 
-  const lowerEdge = roundedMesh(worldWidth + 0.08, 0.09, worldDepth + 0.3, 0.11, shellEdge);
-  lowerEdge.position.set(0, -0.09, 0.03);
+  const lowerEdge = roundedMesh(worldWidth + 0.08, 0.065, worldDepth + 0.26, 0.09, shellEdge);
+  lowerEdge.position.set(0, -0.09, 0.025);
   lowerEdge.castShadow = true;
   group.add(lowerEdge);
 
-  const insetPlate = roundedMesh(worldWidth - 0.08, 0.08, worldDepth - 0.02, 0.08, plate);
-  insetPlate.position.y = 0.18;
+  const insetPlate = roundedMesh(worldWidth - 0.08, 0.055, worldDepth - 0.02, 0.065, plate);
+  insetPlate.position.y = 0.125;
   insetPlate.receiveShadow = true;
   group.add(insetPlate);
 
   for (const spec of layout.keys) {
     const keyGroup = new THREE.Group();
-    const keyWidth = Math.max(0.12, spec.width * unit - 0.035);
-    const keyDepth = Math.max(0.12, spec.depth * unit - 0.035);
+    const keyWidth = Math.max(0.12, spec.width * unit - 0.028);
+    const keyDepth = Math.max(0.12, spec.depth * unit - 0.028);
     const lowerMaterial = spec.tone === "accent" ? accent : spec.tone === "utility" ? utility : dark;
     const topMaterial = spec.tone === "accent" ? accentTop : spec.tone === "utility" ? utilityTop : darkTop;
-    const lower = roundedMesh(keyWidth, 0.11, keyDepth, 0.035, lowerMaterial);
+    const lower = roundedMesh(keyWidth, 0.075, keyDepth, 0.028, lowerMaterial);
     lower.castShadow = true;
     keyGroup.add(lower);
 
-    const top = roundedMesh(Math.max(0.09, keyWidth - 0.045), 0.045, Math.max(0.09, keyDepth - 0.045), 0.025, topMaterial);
-    top.position.y = 0.074;
+    const top = roundedMesh(Math.max(0.09, keyWidth - 0.04), 0.03, Math.max(0.09, keyDepth - 0.04), 0.02, topMaterial);
+    top.position.y = 0.05;
     top.castShadow = true;
     keyGroup.add(top);
 
@@ -190,12 +190,12 @@ export const createKeyboardModel = () => {
       makeLegendMaterial(spec.label, spec.tone === "accent" ? "#f5f1e7" : "#d8d3c8"),
     );
     legend.rotation.x = -Math.PI / 2;
-    legend.position.y = 0.099;
+    legend.position.y = 0.068;
     keyGroup.add(legend);
 
     keyGroup.position.set(
       (spec.x - layout.width / 2) * unit,
-      0.31 + Math.max(0, 4.8 - spec.z) * 0.008,
+      0.22 + Math.max(0, 4.8 - spec.z) * 0.005,
       (spec.z - layout.depth / 2) * unit,
     );
     group.add(keyGroup);
@@ -205,14 +205,14 @@ export const createKeyboardModel = () => {
     new THREE.PlaneGeometry(0.52, 0.16),
     makeLegendMaterial("Eryu", "#353a36"),
   );
-  brand.position.set(1.9, 0.12, worldDepth / 2 + 0.125);
+  brand.position.set(1.9, 0.075, worldDepth / 2 + 0.115);
   group.add(brand);
 
   const ledMaterial = new THREE.MeshBasicMaterial({ color: "#9cc4a4", toneMapped: false });
   [-0.07, 0, 0.07].forEach((offset) => {
     const led = new THREE.Mesh(new THREE.CircleGeometry(0.018, 14), ledMaterial);
     led.rotation.x = -Math.PI / 2;
-    led.position.set(2.08 + offset, 0.245, -worldDepth / 2 + 0.16);
+    led.position.set(2.08 + offset, 0.17, -worldDepth / 2 + 0.16);
     group.add(led);
   });
 
