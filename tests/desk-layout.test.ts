@@ -6,7 +6,7 @@ const sceneSource = readFileSync(new URL("../src/desktop/scene.ts", import.meta.
 
 describe("approved desktop composition layout", () => {
   it("turns the left monitor slightly toward the main viewing position", () => {
-    expect(DESK_LAYOUT.leftMonitor.yaw).toBeGreaterThan(0.08);
+    expect(DESK_LAYOUT.leftMonitor.yaw).toBeGreaterThan(0.17);
     expect(DESK_LAYOUT.leftMonitor.yaw).toBeLessThan(0.24);
   });
 
@@ -26,10 +26,13 @@ describe("approved desktop composition layout", () => {
       DESK_LAYOUT.pegboards.small.height,
     );
     expect(DESK_LAYOUT.pegboards.large.x).toBeGreaterThan(6.45);
+    expect(DESK_LAYOUT.pegboards.large.width).toBeGreaterThan(4.5);
+    expect(DESK_LAYOUT.pegboards.large.height).toBeGreaterThan(7);
   });
 
   it("keeps the message interaction on the physical mat instead of the main screen", () => {
     expect(sceneSource).not.toContain("桌面留言：${state.message}");
-    expect(sceneSource).toContain('context.fillText("留言板", 24, 48)');
+    expect(sceneSource).not.toContain("const note = DESK_LAYOUT.matMessage");
+    expect(sceneSource).toContain("messageBoardCanvas");
   });
 });
