@@ -8,6 +8,8 @@ describe("approved desktop composition layout", () => {
   it("turns the left monitor slightly toward the main viewing position", () => {
     expect(DESK_LAYOUT.leftMonitor.yaw).toBeGreaterThan(0.17);
     expect(DESK_LAYOUT.leftMonitor.yaw).toBeLessThan(0.24);
+    expect(sceneSource).toContain("sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw");
+    expect(sceneSource).not.toContain("sideMonitor.rotation.z");
   });
 
   it("gives the left monitor a visible vertical support and stable foot", () => {
@@ -18,16 +20,23 @@ describe("approved desktop composition layout", () => {
     );
   });
 
-  it("keeps the original pegboard and adds a larger badge surface", () => {
+  it("keeps the small pegboard and places a separate angled board on the desk edge", () => {
+    const small = DESK_LAYOUT.pegboards.small;
+    const large = DESK_LAYOUT.pegboards.large;
     expect(DESK_LAYOUT.pegboards.large.width).toBeGreaterThan(
       DESK_LAYOUT.pegboards.small.width,
     );
     expect(DESK_LAYOUT.pegboards.large.height).toBeGreaterThan(
       DESK_LAYOUT.pegboards.small.height,
     );
-    expect(DESK_LAYOUT.pegboards.large.x).toBeGreaterThan(6.45);
-    expect(DESK_LAYOUT.pegboards.large.width).toBeGreaterThan(4.5);
-    expect(DESK_LAYOUT.pegboards.large.height).toBeGreaterThan(7);
+    expect(large.x).toBeGreaterThan(small.x);
+    expect(large.z).toBeGreaterThan(small.z + 1);
+    expect(large.y - large.height / 2).toBeGreaterThan(0.15);
+    expect(Math.abs(large.yaw)).toBeGreaterThan(0.35);
+    expect(sceneSource).toContain("const angledPegboard = new THREE.Group()");
+    expect(sceneSource).toContain("angledPegboard.rotation.y = DESK_LAYOUT.pegboards.large.yaw");
+    expect(sceneSource).toContain("angledPegboard.add(largeBoard)");
+    expect(sceneSource).toContain("angledPegboard.add(hole)");
   });
 
   it("keeps the message interaction on the physical mat instead of the main screen", () => {

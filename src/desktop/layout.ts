@@ -11,7 +11,15 @@ export const DESK_LAYOUT = {
     },
   },
   pegboards: {
-    small: { width: 2.35, height: 4.6 },
-    large: { width: 5.2, height: 8.4, x: 8.05, y: 4.25, z: -2.38 },
+    small: { width: 2.35, height: 4.6, x: 6.45, y: 3.35, z: -1.98 },
+    // The second board is a separate foreground prop resting on the desk's right edge.
+    large: {
+      width: 2.9,
+      height: 5.4,
+      x: 7.25,
+      y: 2.95,
+      z: 0.45,
+      yaw: -0.52,
+    },
   },
 } as const;
