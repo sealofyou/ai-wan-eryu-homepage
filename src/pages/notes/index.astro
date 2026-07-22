@@ -1,0 +1,71 @@
+---
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
+import qAvatar from "../../assets/q-avatar-v1.png";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { formatDate, sortByDateDesc } from "../../lib/content";
+
+const notes = sortByDateDesc(await getCollection("notes", ({ data }) => !data.draft));
+const typeLabels = { share: "分享", activity: "活动", project: "项目", note: "随记" } as const;
+---
+
+<SiteLayout title="时间笔记" description="按时间记录分享、活动、项目和阶段随记。" theme="soft">
+  <header class="soft-page-hero">
+    <div>
+      <h1>时间笔记</h1>
+      <p>分享、活动和项目，按发生的时间记下来。</p>
+    </div>
+    <Image src={qAvatar} alt="AI玩尔玉 Q 版形象" widths={[260, 420, 600]} sizes="(max-width: 720px) 220px, 300px" />
+  </header>
+
+  <div class="note-filters" role="group" aria-label="筛选时间笔记">
+    <button class="is-active" type="button" data-note-filter="all" aria-pressed="true">全部</button>
+    <button type="button" data-note-filter="share" aria-pressed="false">分享</button>
+    <button type="button" data-note-filter="activity" aria-pressed="false">活动</button>
+    <button type="button" data-note-filter="project" aria-pressed="false">项目</button>
+    <button type="button" data-note-filter="note" aria-pressed="false">随记</button>
+  </div>
+
+  <section class="timeline" aria-live="polite" aria-label="时间笔记列表">
+    {notes.map((note) => (
+      <article data-note-type={note.data.type}>
+        <div class="timeline-meta">
+          <time datetime={note.data.date.toISOString()}>{formatDate(note.data.date)}</time>
+          <span>{typeLabels[note.data.type]}</span>
+        </div>
+        <div class="timeline-entry">
+          <h2><a href={`/notes/${note.id}/`}>{note.data.title}</a></h2>
+          <p>{note.data.description}</p>
+        </div>
+      </article>
+    ))}
+  </section>
+  <p class="timeline-empty" data-note-empty hidden>暂无公开记录。</p>
+
+  <script>
+    const filters = [...document.querySelectorAll<HTMLButtonElement>("[data-note-filter]")];
+    const entries = [...document.querySelectorAll<HTMLElement>("[data-note-type]")];
+    const empty = document.querySelector<HTMLElement>("[data-note-empty]");
+
+    filters.forEach((button) => {
+      button.addEventListener("click", () => {
+        const filter = button.dataset.noteFilter;
+        let visibleCount = 0;
+
+        filters.forEach((item) => {
+          const active = item === button;
+          item.classList.toggle("is-active", active);
+          item.setAttribute("aria-pressed", String(active));
+        });
+
+        entries.forEach((entry) => {
+          const visible = filter === "all" || entry.dataset.noteType === filter;
+          entry.hidden = !visible;
+          if (visible) visibleCount += 1;
+        });
+
+        if (empty) empty.hidden = visibleCount !== 0;
+      });
+    });
+  </script>
+</SiteLayout>

@@ -1,0 +1,17 @@
+---
+import { Image } from "astro:assets";
+import qAvatar from "../assets/q-avatar-v1.png";
+import SiteLayout from "../layouts/SiteLayout.astro";
+---
+
+<SiteLayout title="页面不存在" description="这个页面不存在。" theme="soft">
+  <section class="not-found">
+    <Image src={qAvatar} alt="AI玩尔玉 Q 版形象" widths={[240, 420]} sizes="260px" />
+    <div>
+      <p class="record-meta">404</p>
+      <h1>这个页面不存在</h1>
+      <p>可能是地址变了，也可能内容还没有公开。</p>
+      <a class="primary-action" href="/">返回首页</a>
+    </div>
+  </section>
+</SiteLayout>

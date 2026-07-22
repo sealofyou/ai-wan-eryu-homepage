@@ -1,0 +1,251 @@
+body.is-immersive {
+  overflow: hidden;
+  background: #171613;
+}
+
+body.is-immersive main {
+  min-height: 100vh;
+}
+
+.desktop-experience {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-width: 1024px;
+  overflow: hidden;
+  isolation: isolate;
+  background: #27231e;
+}
+
+.scene-mount,
+.scene-mount canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scene-mount canvas {
+  display: block;
+  cursor: default;
+  touch-action: none;
+}
+
+.scene-mount canvas.is-interactive {
+  cursor: pointer;
+}
+
+.scene-mount canvas.is-dragging {
+  cursor: grabbing;
+}
+
+.scene-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  background: #28231e;
+  color: #eee7da;
+  transition: opacity 500ms ease, visibility 500ms ease;
+}
+
+.scene-loading.is-ready {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.scene-loading span {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(238, 231, 218, 0.22);
+  border-top-color: #78a894;
+  border-radius: 50%;
+  animation: desktop-spin 900ms linear infinite;
+}
+
+.scene-loading p {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+.webgl-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 18px;
+  padding: 40px;
+  background: #29251f;
+  color: #f6f0e5;
+  text-align: center;
+}
+
+.webgl-fallback[hidden] {
+  display: none;
+}
+
+.webgl-fallback img {
+  width: min(1080px, 88vw);
+  max-height: 76vh;
+  object-fit: contain;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+}
+
+.webgl-fallback p {
+  margin: 0;
+}
+
+.mat-message-panel {
+  position: absolute;
+  left: 7.5%;
+  bottom: 8.5%;
+  z-index: 3;
+  width: 310px;
+  padding: 9px 11px 11px;
+  border: 1px solid rgba(108, 78, 25, 0.2);
+  border-radius: 2px;
+  background: rgba(229, 199, 110, 0.96);
+  box-shadow: 6px 9px 18px rgba(41, 32, 25, 0.24);
+  color: #58431f;
+  transform: rotate(-1deg);
+  backdrop-filter: blur(10px);
+}
+
+.mat-message-panel[hidden] {
+  display: none;
+}
+
+.mat-message-panel label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.mat-message-panel > div {
+  display: grid;
+  grid-template-columns: 1fr 52px;
+  gap: 6px;
+}
+
+.mat-message-panel input,
+.mat-message-panel button {
+  height: 34px;
+  border: 1px solid rgba(40, 40, 36, 0.22);
+  border-radius: 4px;
+  font: inherit;
+}
+
+.mat-message-panel input {
+  min-width: 0;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.mat-message-panel button {
+  background: #58431f;
+  color: #fff8dd;
+  cursor: pointer;
+}
+
+.interaction-status {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  z-index: 3;
+  max-width: 440px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgba(31, 30, 27, 0.72);
+  color: #fffdf8;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.interaction-status.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.semantic-controls {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.semantic-controls:focus-within {
+  top: 12px;
+  left: 12px;
+  z-index: 8;
+  width: auto;
+  height: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 720px;
+  padding: 10px;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  background: rgba(246, 242, 233, 0.96);
+  white-space: normal;
+}
+
+.semantic-controls button {
+  min-height: 36px;
+  border: 1px solid rgba(33, 34, 32, 0.2);
+  border-radius: 4px;
+  background: white;
+  color: #222522;
+}
+
+.desktop-only-note {
+  display: none;
+}
+
+@keyframes desktop-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 900px) {
+  .desktop-experience {
+    min-width: 0;
+    display: grid;
+    place-items: center;
+    padding: 30px;
+  }
+
+  .scene-mount,
+  .scene-loading,
+  .mat-message-panel,
+  .interaction-status {
+    display: none;
+  }
+
+  .desktop-only-note {
+    display: block;
+    color: #f4efe5;
+    font-size: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-loading span {
+    animation: none;
+  }
+}
