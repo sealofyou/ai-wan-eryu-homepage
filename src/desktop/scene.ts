@@ -129,6 +129,42 @@ const wrapText = (
   if (line) context.fillText(line, x, y + offsetY);
 };
 
+const drawImageCover = (
+  context: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+) => {
+  const sourceAspect = image.naturalWidth / image.naturalHeight;
+  const targetAspect = width / height;
+  let sourceX = 0;
+  let sourceY = 0;
+  let sourceWidth = image.naturalWidth;
+  let sourceHeight = image.naturalHeight;
+
+  if (sourceAspect > targetAspect) {
+    sourceWidth = image.naturalHeight * targetAspect;
+    sourceX = (image.naturalWidth - sourceWidth) / 2;
+  } else {
+    sourceHeight = image.naturalWidth / targetAspect;
+    sourceY = (image.naturalHeight - sourceHeight) / 2;
+  }
+
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    x,
+    y,
+    width,
+    height,
+  );
+};
+
 const makeTextMaterial = (
   text: string,
   foreground = "#ece6da",
@@ -275,8 +311,8 @@ export function mountDesktopScene(root: HTMLElement) {
       context.clip();
       context.fillStyle = "#d8d4cb";
       context.fillRect(48, 52, 440, 576);
-      if (avatarImage.complete) {
-        context.drawImage(avatarImage, 48, 36, 440, 608);
+      if (avatarImage.complete && avatarImage.naturalWidth > 0) {
+        drawImageCover(context, avatarImage, 48, 52, 440, 576);
       }
       context.restore();
 
@@ -437,12 +473,10 @@ export function mountDesktopScene(root: HTMLElement) {
     for (let y = 88; y < canvas.height; y += 54) {
       context.fillRect(28, y, canvas.width - 56, 2);
     }
-    context.fillStyle = "#58431f";
-    context.font = '800 38px "Microsoft YaHei", sans-serif';
-    context.fillText("留言板", 30, 56);
     if (state.message) {
+      context.fillStyle = "#58431f";
       context.font = '600 30px "Microsoft YaHei", sans-serif';
-      wrapText(context, state.message, 30, 126, canvas.width - 60, 38);
+      wrapText(context, state.message, 30, 70, canvas.width - 60, 42);
     }
     texture.needsUpdate = true;
   };
@@ -755,17 +789,54 @@ export function mountDesktopScene(root: HTMLElement) {
   world.add(keyboard);
 
   const mouse = addAction(new THREE.Group(), "mouse");
-  const mouseBody = new THREE.Mesh(new THREE.SphereGeometry(0.52, 32, 20), charcoal);
-  mouseBody.scale.set(0.86, 0.45, 1.22);
+  const mouseBody = new THREE.Mesh(new THREE.SphereGeometry(0.54, 40, 24), charcoal);
+  mouseBody.scale.set(0.92, 0.42, 1.28);
+  mouseBody.position.y = -0.04;
   mouseBody.castShadow = true;
   mouse.add(mouseBody);
-  const mouseLine = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.18, 0.58), new THREE.MeshBasicMaterial({ color: "#9aa69e" }));
-  mouseLine.position.set(0, 0.17, -0.12);
-  mouse.add(mouseLine);
-  const mouseWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.11, 16), paleGreen);
+
+  const rearHump = new THREE.Mesh(new THREE.SphereGeometry(0.43, 32, 18), charcoalSoft);
+  rearHump.scale.set(0.9, 0.5, 0.95);
+  rearHump.position.set(0, 0.04, 0.22);
+  rearHump.castShadow = true;
+  mouse.add(rearHump);
+
+  [-0.16, 0.16].forEach((x) => {
+    const button = roundedMesh(0.31, 0.06, 0.44, 0.05, charcoalSoft);
+    button.position.set(x, 0.15, -0.34);
+    button.castShadow = true;
+    mouse.add(button);
+  });
+
+  const centerSpine = roundedMesh(0.14, 0.1, 0.7, 0.05, charcoal);
+  centerSpine.position.set(0, 0.2, -0.13);
+  mouse.add(centerSpine);
+
+  const mouseWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.13, 20), paleGreen);
   mouseWheel.rotation.z = Math.PI / 2;
-  mouseWheel.position.set(0, 0.29, -0.24);
+  mouseWheel.position.set(0, 0.28, -0.27);
   mouse.add(mouseWheel);
+
+  const dpiButton = roundedMesh(0.13, 0.07, 0.2, 0.04, paleGreen);
+  dpiButton.position.set(0, 0.23, 0.02);
+  mouse.add(dpiButton);
+
+  [-0.49, 0.49].forEach((x) => {
+    const lightStrip = roundedMesh(0.025, 0.035, 0.5, 0.012, paleGreen);
+    lightStrip.position.set(x * 0.96, -0.12, 0.12);
+    mouse.add(lightStrip);
+  });
+
+  [-0.08, 0.14].forEach((z) => {
+    const sideButton = roundedMesh(0.055, 0.09, 0.15, 0.025, charcoalSoft);
+    sideButton.position.set(-0.48, 0.07, z);
+    mouse.add(sideButton);
+  });
+
+  const rearLogo = roundedMesh(0.12, 0.035, 0.12, 0.025, paleGreen);
+  rearLogo.position.set(0, 0.26, 0.37);
+  rearLogo.rotation.y = Math.PI / 4;
+  mouse.add(rearLogo);
   world.add(mouse);
 
   const modeButtons: Array<{ label: string; action: SceneAction; x: number }> = [

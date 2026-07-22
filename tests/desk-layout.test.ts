@@ -44,7 +44,17 @@ describe("approved desktop composition layout", () => {
   it("keeps the message interaction on the physical mat instead of the main screen", () => {
     expect(sceneSource).not.toContain("桌面留言：${state.message}");
     expect(sceneSource).not.toContain("const note = DESK_LAYOUT.matMessage");
+    expect(sceneSource).not.toContain('context.fillText("留言板"');
     expect(sceneSource).toContain('"message"');
     expect(sceneSource).toContain("messageInput.focus()");
+  });
+
+  it("preserves the portrait image ratio and gives the mouse gaming details", () => {
+    expect(sceneSource).toContain("const drawImageCover = (");
+    expect(sceneSource).toContain("drawImageCover(context, avatarImage, 48, 52, 440, 576)");
+    expect(sceneSource).toContain("const rearHump");
+    expect(sceneSource).toContain("const dpiButton");
+    expect(sceneSource).toContain("const lightStrip");
+    expect(sceneSource).toContain("const rearLogo");
   });
 });
