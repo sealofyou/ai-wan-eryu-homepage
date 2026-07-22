@@ -104,16 +104,17 @@ body.is-immersive main {
 
 .mat-message-panel {
   position: absolute;
-  right: 8.5%;
-  bottom: 5.2%;
+  left: 7.5%;
+  bottom: 8.5%;
   z-index: 3;
-  width: 330px;
+  width: 310px;
   padding: 9px 11px 11px;
-  border: 1px solid rgba(60, 57, 51, 0.22);
-  border-radius: 6px;
-  background: rgba(239, 234, 223, 0.9);
-  box-shadow: 0 8px 20px rgba(41, 32, 25, 0.18);
-  color: #282824;
+  border: 1px solid rgba(108, 78, 25, 0.2);
+  border-radius: 2px;
+  background: rgba(229, 199, 110, 0.96);
+  box-shadow: 6px 9px 18px rgba(41, 32, 25, 0.24);
+  color: #58431f;
+  transform: rotate(-1deg);
   backdrop-filter: blur(10px);
 }
 
@@ -149,8 +150,8 @@ body.is-immersive main {
 }
 
 .mat-message-panel button {
-  background: #2b302d;
-  color: #fffdf8;
+  background: #58431f;
+  color: #fff8dd;
   cursor: pointer;
 }
 

@@ -15,6 +15,7 @@ import {
   type ScreenId,
 } from "./model";
 import { createKeyboardModel } from "./keyboard";
+import { DESK_LAYOUT } from "./layout";
 
 type SceneAction =
   | `screen:${ScreenId}`
@@ -308,11 +309,6 @@ export function mountDesktopScene(root: HTMLElement) {
       context.fillStyle = "#4d524d";
       context.fillText("整理个人 AI 操作系统", 584, 503);
       context.fillText("打磨可交接的项目流程", 584, 543);
-      if (state.message) {
-        context.fillStyle = "#8b6f49";
-        context.font = '600 19px "Microsoft YaHei", sans-serif';
-        context.fillText(`桌面留言：${state.message}`, 584, 578);
-      }
     } else {
       const selected = activities.find((activity) => activity.id === state.activeScreen);
       const isBadge = state.activeScreen === "badge";
@@ -452,9 +448,28 @@ export function mountDesktopScene(root: HTMLElement) {
       });
       context.stroke();
     });
-    context.fillStyle = "rgba(38,44,40,0.62)";
-    context.font = '700 22px "Microsoft YaHei", sans-serif';
-    context.fillText(state.message || "Eryu desk", 1100, 410);
+    const note = DESK_LAYOUT.matMessage;
+    context.save();
+    context.translate(note.x, note.y);
+    context.rotate(-0.018);
+    context.fillStyle = "#e5c76e";
+    context.shadowColor = "rgba(62, 48, 28, 0.2)";
+    context.shadowBlur = 18;
+    context.shadowOffsetY = 8;
+    context.fillRect(0, 0, note.width, note.height);
+    context.shadowColor = "transparent";
+    context.fillStyle = "rgba(108,78,25,0.16)";
+    for (let y = 76; y < note.height - 18; y += 48) {
+      context.fillRect(24, y, note.width - 48, 2);
+    }
+    context.fillStyle = "#58431f";
+    context.font = '800 28px "Microsoft YaHei", sans-serif';
+    context.fillText("留言板", 24, 48);
+    context.font = '600 22px "Microsoft YaHei", sans-serif';
+    if (state.message) {
+      wrapText(context, state.message, 24, 112, note.width - 48, 34);
+    }
+    context.restore();
     texture.needsUpdate = true;
   };
 
@@ -493,24 +508,66 @@ export function mountDesktopScene(root: HTMLElement) {
   soundbarLabel.position.set(0.7, 1.08, 0.49);
   world.add(soundbarLabel);
 
+  const sideMonitor = new THREE.Group();
+  sideMonitor.position.set(
+    DESK_LAYOUT.leftMonitor.center.x,
+    DESK_LAYOUT.leftMonitor.center.y,
+    DESK_LAYOUT.leftMonitor.center.z,
+  );
+  sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw;
+  world.add(sideMonitor);
+
   const sideFrame = roundedMesh(2.45, 4.75, 0.34, 0.14, charcoal);
-  sideFrame.position.set(-4.25, 3.68, -0.55);
+  sideFrame.position.set(0, 0, 0);
   sideFrame.castShadow = true;
-  world.add(sideFrame);
+  sideMonitor.add(sideFrame);
   const sideScreen = new THREE.Mesh(
     new THREE.PlaneGeometry(2.17, 4.4),
     new THREE.MeshBasicMaterial({ map: sideCanvas.texture, toneMapped: false }),
   );
-  sideScreen.position.set(-4.25, 3.68, -0.36);
-  world.add(sideScreen);
+  sideScreen.position.set(0, 0, 0.19);
+  sideMonitor.add(sideScreen);
   activities.forEach((activity, index) => {
     const hit = addAction(
       new THREE.Mesh(new THREE.PlaneGeometry(1.92, 0.92), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })),
       `screen:${activity.id}`,
     );
-    hit.position.set(-4.25, 4.48 - index * 1.1, -0.33);
-    world.add(hit);
+    hit.position.set(0, 0.8 - index * 1.1, 0.22);
+    sideMonitor.add(hit);
   });
+
+  const sideSupport = new THREE.Group();
+  sideSupport.position.set(
+    DESK_LAYOUT.leftMonitor.center.x,
+    DESK_LAYOUT.leftMonitor.support.baseY - 0.09,
+    DESK_LAYOUT.leftMonitor.center.z,
+  );
+  sideSupport.rotation.y = DESK_LAYOUT.leftMonitor.yaw;
+  const supportPost = roundedMesh(
+    0.56,
+    DESK_LAYOUT.leftMonitor.support.height,
+    0.42,
+    0.08,
+    charcoal,
+  );
+  supportPost.position.set(0, DESK_LAYOUT.leftMonitor.support.height / 2, 0);
+  supportPost.castShadow = true;
+  sideSupport.add(supportPost);
+  const supportHinge = roundedMesh(0.9, 0.2, 0.5, 0.06, charcoalSoft);
+  supportHinge.position.set(0, DESK_LAYOUT.leftMonitor.support.topY - DESK_LAYOUT.leftMonitor.support.baseY, 0);
+  supportHinge.castShadow = true;
+  sideSupport.add(supportHinge);
+  const supportFoot = roundedMesh(
+    DESK_LAYOUT.leftMonitor.support.footWidth,
+    0.18,
+    DESK_LAYOUT.leftMonitor.support.footDepth,
+    0.08,
+    charcoalSoft,
+  );
+  supportFoot.position.set(0, 0.09, 0.08);
+  supportFoot.castShadow = true;
+  sideSupport.add(supportFoot);
+  world.add(sideSupport);
 
   const tower = roundedMesh(2.05, 4.0, 2.1, 0.2, charcoal);
   tower.position.set(-6.45, 2.1, 0.15);
@@ -596,6 +653,35 @@ export function mountDesktopScene(root: HTMLElement) {
     badge.position.set(6.05 + (index % 2) * 0.78, 4.45 - index * 0.82, -1.78);
     world.add(badge);
   });
+
+  const largeBoard = roundedMesh(
+    DESK_LAYOUT.pegboards.large.width,
+    DESK_LAYOUT.pegboards.large.height,
+    0.22,
+    0.08,
+    new THREE.MeshStandardMaterial({ color: "#555a55", roughness: 0.86 }),
+  );
+  largeBoard.position.set(
+    DESK_LAYOUT.pegboards.large.x,
+    DESK_LAYOUT.pegboards.large.y,
+    DESK_LAYOUT.pegboards.large.z,
+  );
+  largeBoard.castShadow = true;
+  world.add(largeBoard);
+  for (let x = -1.2; x <= 1.2; x += 0.3) {
+    for (let y = -2.1; y <= 2.1; y += 0.32) {
+      const hole = new THREE.Mesh(
+        new THREE.CircleGeometry(0.035, 10),
+        new THREE.MeshBasicMaterial({ color: "#272a27" }),
+      );
+      hole.position.set(
+        DESK_LAYOUT.pegboards.large.x + x,
+        DESK_LAYOUT.pegboards.large.y + y,
+        DESK_LAYOUT.pegboards.large.z + 0.14,
+      );
+      world.add(hole);
+    }
+  }
 
   const lamp = new THREE.Group();
   lamp.position.set(5.62, 0.2, 0.05);
