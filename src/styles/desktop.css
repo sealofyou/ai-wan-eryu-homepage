@@ -104,17 +104,17 @@ body.is-immersive main {
 
 .mat-message-panel {
   position: absolute;
-  top: 43%;
-  right: 4.5%;
+  top: 25%;
+  right: 15%;
   z-index: 3;
-  width: 270px;
+  width: 220px;
   padding: 9px 11px 11px;
   border: 1px solid rgba(108, 78, 25, 0.2);
   border-radius: 2px;
   background: rgba(229, 199, 110, 0.96);
   box-shadow: 6px 9px 18px rgba(41, 32, 25, 0.24);
   color: #58431f;
-  transform: rotate(1deg);
+  transform: rotate(-2deg);
   backdrop-filter: blur(10px);
 }
 

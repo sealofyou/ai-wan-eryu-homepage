@@ -1,6 +1,6 @@
 export const DESK_LAYOUT = {
   leftMonitor: {
-    yaw: 0.2,
+    yaw: 0.5,
     center: { x: -4.25, y: 3.68, z: -0.55 },
     support: {
       baseY: 0.26,
@@ -12,14 +12,14 @@ export const DESK_LAYOUT = {
   },
   pegboards: {
     small: { width: 2.35, height: 4.6, x: 6.45, y: 3.35, z: -1.98 },
-    // The second board is a separate foreground prop resting on the desk's right edge.
+    // The second board follows the room's right-hand depth plane instead of facing front.
     large: {
-      width: 2.9,
-      height: 5.4,
-      x: 7.25,
-      y: 2.95,
-      z: 0.45,
-      yaw: -0.52,
+      width: 5.8,
+      height: 7.4,
+      x: 8.6,
+      y: 4,
+      z: 0.1,
+      yaw: -1.05,
     },
   },
 } as const;

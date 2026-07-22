@@ -6,8 +6,8 @@ const sceneSource = readFileSync(new URL("../src/desktop/scene.ts", import.meta.
 
 describe("approved desktop composition layout", () => {
   it("turns the left monitor slightly toward the main viewing position", () => {
-    expect(DESK_LAYOUT.leftMonitor.yaw).toBeGreaterThan(0.17);
-    expect(DESK_LAYOUT.leftMonitor.yaw).toBeLessThan(0.24);
+    expect(DESK_LAYOUT.leftMonitor.yaw).toBeGreaterThan(0.42);
+    expect(DESK_LAYOUT.leftMonitor.yaw).toBeLessThan(0.58);
     expect(sceneSource).toContain("sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw");
     expect(sceneSource).not.toContain("sideMonitor.rotation.z");
   });
@@ -29,10 +29,10 @@ describe("approved desktop composition layout", () => {
     expect(DESK_LAYOUT.pegboards.large.height).toBeGreaterThan(
       DESK_LAYOUT.pegboards.small.height,
     );
-    expect(large.x).toBeGreaterThan(small.x);
-    expect(large.z).toBeGreaterThan(small.z + 1);
+    expect(large.x).toBeGreaterThan(8);
+    expect(large.width).toBeGreaterThan(5);
     expect(large.y - large.height / 2).toBeGreaterThan(0.15);
-    expect(Math.abs(large.yaw)).toBeGreaterThan(0.35);
+    expect(Math.abs(large.yaw)).toBeGreaterThan(0.9);
     expect(sceneSource).toContain("const angledPegboard = new THREE.Group()");
     expect(sceneSource).toContain("angledPegboard.rotation.y = DESK_LAYOUT.pegboards.large.yaw");
     expect(sceneSource).toContain("angledPegboard.add(largeBoard)");
