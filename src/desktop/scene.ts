@@ -6,7 +6,11 @@ import {
   cycleQuote,
   moveKeyboard,
   movePhysicalMouse,
+  returnFromContent,
+  selectContentItem,
+  selectSection,
   selectScreen,
+  setContentPage,
   setMatMode,
   setMessage,
   type DesktopState,
@@ -16,11 +20,24 @@ import {
 } from "./model";
 import { createKeyboardModel } from "./keyboard";
 import { DESK_LAYOUT } from "./layout";
-import type { DesktopContentPayload } from "./content";
+import {
+  getContentPage,
+  resolveContentUrl,
+  sortDesktopItems,
+  type ContentSectionId,
+  type DesktopContentItem,
+  type DesktopContentPayload,
+} from "./content";
 
 type SceneAction =
   | `screen:${ScreenId}`
+  | `section:${ContentSectionId}`
+  | `content:${string}`
   | `mode:${MatMode}`
+  | "content-back"
+  | "content-open"
+  | "page-prev"
+  | "page-next"
   | "quote"
   | "badge"
   | "clear"
@@ -35,6 +52,8 @@ declare global {
     __ERYU_DESKTOP__?: {
       getState: () => DesktopState;
       selectScreen: (screen: ScreenId) => void;
+      selectSection: (section: ContentSectionId) => void;
+      selectContentItem: (itemId: string) => void;
       moveMouseNormalized: (x: number, y: number) => void;
       moveKeyboardNormalized: (x: number, y: number) => void;
       setMatMode: (mode: MatMode) => void;
@@ -47,32 +66,32 @@ declare global {
   }
 }
 
-const activities: Array<{
-  id: Exclude<ScreenId, "home" | "badge">;
-  date: string;
+const sections: Array<{
+  id: ContentSectionId;
+  eyebrow: string;
   title: string;
-  summary: string;
+  subtitle: string;
   color: string;
 }> = [
   {
     id: "articles",
-    date: "07.04",
-    title: "分享",
-    summary: "一次关于 AI 技能与真实工作流的分享记录。",
+    eyebrow: "ARTICLES",
+    title: "文章",
+    subtitle: "按时间阅读",
     color: "#d77c51",
   },
   {
     id: "activities",
-    date: "07.18",
-    title: "活动",
-    summary: "活动资料正在整理，先保留时间与入口。",
+    eyebrow: "ACTIVITIES",
+    title: "分享与活动",
+    subtitle: "现场与资料",
     color: "#7f9c8d",
   },
   {
     id: "recent",
-    date: "NOW",
+    eyebrow: "NOW",
     title: "最近在做",
-    summary: "把个人知识、项目与任务节奏接成可交接的系统。",
+    subtitle: "项目与状态",
     color: "#8091aa",
   },
 ];
@@ -128,6 +147,19 @@ const wrapText = (
     }
   }
   if (line) context.fillText(line, x, y + offsetY);
+};
+
+const truncateToWidth = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+) => {
+  if (context.measureText(text).width <= maxWidth) return text;
+  let result = text;
+  while (result && context.measureText(`${result}...`).width > maxWidth) {
+    result = result.slice(0, -1);
+  }
+  return `${result}...`;
 };
 
 const drawImageCover = (
@@ -207,7 +239,7 @@ const roundedMesh = (
 
 export function mountDesktopScene(
   root: HTMLElement,
-  _contentPayload: DesktopContentPayload = { items: [] },
+  contentPayload: DesktopContentPayload = { items: [] },
 ) {
   if (window.innerWidth <= 900) return;
 
@@ -218,6 +250,11 @@ export function mountDesktopScene(
   const messagePanel = root.querySelector<HTMLFormElement>("[data-message-panel]");
   const messageInput = root.querySelector<HTMLInputElement>("#mat-message");
   if (!mount || !loading || !fallback || !status || !messagePanel || !messageInput) return;
+
+  const contentItems = sortDesktopItems(contentPayload.items);
+  const contentById = new Map(contentItems.map((item) => [item.id, item]));
+  const itemsForSection = (section: ContentSectionId) =>
+    contentItems.filter((item) => item.section === section);
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let renderer: THREE.WebGLRenderer;
@@ -306,6 +343,153 @@ export function mountDesktopScene(
   const avatarImage = new Image();
   avatarImage.src = "/desktop/main-avatar.png";
 
+  const drawScreenButton = (
+    context: CanvasRenderingContext2D,
+    label: string,
+    x: number,
+    y: number,
+    width: number,
+    active = true,
+  ) => {
+    roundRect(context, x, y, width, 58, 16);
+    context.fillStyle = active ? "#282c29" : "#dfe3dc";
+    context.fill();
+    context.fillStyle = active ? "#fffdf8" : "#626b65";
+    context.font = '700 22px "Microsoft YaHei", sans-serif';
+    context.textAlign = "center";
+    context.fillText(label, x + width / 2, y + 38);
+    context.textAlign = "left";
+  };
+
+  const drawBadgeScreen = (context: CanvasRenderingContext2D, height: number) => {
+    context.fillStyle = "#d6a755";
+    context.fillRect(0, 0, 22, height);
+    context.fillStyle = "#5f655f";
+    context.font = '700 22px "Microsoft YaHei", sans-serif';
+    context.fillText("PEGBOARD / BADGE", 72, 88);
+    context.fillStyle = "#222622";
+    context.font = '900 62px "Microsoft YaHei", sans-serif';
+    context.fillText("徽章故事", 72, 174);
+    roundRect(context, 72, 232, 1052, 260, 28);
+    context.fillStyle = "#d6a755";
+    context.fill();
+    context.fillStyle = "rgba(255,255,255,0.28)";
+    for (let index = 0; index < 8; index += 1) {
+      context.fillRect(108 + index * 120, 278 + (index % 2) * 70, 66, 66);
+    }
+    context.fillStyle = "#f8f5ef";
+    context.font = '800 32px "Microsoft YaHei", sans-serif';
+    context.fillText("内容整理中", 118, 426);
+    context.fillStyle = "#343934";
+    context.font = '500 26px "Microsoft YaHei", sans-serif';
+    wrapText(context, "这里以后会放徽章的时间、来源和故事。", 76, 552, 850, 42);
+    drawScreenButton(context, "返回首页", 932, 548, 192);
+  };
+
+  const drawContentList = (
+    context: CanvasRenderingContext2D,
+    sectionId: ContentSectionId,
+    requestedPage: number,
+  ) => {
+    const section = sections.find((candidate) => candidate.id === sectionId) ?? sections[0];
+    const page = getContentPage(itemsForSection(sectionId), requestedPage, 4);
+
+    context.fillStyle = section.color;
+    context.fillRect(0, 0, 22, mainCanvas.canvas.height);
+    context.fillStyle = "#5f655f";
+    context.font = '700 22px "Microsoft YaHei", sans-serif';
+    context.fillText(`${section.eyebrow} / ${page.items.length ? "LATEST" : "EMPTY"}`, 72, 72);
+    context.fillStyle = "#222622";
+    context.font = '900 54px "Microsoft YaHei", sans-serif';
+    context.fillText(section.title, 72, 140);
+    context.fillStyle = "#707771";
+    context.font = '500 21px "Microsoft YaHei", sans-serif';
+    context.fillText(section.subtitle, 72, 178);
+
+    if (!page.items.length) {
+      roundRect(context, 72, 224, 1050, 284, 24);
+      context.fillStyle = "rgba(255,255,255,0.65)";
+      context.fill();
+      context.strokeStyle = "rgba(40,44,41,0.12)";
+      context.stroke();
+      context.fillStyle = "#343934";
+      context.font = '800 31px "Microsoft YaHei", sans-serif';
+      context.fillText("这里还没有公开内容", 112, 330);
+      context.fillStyle = "#6b726d";
+      context.font = '500 24px "Microsoft YaHei", sans-serif';
+      context.fillText("内容确认后会按时间出现在这里。", 112, 382);
+    } else {
+      page.items.forEach((item, index) => {
+        const y = 205 + index * 96;
+        roundRect(context, 72, y, 1050, 78, 16);
+        context.fillStyle = "rgba(255,255,255,0.72)";
+        context.fill();
+        context.strokeStyle = "rgba(40,44,41,0.12)";
+        context.stroke();
+        context.fillStyle = section.color;
+        roundRect(context, 92, y + 13, 122, 52, 12);
+        context.fill();
+        context.fillStyle = "#fffdf8";
+        context.font = '800 18px "Microsoft YaHei", sans-serif';
+        context.fillText(item.date.slice(5).replace("-", "."), 118, y + 46);
+        context.fillStyle = "#252925";
+        context.font = '800 24px "Microsoft YaHei", sans-serif';
+        context.fillText(truncateToWidth(context, item.title, 520), 246, y + 34);
+        context.fillStyle = "#6d746e";
+        context.font = '500 17px "Microsoft YaHei", sans-serif';
+        context.fillText(truncateToWidth(context, item.description, 730), 246, y + 61);
+      });
+    }
+
+    drawScreenButton(context, "返回首页", 72, 582, 174);
+    if (page.pageCount > 1) {
+      drawScreenButton(context, "上一页", 768, 582, 132, page.page > 0);
+      drawScreenButton(context, "下一页", 916, 582, 132, page.page < page.pageCount - 1);
+      context.fillStyle = "#707771";
+      context.font = '600 18px "Microsoft YaHei", sans-serif';
+      context.fillText(`${page.page + 1} / ${page.pageCount}`, 1068, 619);
+    }
+  };
+
+  const drawContentPreview = (
+    context: CanvasRenderingContext2D,
+    item: DesktopContentItem,
+  ) => {
+    const section = sections.find((candidate) => candidate.id === item.section) ?? sections[0];
+    context.fillStyle = section.color;
+    context.fillRect(0, 0, 22, mainCanvas.canvas.height);
+    context.fillStyle = "#5f655f";
+    context.font = '700 22px "Microsoft YaHei", sans-serif';
+    context.fillText(`${section.eyebrow} / ${item.date}`, 72, 76);
+    context.fillStyle = "#222622";
+    context.font = '900 48px "Microsoft YaHei", sans-serif';
+    wrapText(context, item.title, 72, 150, 1030, 55);
+    context.fillStyle = "#6d746e";
+    context.font = '600 20px "Microsoft YaHei", sans-serif';
+    context.fillText(
+      [item.category, item.location].filter(Boolean).join(" · ") || section.title,
+      76,
+      224,
+    );
+    roundRect(context, 72, 260, 1050, 250, 24);
+    context.fillStyle = "rgba(255,255,255,0.72)";
+    context.fill();
+    context.strokeStyle = "rgba(40,44,41,0.12)";
+    context.stroke();
+    context.fillStyle = "#343934";
+    context.font = '500 25px "Microsoft YaHei", sans-serif';
+    wrapText(context, item.preview, 110, 320, 970, 42);
+    drawScreenButton(context, "返回列表", 72, 582, 174);
+    drawScreenButton(
+      context,
+      item.section === "activities" ? "查看完整活动" : "阅读全文",
+      884,
+      582,
+      238,
+      Boolean(resolveContentUrl(item)),
+    );
+  };
+
   const drawMainScreen = () => {
     const { context, canvas, texture } = mainCanvas;
     const { width, height } = canvas;
@@ -364,44 +548,17 @@ export function mountDesktopScene(
       context.fillStyle = "#4d524d";
       context.fillText("整理个人 AI 操作系统", 584, 503);
       context.fillText("打磨可交接的项目流程", 584, 543);
-    } else {
-      const selected = activities.find((activity) => activity.id === state.activeScreen);
-      const isBadge = state.activeScreen === "badge";
-      const color = selected?.color ?? "#d6a755";
-      context.fillStyle = color;
-      context.fillRect(0, 0, 22, height);
-      context.fillStyle = "#5f655f";
-      context.font = '700 22px "Microsoft YaHei", sans-serif';
-      context.fillText(isBadge ? "PEGBOARD / BADGE" : `${selected?.date} / ACTIVITY`, 72, 88);
-      context.fillStyle = "#222622";
-      context.font = '900 62px "Microsoft YaHei", sans-serif';
-      context.fillText(isBadge ? "徽章故事" : selected?.title ?? "内容", 72, 174);
-      roundRect(context, 72, 232, 1052, 260, 28);
-      context.fillStyle = color;
-      context.fill();
-      context.fillStyle = "rgba(255,255,255,0.28)";
-      for (let index = 0; index < 8; index += 1) {
-        context.fillRect(108 + index * 120, 278 + (index % 2) * 70, 66, 66);
+    } else if (state.activeScreen === "badge") {
+      drawBadgeScreen(context, height);
+    } else if (state.contentView.kind === "list") {
+      drawContentList(context, state.contentView.section, state.contentView.page);
+    } else if (state.contentView.kind === "preview") {
+      const selectedItem = contentById.get(state.contentView.itemId);
+      if (selectedItem) {
+        drawContentPreview(context, selectedItem);
+      } else {
+        drawContentList(context, state.contentView.section, 0);
       }
-      context.fillStyle = "#f8f5ef";
-      context.font = '800 32px "Microsoft YaHei", sans-serif';
-      context.fillText(isBadge ? "示例占位" : "内容整理中", 118, 426);
-      context.fillStyle = "#343934";
-      context.font = '500 26px "Microsoft YaHei", sans-serif';
-      wrapText(
-        context,
-        isBadge ? "这里将来会放徽章的时间、来源和故事。目前尚未填充。" : selected?.summary ?? "内容整理中",
-        76,
-        552,
-        850,
-        42,
-      );
-      roundRect(context, 932, 548, 192, 64, 18);
-      context.fillStyle = "#282c29";
-      context.fill();
-      context.fillStyle = "#fffdf8";
-      context.font = '700 23px "Microsoft YaHei", sans-serif';
-      context.fillText("← 返回首页", 962, 589);
     }
 
     const cursorX = state.screenCursor.x * width;
@@ -437,12 +594,12 @@ export function mountDesktopScene(
     context.font = '700 17px "Microsoft YaHei", sans-serif';
     context.fillText("ACTIVITY", 40, 108);
 
-    activities.forEach((activity, index) => {
+    sections.forEach((section, index) => {
       const y = 152 + index * 222;
       roundRect(context, 28, y, 384, 188, 24);
-      context.fillStyle = state.activeScreen === activity.id ? "#343a35" : "#2a2e2a";
+      context.fillStyle = state.activeScreen === section.id ? "#343a35" : "#2a2e2a";
       context.fill();
-      context.fillStyle = activity.color;
+      context.fillStyle = section.color;
       roundRect(context, 48, y + 25, 128, 136, 18);
       context.fill();
       context.fillStyle = "rgba(255,255,255,0.3)";
@@ -451,13 +608,13 @@ export function mountDesktopScene(
       context.fillRect(72, y + 114, 88, 12);
       context.fillStyle = "#9fb2a6";
       context.font = '700 18px "Microsoft YaHei", sans-serif';
-      context.fillText(activity.date, 198, y + 55);
+      context.fillText(section.eyebrow, 198, y + 55);
       context.fillStyle = "#f4efe6";
       context.font = '800 27px "Microsoft YaHei", sans-serif';
-      context.fillText(activity.title, 198, y + 96);
+      context.fillText(section.title, 198, y + 96);
       context.fillStyle = "#aeb5af";
       context.font = '500 16px "Microsoft YaHei", sans-serif';
-      context.fillText("内容整理中", 198, y + 133);
+      context.fillText(section.subtitle, 198, y + 133);
     });
     texture.needsUpdate = true;
   };
@@ -533,12 +690,70 @@ export function mountDesktopScene(
   mainScreen.position.set(0.7, 4.05, -0.724);
   world.add(mainScreen);
 
-  const mainBackHit = addAction(
-    new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.52), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })),
-    "screen:home",
-  );
-  mainBackHit.position.set(2.98, 2.82, -0.70);
-  world.add(mainBackHit);
+  const mainActionGroup = new THREE.Group();
+  world.add(mainActionGroup);
+
+  const addMainActionHit = (
+    action: SceneAction,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ) => {
+    const hit = addAction(
+      new THREE.Mesh(
+        new THREE.PlaneGeometry((width / 1200) * 6.98, (height / 680) * 3.98),
+        new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 }),
+      ),
+      action,
+    );
+    hit.position.set(
+      0.7 + ((x + width / 2) / 1200 - 0.5) * 6.98,
+      4.05 + (0.5 - (y + height / 2) / 680) * 3.98,
+      -0.70,
+    );
+    mainActionGroup.add(hit);
+  };
+
+  const updateMainActions = () => {
+    mainActionGroup.children.forEach((child) => {
+      if (!(child instanceof THREE.Mesh)) return;
+      child.geometry.dispose();
+      const materials = Array.isArray(child.material) ? child.material : [child.material];
+      materials.forEach((material) => material.dispose());
+    });
+    mainActionGroup.clear();
+
+    if (state.activeScreen === "badge") {
+      addMainActionHit("screen:home", 932, 548, 192, 64);
+      return;
+    }
+
+    if (state.contentView.kind === "list") {
+      const page = getContentPage(
+        itemsForSection(state.contentView.section),
+        state.contentView.page,
+        4,
+      );
+      page.items.forEach((item, index) => {
+        addMainActionHit(`content:${item.id}`, 72, 205 + index * 96, 1050, 78);
+      });
+      addMainActionHit("content-back", 72, 582, 174, 58);
+      if (page.page > 0) addMainActionHit("page-prev", 768, 582, 132, 58);
+      if (page.page < page.pageCount - 1) {
+        addMainActionHit("page-next", 916, 582, 132, 58);
+      }
+      return;
+    }
+
+    if (state.contentView.kind === "preview") {
+      addMainActionHit("content-back", 72, 582, 174, 58);
+      const item = contentById.get(state.contentView.itemId);
+      if (item && resolveContentUrl(item)) {
+        addMainActionHit("content-open", 884, 582, 238, 58);
+      }
+    }
+  };
 
   const stand = roundedMesh(0.72, 1.05, 0.35, 0.08, charcoal);
   stand.position.set(0.7, 1.47, -0.75);
@@ -576,10 +791,10 @@ export function mountDesktopScene(
   );
   sideScreen.position.set(0, 0, 0.19);
   sideMonitor.add(sideScreen);
-  activities.forEach((activity, index) => {
+  sections.forEach((section, index) => {
     const hit = addAction(
       new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.02), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })),
-      `screen:${activity.id}`,
+      `section:${section.id}`,
     );
     hit.position.set(0, 0.8 - index * 1.1, 0.22);
     sideMonitor.add(hit);
@@ -905,9 +1120,9 @@ export function mountDesktopScene(
   };
 
   const updateScreens = () => {
-    mainBackHit.visible = state.activeScreen !== "home";
     drawMainScreen();
     drawSideScreen();
+    updateMainActions();
     drawNote();
     drawMessageBoard();
     drawMat();
@@ -919,6 +1134,12 @@ export function mountDesktopScene(
     state = selectScreen(state, screen);
     updateScreens();
     announce(screen === "home" ? "已返回主屏首页" : "主屏内容已切换");
+  };
+
+  const setSection = (section: ContentSectionId) => {
+    state = selectSection(state, section);
+    updateScreens();
+    announce("主屏已打开内容列表");
   };
 
   const setMode = (mode: MatMode) => {
@@ -958,8 +1179,29 @@ export function mountDesktopScene(
     if (!action) return;
     if (action.startsWith("screen:")) {
       setScreen(action.slice(7) as ScreenId);
+    } else if (action.startsWith("section:")) {
+      setSection(action.slice(8) as ContentSectionId);
+    } else if (action.startsWith("content:")) {
+      state = selectContentItem(state, action.slice(8));
+      updateScreens();
+      announce("已打开内容预览");
     } else if (action.startsWith("mode:")) {
       setMode(action.slice(5) as MatMode);
+    } else if (action === "content-back") {
+      state = returnFromContent(state);
+      updateScreens();
+    } else if (action === "page-prev" || action === "page-next") {
+      if (state.contentView.kind === "list") {
+        const nextPage = state.contentView.page + (action === "page-next" ? 1 : -1);
+        state = setContentPage(state, nextPage);
+        updateScreens();
+      }
+    } else if (action === "content-open") {
+      if (state.contentView.kind === "preview") {
+        const item = contentById.get(state.contentView.itemId);
+        const targetUrl = item ? resolveContentUrl(item) : null;
+        if (targetUrl) window.open(targetUrl, "_blank", "noopener,noreferrer");
+      }
     } else if (action === "quote") {
       state = cycleQuote(state);
       drawNote();
@@ -1042,6 +1284,28 @@ export function mountDesktopScene(
     renderer.domElement.classList.toggle("is-interactive", Boolean(action));
   });
 
+  renderer.domElement.addEventListener(
+    "wheel",
+    (event: WheelEvent) => {
+      if (state.contentView.kind !== "list" || Math.abs(event.deltaY) < 8) return;
+      updatePointer(event as unknown as PointerEvent);
+      if (!raycaster.intersectObject(mainScreen, false).length) return;
+
+      const page = getContentPage(
+        itemsForSection(state.contentView.section),
+        state.contentView.page,
+        4,
+      );
+      const nextPage = clamp(page.page + (event.deltaY > 0 ? 1 : -1), 0, page.pageCount - 1);
+      if (nextPage === page.page) return;
+
+      event.preventDefault();
+      state = setContentPage(state, nextPage);
+      updateScreens();
+    },
+    { passive: false },
+  );
+
   const finishPointer = (event: PointerEvent) => {
     if (dragTarget === "keyboard") updatePositions();
     if (dragTarget && movedPixels > 6) announce(dragTarget === "mouse" ? "鼠标位置已更新" : "键盘位置已更新");
@@ -1055,6 +1319,9 @@ export function mountDesktopScene(
 
   root.querySelectorAll<HTMLButtonElement>("[data-screen]").forEach((button) => {
     button.addEventListener("click", () => setScreen(button.dataset.screen as ScreenId));
+  });
+  root.querySelectorAll<HTMLButtonElement>("[data-section]").forEach((button) => {
+    button.addEventListener("click", () => setSection(button.dataset.section as ContentSectionId));
   });
   root.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((button) => {
     button.addEventListener("click", () => setMode(button.dataset.mode as MatMode));
@@ -1082,6 +1349,11 @@ export function mountDesktopScene(
   window.__ERYU_DESKTOP__ = {
     getState: () => structuredClone(state),
     selectScreen: setScreen,
+    selectSection: setSection,
+    selectContentItem: (itemId) => {
+      state = selectContentItem(state, itemId);
+      updateScreens();
+    },
     moveMouseNormalized: (x, y) => {
       state = movePhysicalMouse(state, { x, y });
       updatePositions();

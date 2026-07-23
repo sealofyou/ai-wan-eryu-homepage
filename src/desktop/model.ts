@@ -6,7 +6,7 @@ export type MatMode = "move" | "draw" | "message";
 export type ContentView =
   | { kind: "home" }
   | { kind: "list"; section: ContentSectionId; page: number }
-  | { kind: "preview"; section: ContentSectionId; itemId: string };
+  | { kind: "preview"; section: ContentSectionId; itemId: string; page: number };
 
 export interface Point {
   x: number;
@@ -85,6 +85,7 @@ export const selectContentItem = (
       kind: "preview",
       section: state.contentView.section,
       itemId,
+      page: state.contentView.page,
     },
   };
 };
@@ -96,7 +97,7 @@ export const returnFromContent = (state: DesktopState): DesktopState => {
       contentView: {
         kind: "list",
         section: state.contentView.section,
-        page: 0,
+        page: state.contentView.page,
       },
     };
   }

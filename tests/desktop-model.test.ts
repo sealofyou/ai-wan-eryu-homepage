@@ -8,6 +8,7 @@ import {
   selectContentItem,
   selectSection,
   selectScreen,
+  setContentPage,
   setMatMode,
   setMessage,
 } from "../src/desktop/model";
@@ -56,10 +57,35 @@ describe("desktop interaction model", () => {
       kind: "preview",
       section: "articles",
       itemId: "article-1",
+      page: 0,
     });
     expect(backToList.contentView).toEqual(list.contentView);
     expect(home.contentView).toEqual({ kind: "home" });
     expect(home.activeScreen).toBe("home");
+  });
+
+  it("updates list pagination without changing other desktop state", () => {
+    const list = selectSection(createInitialDesktopState(), "activities");
+    const paged = setContentPage(list, 3);
+
+    expect(paged.contentView).toEqual({
+      kind: "list",
+      section: "activities",
+      page: 3,
+    });
+    expect(paged.physicalMouse).toEqual(list.physicalMouse);
+  });
+
+  it("returns a preview to the same list page", () => {
+    const list = setContentPage(selectSection(createInitialDesktopState(), "articles"), 2);
+    const preview = selectContentItem(list, "article-on-page-three");
+    const returned = returnFromContent(preview);
+
+    expect(returned.contentView).toEqual({
+      kind: "list",
+      section: "articles",
+      page: 2,
+    });
   });
 
   it("cycles through daily quotes without leaving the available set", () => {
