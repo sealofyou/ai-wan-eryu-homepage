@@ -5,13 +5,15 @@ const pageSource = readFileSync(new URL("../src/pages/index.astro", import.meta.
 const scenePath = new URL("../src/desktop/scene.ts", import.meta.url);
 
 describe("desktop homepage structure", () => {
-  it("mounts an immersive desktop with keyboard-accessible interaction entry points", () => {
+  it("mounts an immersive desktop with build-time public content", () => {
     expect(pageSource).toContain("data-desktop-root");
-    expect(pageSource).toContain("07.04 分享");
-    expect(pageSource).toContain("07.18 活动");
+    expect(pageSource).toContain("data-desktop-content");
+    expect(pageSource).toContain('getCollection("articles"');
+    expect(pageSource).toContain('getCollection("notes"');
+    expect(pageSource).toContain("mountDesktopScene(root, desktopContent)");
+    expect(pageSource).toContain("文章");
+    expect(pageSource).toContain("分享与活动");
     expect(pageSource).toContain("最近在做");
-    expect(pageSource).toContain("更换每日格言");
-    expect(pageSource).toContain("打开徽章故事");
     expect(pageSource).toContain("桌面版体验准备中");
   });
 

@@ -11,6 +11,11 @@ const articles = defineCollection({
     category: z.string(),
     draft: z.boolean().default(false),
     featured: z.boolean().default(false),
+    preview: z.string().default(""),
+    cover: z.string().optional(),
+    target: z.enum(["feishu", "internal"]).optional(),
+    externalUrl: z.url().optional(),
+    internalUrl: z.string().optional(),
   }),
 });
 
@@ -24,6 +29,12 @@ const notes = defineCollection({
     draft: z.boolean().default(false),
     location: z.string().optional(),
     images: z.array(z.string()).default([]),
+    preview: z.string().default(""),
+    cover: z.string().optional(),
+    target: z.enum(["feishu", "internal"]).optional(),
+    externalUrl: z.url().optional(),
+    internalUrl: z.string().optional(),
+    featured: z.boolean().default(false),
   }),
 });
 

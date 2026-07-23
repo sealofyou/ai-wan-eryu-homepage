@@ -3,6 +3,7 @@ title: "不用 Skill vs 用 Skill：AI Agent 工作质量为什么会不一样"
 description: "一次关于 AI Agent 工作质量的分享，也留下了关于开场、主线和例子顺序的复盘。"
 date: 2026-07-04
 type: "share"
+draft: true
 ---
 
 这次分享讨论了一个直接的问题：同一个 Agent，有没有明确的 Skill、上下文和验收方式，工作质量为什么会差很多。

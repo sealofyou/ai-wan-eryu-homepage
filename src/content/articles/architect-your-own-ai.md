@@ -4,6 +4,7 @@ description: "AI 做事前读什么、能用什么工具、做完怎么验收，
 date: 2026-05-31
 category: "工作流"
 featured: true
+draft: true
 ---
 
 如果每次使用 AI 都从聊天窗口重新开始，它很难真正接住长期工作。

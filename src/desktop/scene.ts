@@ -16,6 +16,7 @@ import {
 } from "./model";
 import { createKeyboardModel } from "./keyboard";
 import { DESK_LAYOUT } from "./layout";
+import type { DesktopContentPayload } from "./content";
 
 type SceneAction =
   | `screen:${ScreenId}`
@@ -54,14 +55,14 @@ const activities: Array<{
   color: string;
 }> = [
   {
-    id: "share",
+    id: "articles",
     date: "07.04",
     title: "分享",
     summary: "一次关于 AI 技能与真实工作流的分享记录。",
     color: "#d77c51",
   },
   {
-    id: "activity",
+    id: "activities",
     date: "07.18",
     title: "活动",
     summary: "活动资料正在整理，先保留时间与入口。",
@@ -204,7 +205,10 @@ const roundedMesh = (
   material: THREE.Material,
 ) => new THREE.Mesh(new RoundedBoxGeometry(width, height, depth, 5, radius), material);
 
-export function mountDesktopScene(root: HTMLElement) {
+export function mountDesktopScene(
+  root: HTMLElement,
+  _contentPayload: DesktopContentPayload = { items: [] },
+) {
   if (window.innerWidth <= 900) return;
 
   const mount = root.querySelector<HTMLElement>("[data-scene-mount]");

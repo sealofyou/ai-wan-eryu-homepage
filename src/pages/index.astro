@@ -1,6 +1,29 @@
 ---
+import { getCollection } from "astro:content";
 import SiteLayout from "../layouts/SiteLayout.astro";
+import {
+  createDesktopContentItem,
+  serializeDesktopContentPayload,
+} from "../lib/content";
+import { sortDesktopItems, type DesktopContentItem } from "../desktop/content";
 import "../styles/desktop.css";
+
+const articles = await getCollection("articles");
+const notes = await getCollection("notes");
+
+const desktopItems = [
+  ...articles.map((entry) => createDesktopContentItem("articles", entry)),
+  ...notes.map((entry) =>
+    createDesktopContentItem(
+      entry.data.type === "project" ? "recent" : "activities",
+      entry,
+    ),
+  ),
+].filter((item): item is DesktopContentItem => item !== null);
+
+const desktopContentJson = serializeDesktopContentPayload({
+  items: sortDesktopItems(desktopItems),
+});
 ---
 
 <SiteLayout
@@ -9,6 +32,7 @@ import "../styles/desktop.css";
   immersive
 >
   <section class="desktop-experience" data-desktop-root aria-label="AI玩尔玉三维桌面主页">
+    <script is:inline type="application/json" data-desktop-content set:html={desktopContentJson}></script>
     <div class="scene-mount" data-scene-mount aria-hidden="true"></div>
 
     <div class="scene-loading" data-scene-loading>
@@ -22,7 +46,7 @@ import "../styles/desktop.css";
     </div>
 
     <form class="mat-message-panel" data-message-panel hidden>
-        <label for="mat-message">留言板</label>
+      <label for="mat-message">留言板</label>
       <div>
         <input id="mat-message" maxlength="48" autocomplete="off" placeholder="留下一句话" />
         <button type="submit">写下</button>
@@ -32,9 +56,9 @@ import "../styles/desktop.css";
     <p class="interaction-status" data-interaction-status aria-live="polite"></p>
 
     <div class="semantic-controls" aria-label="桌面键盘操作入口">
-      <button type="button" data-screen="share">07.04 分享</button>
-      <button type="button" data-screen="activity">07.18 活动</button>
-      <button type="button" data-screen="recent">最近在做</button>
+      <button type="button" data-section="articles">文章</button>
+      <button type="button" data-section="activities">分享与活动</button>
+      <button type="button" data-section="recent">最近在做</button>
       <button type="button" data-screen="home">返回主屏首页</button>
       <button type="button" data-action="quote">更换每日格言</button>
       <button type="button" data-action="badge">打开徽章故事</button>
@@ -49,8 +73,14 @@ import "../styles/desktop.css";
 
   <script>
     import { mountDesktopScene } from "../desktop/scene";
+    import type { DesktopContentPayload } from "../desktop/content";
 
     const root = document.querySelector<HTMLElement>("[data-desktop-root]");
-    if (root) mountDesktopScene(root);
+    const contentNode = root?.querySelector<HTMLScriptElement>("[data-desktop-content]");
+    const desktopContent = JSON.parse(
+      contentNode?.textContent || '{"items":[]}',
+    ) as DesktopContentPayload;
+
+    if (root) mountDesktopScene(root, desktopContent);
   </script>
 </SiteLayout>

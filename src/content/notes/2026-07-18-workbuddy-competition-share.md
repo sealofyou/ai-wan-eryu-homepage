@@ -3,7 +3,7 @@ title: "2026-07-18｜让 AI 帮我完成第一次算法竞赛"
 description: "让 AI 从理解赛题、报名、配置环境和训练，一路推进到第一次算法竞赛提交，并继续优化结果。"
 date: 2026-07-18
 type: "share"
-draft: false
+draft: true
 location: "尔玉分享"
 images: []
 ---
