@@ -1,5 +1,12 @@
-export type ScreenId = "home" | "share" | "activity" | "recent" | "badge";
+import type { ContentSectionId } from "./content";
+
+export type ScreenId = "home" | ContentSectionId | "badge";
 export type MatMode = "move" | "draw" | "message";
+
+export type ContentView =
+  | { kind: "home" }
+  | { kind: "list"; section: ContentSectionId; page: number }
+  | { kind: "preview"; section: ContentSectionId; itemId: string };
 
 export interface Point {
   x: number;
@@ -14,6 +21,7 @@ export interface DesktopState {
   quoteIndex: number;
   matMode: MatMode;
   message: string;
+  contentView: ContentView;
 }
 
 export const DAILY_QUOTES = [
@@ -47,12 +55,70 @@ export const createInitialDesktopState = (): DesktopState => ({
   quoteIndex: 0,
   matMode: "move",
   message: "",
+  contentView: { kind: "home" },
 });
 
 export const selectScreen = (state: DesktopState, activeScreen: ScreenId): DesktopState => ({
   ...state,
   activeScreen,
+  contentView: activeScreen === "home" ? { kind: "home" } : state.contentView,
 });
+
+export const selectSection = (
+  state: DesktopState,
+  section: ContentSectionId,
+): DesktopState => ({
+  ...state,
+  activeScreen: section,
+  contentView: { kind: "list", section, page: 0 },
+});
+
+export const selectContentItem = (
+  state: DesktopState,
+  itemId: string,
+): DesktopState => {
+  if (state.contentView.kind !== "list") return state;
+
+  return {
+    ...state,
+    contentView: {
+      kind: "preview",
+      section: state.contentView.section,
+      itemId,
+    },
+  };
+};
+
+export const returnFromContent = (state: DesktopState): DesktopState => {
+  if (state.contentView.kind === "preview") {
+    return {
+      ...state,
+      contentView: {
+        kind: "list",
+        section: state.contentView.section,
+        page: 0,
+      },
+    };
+  }
+
+  if (state.contentView.kind === "list") {
+    return {
+      ...state,
+      activeScreen: "home",
+      contentView: { kind: "home" },
+    };
+  }
+
+  return state;
+};
+
+export const setContentPage = (state: DesktopState, page: number): DesktopState => {
+  if (state.contentView.kind !== "list") return state;
+  return {
+    ...state,
+    contentView: { ...state.contentView, page: Math.max(0, Math.floor(page)) },
+  };
+};
 
 export const movePhysicalMouse = (state: DesktopState, point: Point): DesktopState => {
   const physicalMouse = clampPoint(point, MOUSE_BOUNDS);

@@ -4,6 +4,9 @@ import {
   createInitialDesktopState,
   moveKeyboard,
   movePhysicalMouse,
+  returnFromContent,
+  selectContentItem,
+  selectSection,
   selectScreen,
   setMatMode,
   setMessage,
@@ -30,10 +33,32 @@ describe("desktop interaction model", () => {
 
   it("switches main-screen content and can return home", () => {
     const state = createInitialDesktopState();
-    const detail = selectScreen(state, "share");
+    const detail = selectScreen(state, "recent");
     const home = selectScreen(detail, "home");
 
-    expect(detail.activeScreen).toBe("share");
+    expect(detail.activeScreen).toBe("recent");
+    expect(home.activeScreen).toBe("home");
+  });
+
+  it("opens a section, previews an item, and returns one level at a time", () => {
+    const state = createInitialDesktopState();
+    const list = selectSection(state, "articles");
+    const preview = selectContentItem(list, "article-1");
+    const backToList = returnFromContent(preview);
+    const home = returnFromContent(backToList);
+
+    expect(list.contentView).toEqual({
+      kind: "list",
+      section: "articles",
+      page: 0,
+    });
+    expect(preview.contentView).toEqual({
+      kind: "preview",
+      section: "articles",
+      itemId: "article-1",
+    });
+    expect(backToList.contentView).toEqual(list.contentView);
+    expect(home.contentView).toEqual({ kind: "home" });
     expect(home.activeScreen).toBe("home");
   });
 
