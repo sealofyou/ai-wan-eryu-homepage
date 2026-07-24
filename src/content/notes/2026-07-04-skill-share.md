@@ -5,7 +5,7 @@ date: 2026-07-04
 type: "share"
 draft: false
 location: "线下分享"
-preview: "同样是让 AI Agent 做一个 30 秒小游戏，只给一次性需求、使用领域 Skill、再加入 brainstorming 流程，最后的完整度会有什么不同？"
+preview: "同样是让 AI Agent 做一个 30 秒小游戏，只给一次性需求、使用领域 Skill，或先确认需求和方案，最后的完整度会有什么不同？"
 target: "feishu"
 externalUrl: "https://my.feishu.cn/wiki/Rt9qwrsRNi0mDnkOggsc8rPxnof"
 featured: true
