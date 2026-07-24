@@ -1,11 +1,16 @@
 ---
-title: "不用 Skill vs 用 Skill：AI Agent 工作质量为什么会不一样"
-description: "一次关于 AI Agent 工作质量的分享，也留下了关于开场、主线和例子顺序的复盘。"
+title: "0704 线下分享｜不用 Skill vs 用 Skill"
+description: "用 Meteor Defender 小游戏对照三种 Agent 工作方式，看 Skill 如何影响成品标准和协作流程。"
 date: 2026-07-04
 type: "share"
-draft: true
+draft: false
+location: "线下分享"
+preview: "同样是让 AI Agent 做一个 30 秒小游戏，只给一次性需求、使用领域 Skill、再加入 brainstorming 流程，最后的完整度会有什么不同？"
+target: "feishu"
+externalUrl: "https://my.feishu.cn/wiki/Rt9qwrsRNi0mDnkOggsc8rPxnof"
+featured: true
 ---
 
-这次分享讨论了一个直接的问题：同一个 Agent，有没有明确的 Skill、上下文和验收方式，工作质量为什么会差很多。
+这次分享用 `Meteor Defender` 小游戏做对照，分别演示不使用 Skill、使用领域 Skill，以及先完成需求和设计确认再实现三种方式。
 
-分享结束后，我对自己的评价并不高。内容准备得出来，不代表现场能够讲清楚。下一次准备公开分享时，应该先确定听众、一句话主张、三段结构、例子顺序和可砍内容，再开始做页面。
+活动目录中包含主分享、`mini-game-canvas-skill` 中文拆解和 Superpowers `brainstorming` 中文拆解。
