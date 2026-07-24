@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 
 const pageSource = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
 const scenePath = new URL("../src/desktop/scene.ts", import.meta.url);
+const layoutSource = readFileSync(new URL("../src/layouts/SiteLayout.astro", import.meta.url), "utf8");
+const faviconSource = readFileSync(new URL("../public/favicon.svg", import.meta.url), "utf8");
 
 describe("desktop homepage structure", () => {
   it("mounts an immersive desktop with build-time public content", () => {
@@ -25,5 +27,13 @@ describe("desktop homepage structure", () => {
     expect(sceneSource).toContain("Raycaster");
     expect(sceneSource).toContain("prefers-reduced-motion");
     expect(sceneSource).toContain("webgl-fallback");
+  });
+
+  it("publishes the reusable angular E brand mark as browser icons", () => {
+    expect(layoutSource).toContain('href="/brand/eryu-e-icon.svg" type="image/svg+xml"');
+    expect(layoutSource).toContain('href="/brand/eryu-e-icon-32.png" type="image/png"');
+    expect(layoutSource).toContain('rel="apple-touch-icon" href="/brand/eryu-e-icon-180.png"');
+    expect(faviconSource).toContain('aria-label="Eryu angular E mark"');
+    expect(faviconSource).toContain("#2fae99");
   });
 });
