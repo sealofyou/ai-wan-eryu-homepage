@@ -204,4 +204,14 @@ export const DESK_LAYOUT = {
       ],
     },
   },
+  matControls: {
+    button: { size: { width: 0.82, height: 0.16, depth: 0.48 }, radius: 0.08, y: 0.41, z: 3.55 },
+    label: { size: { width: 0.64, height: 0.24 }, y: 0.505, z: 3.55, rotationX: -Math.PI / 2 },
+    buttons: [
+      { label: "移动", action: "mode:move" as const, x: -4.55 },
+      { label: "画笔", action: "mode:draw" as const, x: -3.58 },
+      { label: "留言", action: "mode:message" as const, x: -2.61 },
+      { label: "清空", action: "clear" as const, x: -1.64 },
+    ],
+  },
 } as const;

@@ -17,7 +17,7 @@ import {
   type Point,
   type ScreenId,
 } from "./model";
-import { actionFromObject, addAction } from "./core/actions";
+import { actionFromObject } from "./core/actions";
 import { createDesktopImage, DESKTOP_IMAGE_URLS } from "./core/assets";
 import {
   createDesktopRendererEnvironment,
@@ -44,14 +44,11 @@ import { createDecorationsObject } from "./objects/decorations";
 import { createDeskObject } from "./objects/desk";
 import { createLampObject } from "./objects/lamp";
 import { createKeyboardObject } from "./objects/keyboard-object";
+import { createMatControlsObject } from "./objects/mat-controls";
 import { createMonitorsObject } from "./objects/monitors";
 import { createMouseObject } from "./objects/mouse";
 import { createPegboardsObject } from "./objects/pegboards";
-import {
-  createDesktopMaterials,
-  makeTextMaterial,
-  roundedMesh,
-} from "./objects/primitives";
+import { createDesktopMaterials } from "./objects/primitives";
 import { createRoomObject } from "./objects/room";
 
 declare global {
@@ -111,7 +108,6 @@ export function mountDesktopScene(
   const { lampLight } = environment.lights;
 
   const materials = createDesktopMaterials();
-  const { charcoalSoft } = materials;
   world.add(createRoomObject().group);
   const deskObject = createDeskObject(materials);
   world.add(deskObject.group);
@@ -192,24 +188,8 @@ export function mountDesktopScene(
   const mouse = mouseObject.group;
   world.add(keyboard, mouse);
 
-  const modeButtons: Array<{ label: string; action: SceneAction; x: number }> = [
-    { label: "移动", action: "mode:move", x: -4.55 },
-    { label: "画笔", action: "mode:draw", x: -3.58 },
-    { label: "留言", action: "mode:message", x: -2.61 },
-    { label: "清空", action: "clear", x: -1.64 },
-  ];
-  const buttonMeshes: Array<{ action: SceneAction; mesh: THREE.Mesh }> = [];
-  modeButtons.forEach(({ label, action, x }) => {
-    const button = addAction(roundedMesh(0.82, 0.16, 0.48, 0.08, charcoalSoft), action);
-    button.position.set(x, 0.41, 3.55);
-    button.castShadow = true;
-    world.add(button);
-    const labelMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.64, 0.24), makeTextMaterial(label));
-    labelMesh.rotation.x = -Math.PI / 2;
-    labelMesh.position.set(x, 0.505, 3.55);
-    world.add(labelMesh);
-    buttonMeshes.push({ action, mesh: button });
-  });
+  const matControls = createMatControlsObject(materials);
+  world.add(matControls.group);
 
   let state = createInitialDesktopState();
   let statusTimer = 0;
@@ -226,10 +206,7 @@ export function mountDesktopScene(
   };
 
   const updateModeButtons = () => {
-    buttonMeshes.forEach(({ action, mesh }) => {
-      const active = action === `mode:${state.matMode}`;
-      (mesh.material as THREE.MeshStandardMaterial).color.set(active ? "#759481" : "#353633");
-    });
+    matControls.update?.(state);
     messagePanel.hidden = false;
     if (state.matMode === "message") window.setTimeout(() => messageInput.focus(), 30);
   };
