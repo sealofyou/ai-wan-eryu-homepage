@@ -81,6 +81,10 @@ const desktopContentJson = serializeDesktopContentPayload({
       contentNode?.textContent || '{"items":[]}',
     ) as DesktopContentPayload;
 
-    if (root) mountDesktopScene(root, desktopContent);
+    const dispose = root ? mountDesktopScene(root, desktopContent) : undefined;
+    if (dispose) {
+      window.addEventListener("pagehide", dispose, { once: true });
+      import.meta.hot?.dispose(dispose);
+    }
   </script>
 </SiteLayout>

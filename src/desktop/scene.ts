@@ -19,6 +19,7 @@ import {
 import { createDesktopImage, DESKTOP_IMAGE_URLS } from "./core/assets";
 import {
   createDesktopRendererEnvironment,
+  disposeObjectGraph,
   type DesktopRendererEnvironment,
 } from "./core/renderer";
 import type { SceneAction } from "./core/types";
@@ -332,6 +333,7 @@ export function mountDesktopScene(
   };
 
   const startTime = performance.now();
+  let animationFrame = 0;
   const animate = (time: number) => {
     const elapsed = time - startTime;
     if (!reducedMotion && elapsed < 1400) {
@@ -344,23 +346,31 @@ export function mountDesktopScene(
     }
     camera.lookAt(cameraTarget);
     renderer.render(scene, camera);
-    requestAnimationFrame(animate);
+    animationFrame = requestAnimationFrame(animate);
   };
-  requestAnimationFrame(animate);
+  animationFrame = requestAnimationFrame(animate);
 
   window.addEventListener("resize", environment.resize);
 
-  requestAnimationFrame(() => {
+  const readyFrame = requestAnimationFrame(() => {
     loading.classList.add("is-ready");
     root.dataset.ready = "true";
   });
 
   return () => {
+    cancelAnimationFrame(animationFrame);
+    cancelAnimationFrame(readyFrame);
     pointerController.dispose();
     dragging.dispose();
     mousepad.dispose();
     messageController.dispose();
     window.removeEventListener("resize", environment.resize);
     avatarImage.removeEventListener("load", drawMainScreen);
+    window.clearTimeout(statusTimer);
+    disposeObjectGraph(world);
+    renderer.dispose();
+    renderer.domElement.remove();
+    delete window.__ERYU_DESKTOP__;
+    delete root.dataset.ready;
   };
 }

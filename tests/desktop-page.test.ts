@@ -38,6 +38,17 @@ describe("desktop homepage structure", () => {
     expect(sceneSource).toContain("webgl-fallback");
   });
 
+  it("cleans up animation, WebGL resources, and listeners when the page is replaced", () => {
+    const sceneSource = readFileSync(scenePath, "utf8");
+
+    expect(pageSource).toContain("const dispose = root ? mountDesktopScene(root, desktopContent) : undefined");
+    expect(pageSource).toContain('window.addEventListener("pagehide", dispose, { once: true })');
+    expect(pageSource).toContain("import.meta.hot?.dispose(dispose)");
+    expect(sceneSource).toContain("cancelAnimationFrame(animationFrame)");
+    expect(sceneSource).toContain("renderer.dispose()");
+    expect(sceneSource).toContain("disposeObjectGraph(world)");
+  });
+
   it("publishes the reusable angular E brand mark as browser icons", () => {
     expect(layoutSource).toContain('href="/brand/eryu-e-icon.svg" type="image/svg+xml"');
     expect(layoutSource).toContain('href="/brand/eryu-e-icon-32.png" type="image/png"');

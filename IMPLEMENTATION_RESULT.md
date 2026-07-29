@@ -13,7 +13,6 @@
 - 受保护基线：`3aec85b`
 - 基线标签：`homepage-desktop-baseline-20260729`
 - 开发分支：`codex/scene-modularization`
-- 当前阶段提交：`3c3cdd4`
 - `scene.ts`：从最初 `1412` 行收敛到 `366` 行
 - 屏幕绘制：迁移到 `src/desktop/screens/`
 - WebGL、相机、灯光、资源与动作合同：迁移到 `src/desktop/core/`
@@ -21,15 +20,17 @@
 - pointer、拖拽、鼠标垫画线和留言 DOM 监听：迁移到 `src/desktop/interactions/`
 - 所有物件工厂使用统一的 `SceneObjectResult` 合同，为后续 GLB 模型替换保留入口
 - 所有 interaction 控制器提供 `dispose()`，不再向 `scene.ts` 继续堆叠原始事件监听
+- 页面卸载或热更新时统一停止动画帧、移除监听器、释放 Three.js 几何体/材质/纹理/renderer，并移除 Canvas 与调试 API
 
 ### 阶段一验证
 
-- `npm test`：`10` 个测试文件、`44` 个测试全部通过
+- `npm test`：`10` 个测试文件、`45` 个测试全部通过
 - `npm run check`：`0 errors / 0 warnings / 0 hints`
 - `npm run build`：通过，生成 `6` 个静态页面
 - `1440×900`：与受保护基线截图 `0` 像素差
 - `1920×1080`：与受保护基线截图 `0` 像素差
 - 真实浏览器交互：左侧入口切换、鼠标拖拽、键盘拖拽、鼠标垫画线、留言输入聚焦、台灯亮度切换均通过
+- 页面生命周期：触发 `pagehide` 后 Canvas 数量由 `1` 变为 `0`，`window.__ERYU_DESKTOP__` 已移除
 - 浏览器控制台：`0 errors`
 
 确定性视觉回归使用 `prefers-reduced-motion: reduce` 关闭入场动画，避免截图时间差产生假阳性。验证记录保存在 `.omx/state/scene-modularization/ralph-progress.json`，截图保存在忽略提交的 `output/scene-refactor-deterministic/`。
@@ -93,7 +94,7 @@
 
 - `npm ci`：通过
 - `npm run check`：通过，`0 errors / 0 warnings / 0 hints`
-- `npm test`：通过，当前为 `10` 个测试文件、`44` 个测试全部通过
+- `npm test`：通过，当前为 `10` 个测试文件、`45` 个测试全部通过
 - `npm run build`：通过，当前生成 `6` 个静态页面
 
 构建仍会提示 Three.js 入口 chunk 超过 500 kB。这是当前单场景原型直接加载 Three.js 的体积提示，不影响功能、截图或运行；后续正式上线时可将场景改为动态导入以进一步优化首屏包体。

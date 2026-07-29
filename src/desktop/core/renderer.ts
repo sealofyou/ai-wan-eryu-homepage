@@ -104,3 +104,24 @@ export const createDesktopRendererEnvironment = (
 
   return environment;
 };
+
+export const disposeObjectGraph = (root: THREE.Object3D) => {
+  const disposedMaterials = new Set<THREE.Material>();
+  const disposedTextures = new Set<THREE.Texture>();
+  root.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
+    object.geometry.dispose();
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => {
+      if (disposedMaterials.has(material)) return;
+      disposedMaterials.add(material);
+      Object.values(material).forEach((value) => {
+        if (value instanceof THREE.Texture && !disposedTextures.has(value)) {
+          disposedTextures.add(value);
+          value.dispose();
+        }
+      });
+      material.dispose();
+    });
+  });
+};
