@@ -6,6 +6,38 @@
 - 当前状态：正在监听，HTTP 返回 `200`
 - 运行进程 PID：`51052`
 
+## 2026-07-30 阶段一架构重构
+
+本轮只调整代码组织，不修改桌面构图、尺寸、坐标、材质、文案和交互。公网版本未更新。
+
+- 受保护基线：`3aec85b`
+- 基线标签：`homepage-desktop-baseline-20260729`
+- 开发分支：`codex/scene-modularization`
+- 当前阶段提交：`3c3cdd4`
+- `scene.ts`：从最初 `1412` 行收敛到 `366` 行
+- 屏幕绘制：迁移到 `src/desktop/screens/`
+- WebGL、相机、灯光、资源与动作合同：迁移到 `src/desktop/core/`
+- 房间、桌体、显示器、机箱、装饰、洞洞板、台灯、键盘、鼠标和实体控制键：迁移到 `src/desktop/objects/`
+- pointer、拖拽、鼠标垫画线和留言 DOM 监听：迁移到 `src/desktop/interactions/`
+- 所有物件工厂使用统一的 `SceneObjectResult` 合同，为后续 GLB 模型替换保留入口
+- 所有 interaction 控制器提供 `dispose()`，不再向 `scene.ts` 继续堆叠原始事件监听
+
+### 阶段一验证
+
+- `npm test`：`10` 个测试文件、`44` 个测试全部通过
+- `npm run check`：`0 errors / 0 warnings / 0 hints`
+- `npm run build`：通过，生成 `6` 个静态页面
+- `1440×900`：与受保护基线截图 `0` 像素差
+- `1920×1080`：与受保护基线截图 `0` 像素差
+- 真实浏览器交互：左侧入口切换、鼠标拖拽、键盘拖拽、鼠标垫画线、留言输入聚焦、台灯亮度切换均通过
+- 浏览器控制台：`0 errors`
+
+确定性视觉回归使用 `prefers-reduced-motion: reduce` 关闭入场动画，避免截图时间差产生假阳性。验证记录保存在 `.omx/state/scene-modularization/ralph-progress.json`，截图保存在忽略提交的 `output/scene-refactor-deterministic/`。
+
+### 发布 Gate
+
+当前分支只推送到 GitHub，不合并、不部署。下一步由用户打开本地地址完成视觉与交互验收；确认通过后，才进入 GLB 模型试验、Build in Public 内容接入和后续公网发布。
+
 ## 实现概览
 
 首页已替换为仅面向桌面端的 Three.js 三维电脑桌面。场景使用真实相机、灯光、阴影、圆角网格、屏幕纹理和射线交互，不使用批准构图图作为页面背景。批准构图图仅在 WebGL 初始化失败时作为降级预览。
@@ -61,15 +93,19 @@
 
 - `npm ci`：通过
 - `npm run check`：通过，`0 errors / 0 warnings / 0 hints`
-- `npm test`：通过，`5` 个测试文件、`16` 个测试全部通过
-- `npm run build`：通过，生成 `7` 个静态页面
+- `npm test`：通过，当前为 `10` 个测试文件、`44` 个测试全部通过
+- `npm run build`：通过，当前生成 `6` 个静态页面
 
 构建仍会提示 Three.js 入口 chunk 超过 500 kB。这是当前单场景原型直接加载 Three.js 的体积提示，不影响功能、截图或运行；后续正式上线时可将场景改为动态导入以进一步优化首屏包体。
 
 ## 主要改动文件
 
 - `src/pages/index.astro`：沉浸式桌面首页和语义交互入口
-- `src/desktop/scene.ts`：Three.js 场景、屏幕纹理、物件与浏览器交互
+- `src/desktop/scene.ts`：场景装配、状态连接、动作分发与渲染循环
+- `src/desktop/core/`：WebGL 环境、相机灯光、资源和动作合同
+- `src/desktop/screens/`：主屏、副屏、便利贴、留言纸与 Canvas 绘制
+- `src/desktop/objects/`：各物理物件工厂、共享材质与布局消费
+- `src/desktop/interactions/`：pointer、拖拽、画线、留言和 DOM 控制器
 - `src/desktop/keyboard.ts`：全尺寸键盘布局、双层键帽、图例、状态灯和三维模型
 - `src/desktop/model.ts`：可测试的桌面状态与边界映射
 - `src/styles/desktop.css`：全屏场景、留言输入、降级与桌面端样式
