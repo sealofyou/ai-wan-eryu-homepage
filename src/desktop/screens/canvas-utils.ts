@@ -1,6 +1,12 @@
 import * as THREE from "three";
 
-export const makeCanvas = (width: number, height: number) => {
+export interface CanvasSurface {
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+  texture: THREE.CanvasTexture;
+}
+
+export const makeCanvas = (width: number, height: number): CanvasSurface => {
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;

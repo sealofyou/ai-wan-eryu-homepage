@@ -7,6 +7,10 @@ const canvasUtilsSource = readFileSync(
   new URL("../src/desktop/screens/canvas-utils.ts", import.meta.url),
   "utf8",
 );
+const mainScreenSource = readFileSync(
+  new URL("../src/desktop/screens/main-screen.ts", import.meta.url),
+  "utf8",
+);
 
 describe("approved desktop composition layout", () => {
   it("turns the left monitor slightly toward the main viewing position", () => {
@@ -54,7 +58,7 @@ describe("approved desktop composition layout", () => {
 
   it("preserves the portrait image ratio and gives the mouse gaming details", () => {
     expect(canvasUtilsSource).toContain("export const drawImageCover = (");
-    expect(sceneSource).toContain("drawImageCover(context, avatarImage, 48, 52, 440, 576)");
+    expect(mainScreenSource).toContain("drawImageCover(context, avatarImage, 48, 52, 440, 576)");
     expect(sceneSource).toContain("const rearHump");
     expect(sceneSource).toContain("const dpiButton");
     expect(sceneSource).toContain("const sideButton");

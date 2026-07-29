@@ -25,16 +25,17 @@ import {
   resolveContentUrl,
   sortDesktopItems,
   type ContentSectionId,
-  type DesktopContentItem,
   type DesktopContentPayload,
 } from "./content";
 import {
-  drawImageCover,
   makeCanvas,
   roundRect,
-  truncateToWidth,
-  wrapText,
 } from "./screens/canvas-utils";
+import { renderMainScreen } from "./screens/main-screen";
+import { renderMessageBoard } from "./screens/message-board";
+import { renderNoteScreen } from "./screens/note-screen";
+import { DESKTOP_SECTIONS } from "./screens/sections";
+import { renderSideScreen } from "./screens/side-screen";
 
 type SceneAction =
   | `screen:${ScreenId}`
@@ -72,36 +73,6 @@ declare global {
     };
   }
 }
-
-const sections: Array<{
-  id: ContentSectionId;
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  color: string;
-}> = [
-  {
-    id: "articles",
-    eyebrow: "ARTICLES",
-    title: "文章",
-    subtitle: "按时间阅读",
-    color: "#d77c51",
-  },
-  {
-    id: "activities",
-    eyebrow: "ACTIVITIES",
-    title: "分享与活动",
-    subtitle: "现场与资料",
-    color: "#7f9c8d",
-  },
-  {
-    id: "recent",
-    eyebrow: "NOW",
-    title: "最近在做",
-    subtitle: "项目与状态",
-    color: "#8091aa",
-  },
-];
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -254,311 +225,21 @@ export function mountDesktopScene(
   const avatarImage = new Image();
   avatarImage.src = "/desktop/main-avatar.png";
 
-  const drawScreenButton = (
-    context: CanvasRenderingContext2D,
-    label: string,
-    x: number,
-    y: number,
-    width: number,
-    active = true,
-  ) => {
-    roundRect(context, x, y, width, 58, 16);
-    context.fillStyle = active ? "#282c29" : "#dfe3dc";
-    context.fill();
-    context.fillStyle = active ? "#fffdf8" : "#626b65";
-    context.font = '700 22px "Microsoft YaHei", sans-serif';
-    context.textAlign = "center";
-    context.fillText(label, x + width / 2, y + 38);
-    context.textAlign = "left";
-  };
-
-  const drawBadgeScreen = (context: CanvasRenderingContext2D, height: number) => {
-    context.fillStyle = "#d6a755";
-    context.fillRect(0, 0, 22, height);
-    context.fillStyle = "#5f655f";
-    context.font = '700 22px "Microsoft YaHei", sans-serif';
-    context.fillText("PEGBOARD / BADGE", 72, 88);
-    context.fillStyle = "#222622";
-    context.font = '900 62px "Microsoft YaHei", sans-serif';
-    context.fillText("徽章故事", 72, 174);
-    roundRect(context, 72, 232, 1052, 260, 28);
-    context.fillStyle = "#d6a755";
-    context.fill();
-    context.fillStyle = "rgba(255,255,255,0.28)";
-    for (let index = 0; index < 8; index += 1) {
-      context.fillRect(108 + index * 120, 278 + (index % 2) * 70, 66, 66);
-    }
-    context.fillStyle = "#f8f5ef";
-    context.font = '800 32px "Microsoft YaHei", sans-serif';
-    context.fillText("内容整理中", 118, 426);
-    context.fillStyle = "#343934";
-    context.font = '500 26px "Microsoft YaHei", sans-serif';
-    wrapText(context, "这里以后会放徽章的时间、来源和故事。", 76, 552, 850, 42);
-    drawScreenButton(context, "返回首页", 932, 548, 192);
-  };
-
-  const drawContentList = (
-    context: CanvasRenderingContext2D,
-    sectionId: ContentSectionId,
-    requestedPage: number,
-  ) => {
-    const section = sections.find((candidate) => candidate.id === sectionId) ?? sections[0];
-    const page = getContentPage(itemsForSection(sectionId), requestedPage, 4);
-
-    context.fillStyle = section.color;
-    context.fillRect(0, 0, 22, mainCanvas.canvas.height);
-    context.fillStyle = "#5f655f";
-    context.font = '700 22px "Microsoft YaHei", sans-serif';
-    context.fillText(`${section.eyebrow} / ${page.items.length ? "LATEST" : "EMPTY"}`, 72, 72);
-    context.fillStyle = "#222622";
-    context.font = '900 54px "Microsoft YaHei", sans-serif';
-    context.fillText(section.title, 72, 140);
-    context.fillStyle = "#707771";
-    context.font = '500 21px "Microsoft YaHei", sans-serif';
-    context.fillText(section.subtitle, 72, 178);
-
-    if (!page.items.length) {
-      roundRect(context, 72, 224, 1050, 284, 24);
-      context.fillStyle = "rgba(255,255,255,0.65)";
-      context.fill();
-      context.strokeStyle = "rgba(40,44,41,0.12)";
-      context.stroke();
-      context.fillStyle = "#343934";
-      context.font = '800 31px "Microsoft YaHei", sans-serif';
-      context.fillText("这里还没有公开内容", 112, 330);
-      context.fillStyle = "#6b726d";
-      context.font = '500 24px "Microsoft YaHei", sans-serif';
-      context.fillText("内容确认后会按时间出现在这里。", 112, 382);
-    } else {
-      page.items.forEach((item, index) => {
-        const y = 205 + index * 96;
-        roundRect(context, 72, y, 1050, 78, 16);
-        context.fillStyle = "rgba(255,255,255,0.72)";
-        context.fill();
-        context.strokeStyle = "rgba(40,44,41,0.12)";
-        context.stroke();
-        context.fillStyle = section.color;
-        roundRect(context, 92, y + 13, 122, 52, 12);
-        context.fill();
-        context.fillStyle = "#fffdf8";
-        context.font = '800 18px "Microsoft YaHei", sans-serif';
-        context.fillText(item.date.slice(5).replace("-", "."), 118, y + 46);
-        context.fillStyle = "#252925";
-        context.font = '800 24px "Microsoft YaHei", sans-serif';
-        context.fillText(truncateToWidth(context, item.title, 520), 246, y + 34);
-        context.fillStyle = "#6d746e";
-        context.font = '500 17px "Microsoft YaHei", sans-serif';
-        context.fillText(truncateToWidth(context, item.description, 730), 246, y + 61);
-      });
-    }
-
-    drawScreenButton(context, "返回首页", 72, 582, 174);
-    if (page.pageCount > 1) {
-      drawScreenButton(context, "上一页", 768, 582, 132, page.page > 0);
-      drawScreenButton(context, "下一页", 916, 582, 132, page.page < page.pageCount - 1);
-      context.fillStyle = "#707771";
-      context.font = '600 18px "Microsoft YaHei", sans-serif';
-      context.fillText(`${page.page + 1} / ${page.pageCount}`, 1068, 619);
-    }
-  };
-
-  const drawContentPreview = (
-    context: CanvasRenderingContext2D,
-    item: DesktopContentItem,
-  ) => {
-    const section = sections.find((candidate) => candidate.id === item.section) ?? sections[0];
-    context.fillStyle = section.color;
-    context.fillRect(0, 0, 22, mainCanvas.canvas.height);
-    context.fillStyle = "#5f655f";
-    context.font = '700 22px "Microsoft YaHei", sans-serif';
-    context.fillText(`${section.eyebrow} / ${item.date}`, 72, 76);
-    context.fillStyle = "#222622";
-    context.font = '900 48px "Microsoft YaHei", sans-serif';
-    wrapText(context, item.title, 72, 150, 1030, 55);
-    context.fillStyle = "#6d746e";
-    context.font = '600 20px "Microsoft YaHei", sans-serif';
-    context.fillText(
-      [item.category, item.location].filter(Boolean).join(" · ") || section.title,
-      76,
-      224,
-    );
-    roundRect(context, 72, 260, 1050, 250, 24);
-    context.fillStyle = "rgba(255,255,255,0.72)";
-    context.fill();
-    context.strokeStyle = "rgba(40,44,41,0.12)";
-    context.stroke();
-    context.fillStyle = "#343934";
-    context.font = '500 25px "Microsoft YaHei", sans-serif';
-    wrapText(context, item.preview, 110, 320, 970, 42);
-    drawScreenButton(context, "返回列表", 72, 582, 174);
-    drawScreenButton(
-      context,
-      item.section === "activities" ? "查看完整活动" : "阅读全文",
-      884,
-      582,
-      238,
-      Boolean(resolveContentUrl(item)),
-    );
-  };
-
   const drawMainScreen = () => {
-    const { context, canvas, texture } = mainCanvas;
-    const { width, height } = canvas;
-    context.clearRect(0, 0, width, height);
-    context.fillStyle = "#f1eee8";
-    context.fillRect(0, 0, width, height);
-    context.fillStyle = "#d7e1dc";
-    context.fillRect(0, 0, 14, height);
-    context.fillStyle = "#202521";
-
-    if (state.activeScreen === "home") {
-      roundRect(context, 48, 52, 440, 576, 28);
-      context.save();
-      context.clip();
-      context.fillStyle = "#d8d4cb";
-      context.fillRect(48, 52, 440, 576);
-      if (avatarImage.complete && avatarImage.naturalWidth > 0) {
-        drawImageCover(context, avatarImage, 48, 52, 440, 576);
-      }
-      context.restore();
-
-      context.font = '800 28px "Microsoft YaHei", sans-serif';
-      context.fillStyle = "#5f8f78";
-      context.fillText("ERYU / PERSONAL SYSTEM", 548, 84);
-      context.font = '900 66px "Microsoft YaHei", sans-serif';
-      context.fillStyle = "#202521";
-      context.fillText("AI玩尔玉", 548, 165);
-      context.font = '700 26px "Microsoft YaHei", sans-serif';
-      context.fillStyle = "#4c514d";
-      context.fillText("Eryu", 552, 212);
-      context.font = '500 27px "Microsoft YaHei", sans-serif';
-      context.fillStyle = "#333733";
-      wrapText(
-        context,
-        "把 AI 接进真实工作流，做成能运行、能验证、也能继续交接的系统。",
-        548,
-        286,
-        570,
-        44,
-      );
-
-      roundRect(context, 548, 400, 580, 190, 22);
-      context.fillStyle = "rgba(255,255,255,0.72)";
-      context.fill();
-      context.strokeStyle = "rgba(32,37,33,0.14)";
-      context.lineWidth = 2;
-      context.stroke();
-      context.fillStyle = "#5f8f78";
-      context.beginPath();
-      context.arc(586, 444, 9, 0, Math.PI * 2);
-      context.fill();
-      context.fillStyle = "#222622";
-      context.font = '800 25px "Microsoft YaHei", sans-serif';
-      context.fillText("当前状态", 610, 454);
-      context.font = '500 22px "Microsoft YaHei", sans-serif';
-      context.fillStyle = "#4d524d";
-      context.fillText("整理个人 AI 操作系统", 584, 503);
-      context.fillText("打磨可交接的项目流程", 584, 543);
-    } else if (state.activeScreen === "badge") {
-      drawBadgeScreen(context, height);
-    } else if (state.contentView.kind === "list") {
-      drawContentList(context, state.contentView.section, state.contentView.page);
-    } else if (state.contentView.kind === "preview") {
-      const selectedItem = contentById.get(state.contentView.itemId);
-      if (selectedItem) {
-        drawContentPreview(context, selectedItem);
-      } else {
-        drawContentList(context, state.contentView.section, 0);
-      }
-    }
-
-    const cursorX = state.screenCursor.x * width;
-    const cursorY = state.screenCursor.y * height;
-    context.save();
-    context.translate(cursorX, cursorY);
-    context.fillStyle = "#202521";
-    context.strokeStyle = "#fffdf8";
-    context.lineWidth = 5;
-    context.beginPath();
-    context.moveTo(0, 0);
-    context.lineTo(0, 34);
-    context.lineTo(9, 26);
-    context.lineTo(18, 45);
-    context.lineTo(28, 40);
-    context.lineTo(19, 22);
-    context.lineTo(31, 21);
-    context.closePath();
-    context.stroke();
-    context.fill();
-    context.restore();
-    texture.needsUpdate = true;
-  };
-
-  const drawSideScreen = () => {
-    const { context, canvas, texture } = sideCanvas;
-    context.fillStyle = "#202320";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "#e8e1d4";
-    context.font = '900 43px "Microsoft YaHei", sans-serif';
-    context.fillText("动态", 38, 76);
-    context.fillStyle = "#82a08f";
-    context.font = '700 17px "Microsoft YaHei", sans-serif';
-    context.fillText("ACTIVITY", 40, 108);
-
-    sections.forEach((section, index) => {
-      const y = 152 + index * 222;
-      roundRect(context, 28, y, 384, 188, 24);
-      context.fillStyle = state.activeScreen === section.id ? "#343a35" : "#2a2e2a";
-      context.fill();
-      context.fillStyle = section.color;
-      roundRect(context, 48, y + 25, 128, 136, 18);
-      context.fill();
-      context.fillStyle = "rgba(255,255,255,0.3)";
-      context.fillRect(72, y + 54, 78, 12);
-      context.fillRect(72, y + 84, 58, 12);
-      context.fillRect(72, y + 114, 88, 12);
-      context.fillStyle = "#9fb2a6";
-      context.font = '700 18px "Microsoft YaHei", sans-serif';
-      context.fillText(section.eyebrow, 198, y + 55);
-      context.fillStyle = "#f4efe6";
-      context.font = '800 27px "Microsoft YaHei", sans-serif';
-      context.fillText(section.title, 198, y + 96);
-      context.fillStyle = "#aeb5af";
-      context.font = '500 16px "Microsoft YaHei", sans-serif';
-      context.fillText(section.subtitle, 198, y + 133);
+    renderMainScreen({
+      surface: mainCanvas,
+      state,
+      avatarImage,
+      contentById,
+      itemsForSection,
     });
-    texture.needsUpdate = true;
   };
 
-  const drawNote = () => {
-    const { context, canvas, texture } = noteCanvas;
-    context.fillStyle = "#e5c76e";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "rgba(108,78,25,0.14)";
-    for (let y = 60; y < canvas.height; y += 62) context.fillRect(28, y, canvas.width - 56, 2);
-    context.fillStyle = "#58431f";
-    context.font = '800 30px "Microsoft YaHei", sans-serif';
-    context.fillText("TODAY", 34, 46);
-    context.font = '700 33px "Microsoft YaHei", sans-serif';
-    wrapText(context, DAILY_QUOTES[state.quoteIndex], 34, 116, 350, 48);
-    texture.needsUpdate = true;
-  };
+  const drawSideScreen = () => renderSideScreen(sideCanvas, state.activeScreen);
 
-  const drawMessageBoard = () => {
-    const { context, canvas, texture } = messageBoardCanvas;
-    context.fillStyle = "#e5c76e";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "rgba(108,78,25,0.16)";
-    for (let y = 88; y < canvas.height; y += 54) {
-      context.fillRect(28, y, canvas.width - 56, 2);
-    }
-    if (state.message) {
-      context.fillStyle = "#58431f";
-      context.font = '600 30px "Microsoft YaHei", sans-serif';
-      wrapText(context, state.message, 30, 70, canvas.width - 60, 42);
-    }
-    texture.needsUpdate = true;
-  };
+  const drawNote = () => renderNoteScreen(noteCanvas, DAILY_QUOTES[state.quoteIndex]);
+
+  const drawMessageBoard = () => renderMessageBoard(messageBoardCanvas, state.message);
 
   const drawMat = () => {
     const { context, canvas, texture } = matCanvas;
@@ -702,7 +383,7 @@ export function mountDesktopScene(
   );
   sideScreen.position.set(0, 0, 0.19);
   sideMonitor.add(sideScreen);
-  sections.forEach((section, index) => {
+  DESKTOP_SECTIONS.forEach((section, index) => {
     const hit = addAction(
       new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.02), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })),
       `section:${section.id}`,

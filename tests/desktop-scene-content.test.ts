@@ -5,15 +5,23 @@ const sceneSource = readFileSync(
   new URL("../src/desktop/scene.ts", import.meta.url),
   "utf8",
 );
+const sectionsSource = readFileSync(
+  new URL("../src/desktop/screens/sections.ts", import.meta.url),
+  "utf8",
+);
+const mainScreenSource = readFileSync(
+  new URL("../src/desktop/screens/main-screen.ts", import.meta.url),
+  "utf8",
+);
 
 describe("desktop screen content integration", () => {
   it("renders fixed sections instead of hard-coded event records", () => {
     expect(sceneSource).not.toContain("const activities");
-    expect(sceneSource).toContain('id: "articles"');
-    expect(sceneSource).toContain('id: "activities"');
-    expect(sceneSource).toContain('id: "recent"');
-    expect(sceneSource).toContain("drawContentList");
-    expect(sceneSource).toContain("drawContentPreview");
+    expect(sectionsSource).toContain('id: "articles"');
+    expect(sectionsSource).toContain('id: "activities"');
+    expect(sectionsSource).toContain('id: "recent"');
+    expect(mainScreenSource).toContain("drawContentList");
+    expect(mainScreenSource).toContain("drawContentPreview");
   });
 
   it("adds list, preview, back, paging and safe full-content actions", () => {
