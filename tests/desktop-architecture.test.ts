@@ -16,6 +16,9 @@ const actionModulePath = new URL("../src/desktop/core/actions.ts", import.meta.u
 const typeModulePath = new URL("../src/desktop/core/types.ts", import.meta.url);
 const rendererModulePath = new URL("../src/desktop/core/renderer.ts", import.meta.url);
 const assetsModulePath = new URL("../src/desktop/core/assets.ts", import.meta.url);
+const objectModulePaths = ["room.ts", "desk.ts", "computer.ts"].map(
+  (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
+);
 
 describe("desktop scene architecture", () => {
   it("delegates reusable canvas drawing helpers to the screens layer", () => {
@@ -70,5 +73,17 @@ describe("desktop scene architecture", () => {
     expect(sceneSource).not.toContain("const screenLight =");
     expect(sceneSource).not.toContain("const keyLight =");
     expect(sceneSource).not.toContain("new Image()");
+  });
+
+  it("builds stable room, desk, and computer objects through focused factories", () => {
+    objectModulePaths.forEach((modulePath) => expect(existsSync(modulePath)).toBe(true));
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./objects/room"');
+    expect(sceneSource).toContain('from "./objects/desk"');
+    expect(sceneSource).toContain('from "./objects/computer"');
+    expect(sceneSource).not.toContain("const wall =");
+    expect(sceneSource).not.toContain("const deskApron =");
+    expect(sceneSource).not.toContain("const tower =");
   });
 });

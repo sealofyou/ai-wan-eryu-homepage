@@ -11,6 +11,10 @@ const mainScreenSource = readFileSync(
   new URL("../src/desktop/screens/main-screen.ts", import.meta.url),
   "utf8",
 );
+const deskObjectSource = readFileSync(
+  new URL("../src/desktop/objects/desk.ts", import.meta.url),
+  "utf8",
+);
 
 describe("approved desktop composition layout", () => {
   it("turns the left monitor slightly toward the main viewing position", () => {
@@ -63,6 +67,6 @@ describe("approved desktop composition layout", () => {
     expect(sceneSource).toContain("const dpiButton");
     expect(sceneSource).toContain("const sideButton");
     expect(sceneSource).toContain("const mouseLogo");
-    expect(sceneSource).toContain("const deskApron");
+    expect(deskObjectSource).toContain("const deskApron");
   });
 });

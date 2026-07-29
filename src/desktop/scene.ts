@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import {
   DAILY_QUOTES,
   createInitialDesktopState,
@@ -43,6 +42,14 @@ import { renderMessageBoard } from "./screens/message-board";
 import { renderNoteScreen } from "./screens/note-screen";
 import { DESKTOP_SECTIONS } from "./screens/sections";
 import { renderSideScreen } from "./screens/side-screen";
+import { createComputerObject } from "./objects/computer";
+import { createDeskObject } from "./objects/desk";
+import {
+  createDesktopMaterials,
+  makeTextMaterial,
+  roundedMesh,
+} from "./objects/primitives";
+import { createRoomObject } from "./objects/room";
 
 declare global {
   interface Window {
@@ -68,31 +75,6 @@ const clamp = (value: number, min: number, max: number) =>
 
 const lerpRange = (value: number, start: number, end: number, nextStart: number, nextEnd: number) =>
   nextStart + ((value - start) / (end - start)) * (nextEnd - nextStart);
-
-const makeTextMaterial = (
-  text: string,
-  foreground = "#ece6da",
-  background = "#2a2a27",
-) => {
-  const { context, texture } = makeCanvas(512, 160);
-  context.fillStyle = background;
-  context.fillRect(0, 0, 512, 160);
-  context.fillStyle = foreground;
-  context.font = '700 54px "Microsoft YaHei", sans-serif';
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.fillText(text, 256, 82);
-  texture.needsUpdate = true;
-  return new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
-};
-
-const roundedMesh = (
-  width: number,
-  height: number,
-  depth: number,
-  radius: number,
-  material: THREE.Material,
-) => new THREE.Mesh(new RoundedBoxGeometry(width, height, depth, 5, radius), material);
 
 export function mountDesktopScene(
   root: HTMLElement,
@@ -125,47 +107,14 @@ export function mountDesktopScene(
   const { renderer, scene, camera, world, cameraTarget } = environment;
   const { lampLight } = environment.lights;
 
-  const charcoal = new THREE.MeshStandardMaterial({ color: "#242624", roughness: 0.64, metalness: 0.32 });
-  const charcoalSoft = new THREE.MeshStandardMaterial({ color: "#353633", roughness: 0.72, metalness: 0.18 });
-  const warmWhite = new THREE.MeshStandardMaterial({ color: "#e9e3d7", roughness: 0.83 });
-  const paleGreen = new THREE.MeshStandardMaterial({ color: "#91aa98", roughness: 0.72 });
-  const wood = new THREE.MeshStandardMaterial({ color: "#805536", roughness: 0.58 });
-
-  const wall = roundedMesh(18, 10, 0.35, 0.12, new THREE.MeshStandardMaterial({ color: "#9b846c", roughness: 0.96 }));
-  wall.position.set(0, 4.1, -3.3);
-  wall.receiveShadow = true;
-  world.add(wall);
-
-  const desk = roundedMesh(16, 0.72, 7.5, 0.2, wood);
-  desk.position.set(0, -0.18, 0.85);
-  desk.receiveShadow = true;
-  desk.castShadow = true;
-  world.add(desk);
-
-  const deskApron = roundedMesh(16.15, 2.7, 0.48, 0.18, wood);
-  deskApron.position.set(0, -1.82, 4.38);
-  deskApron.receiveShadow = true;
-  deskApron.castShadow = true;
-  world.add(deskApron);
-
-  const matCanvas = makeCanvas(1400, 460);
+  const materials = createDesktopMaterials();
+  const { charcoal, charcoalSoft, warmWhite, paleGreen } = materials;
+  world.add(createRoomObject().group);
+  const deskObject = createDeskObject(materials);
+  world.add(deskObject.group);
+  const { matCanvas, matSurface } = deskObject;
   const strokes: Point[][] = [];
   let activeStroke: Point[] | null = null;
-  const matBase = roundedMesh(11.2, 0.12, 3.75, 0.18, new THREE.MeshStandardMaterial({ color: "#ded7ca", roughness: 0.92 }));
-  matBase.position.set(0.15, 0.22, 2.22);
-  matBase.receiveShadow = true;
-  world.add(matBase);
-
-  const matSurface = addAction(
-    new THREE.Mesh(
-      new THREE.PlaneGeometry(10.95, 3.52),
-      new THREE.MeshStandardMaterial({ map: matCanvas.texture, roughness: 0.92 }),
-    ),
-    "mat",
-  );
-  matSurface.rotation.x = -Math.PI / 2;
-  matSurface.position.set(0.15, 0.291, 2.22);
-  world.add(matSurface);
 
   const mainCanvas = makeCanvas(1200, 680);
   const sideCanvas = makeCanvas(440, 880);
@@ -373,28 +322,7 @@ export function mountDesktopScene(
   sideSupport.add(supportFoot);
   world.add(sideSupport);
 
-  const tower = roundedMesh(2.05, 4.0, 2.1, 0.2, charcoal);
-  tower.position.set(-6.45, 2.1, 0.15);
-  tower.castShadow = true;
-  world.add(tower);
-  const towerInset = roundedMesh(1.55, 2.55, 0.09, 0.1, new THREE.MeshStandardMaterial({ color: "#151716", roughness: 0.7 }));
-  towerInset.position.set(-6.45, 2.35, 1.225);
-  world.add(towerInset);
-  const towerGlow = roundedMesh(0.06, 2.3, 0.04, 0.02, new THREE.MeshBasicMaterial({ color: "#60ab79" }));
-  towerGlow.position.set(-7.17, 1.72, 1.285);
-  world.add(towerGlow);
-  const eMark = new THREE.Group();
-  const eMaterial = new THREE.MeshBasicMaterial({ color: "#d9d2c4" });
-  const eVertical = roundedMesh(0.13, 0.62, 0.04, 0.02, eMaterial);
-  eVertical.position.x = -0.18;
-  eMark.add(eVertical);
-  [-0.24, 0, 0.24].forEach((y, index) => {
-    const bar = roundedMesh(index === 1 ? 0.38 : 0.48, 0.1, 0.04, 0.02, eMaterial);
-    bar.position.set(0.03, y, 0);
-    eMark.add(bar);
-  });
-  eMark.position.set(-6.45, 0.92, 1.3);
-  world.add(eMark);
+  world.add(createComputerObject(materials).group);
 
   const note = addAction(
     new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.72), new THREE.MeshBasicMaterial({ map: noteCanvas.texture, toneMapped: false })),
