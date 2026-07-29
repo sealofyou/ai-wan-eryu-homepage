@@ -8,6 +8,7 @@ const canvasUtilsPath = new URL(
   import.meta.url,
 );
 const rendererPath = new URL("../src/desktop/core/renderer.ts", import.meta.url);
+const pointerPath = new URL("../src/desktop/interactions/pointer.ts", import.meta.url);
 const layoutSource = readFileSync(new URL("../src/layouts/SiteLayout.astro", import.meta.url), "utf8");
 const faviconSource = readFileSync(new URL("../public/favicon.svg", import.meta.url), "utf8");
 
@@ -28,10 +29,11 @@ describe("desktop homepage structure", () => {
     const sceneSource = readFileSync(scenePath, "utf8");
     const canvasUtilsSource = readFileSync(canvasUtilsPath, "utf8");
     const rendererSource = readFileSync(rendererPath, "utf8");
+    const pointerSource = readFileSync(pointerPath, "utf8");
 
     expect(rendererSource).toContain("WebGLRenderer");
     expect(canvasUtilsSource).toContain("CanvasTexture");
-    expect(sceneSource).toContain("Raycaster");
+    expect(pointerSource).toContain("Raycaster");
     expect(sceneSource).toContain("prefers-reduced-motion");
     expect(sceneSource).toContain("webgl-fallback");
   });

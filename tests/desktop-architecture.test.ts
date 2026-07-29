@@ -27,6 +27,9 @@ const inputObjectModulePaths = ["keyboard-object.ts", "mouse.ts"].map(
   (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
 );
 const matControlsModulePath = new URL("../src/desktop/objects/mat-controls.ts", import.meta.url);
+const interactionModulePaths = ["pointer.ts", "dragging.ts", "mousepad.ts", "message.ts"].map(
+  (fileName) => new URL(`../src/desktop/interactions/${fileName}`, import.meta.url),
+);
 
 describe("desktop scene architecture", () => {
   it("delegates reusable canvas drawing helpers to the screens layer", () => {
@@ -61,7 +64,6 @@ describe("desktop scene architecture", () => {
     expect(existsSync(typeModulePath)).toBe(true);
 
     const sceneSource = readFileSync(scenePath, "utf8");
-    expect(sceneSource).toContain('from "./core/actions"');
     expect(sceneSource).toContain('from "./core/types"');
     expect(sceneSource).not.toContain("type SceneAction =");
     expect(sceneSource).not.toContain("const addAction =");
@@ -136,5 +138,18 @@ describe("desktop scene architecture", () => {
     expect(sceneSource).toContain('from "./objects/mat-controls"');
     expect(sceneSource).not.toContain("const modeButtons:");
     expect(sceneSource).not.toContain("const buttonMeshes:");
+  });
+
+  it("delegates pointer, dragging, mousepad, and message listeners to disposable controllers", () => {
+    interactionModulePaths.forEach((modulePath) => expect(existsSync(modulePath)).toBe(true));
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./interactions/pointer"');
+    expect(sceneSource).toContain('from "./interactions/dragging"');
+    expect(sceneSource).toContain('from "./interactions/mousepad"');
+    expect(sceneSource).toContain('from "./interactions/message"');
+    expect(sceneSource).not.toContain("const raycaster =");
+    expect(sceneSource).not.toContain('renderer.domElement.addEventListener("pointerdown"');
+    expect(sceneSource).not.toContain('messagePanel.addEventListener("submit"');
   });
 });

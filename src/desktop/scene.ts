@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import {
   DAILY_QUOTES,
   createInitialDesktopState,
@@ -17,7 +16,6 @@ import {
   type Point,
   type ScreenId,
 } from "./model";
-import { actionFromObject } from "./core/actions";
 import { createDesktopImage, DESKTOP_IMAGE_URLS } from "./core/assets";
 import {
   createDesktopRendererEnvironment,
@@ -25,16 +23,12 @@ import {
 } from "./core/renderer";
 import type { SceneAction } from "./core/types";
 import {
-  getContentPage,
   resolveContentUrl,
   sortDesktopItems,
   type ContentSectionId,
   type DesktopContentPayload,
 } from "./content";
-import {
-  makeCanvas,
-  roundRect,
-} from "./screens/canvas-utils";
+import { makeCanvas } from "./screens/canvas-utils";
 import { renderMainScreen } from "./screens/main-screen";
 import { renderMessageBoard } from "./screens/message-board";
 import { renderNoteScreen } from "./screens/note-screen";
@@ -50,6 +44,10 @@ import { createMouseObject } from "./objects/mouse";
 import { createPegboardsObject } from "./objects/pegboards";
 import { createDesktopMaterials } from "./objects/primitives";
 import { createRoomObject } from "./objects/room";
+import { createDraggingController } from "./interactions/dragging";
+import { createMessageController } from "./interactions/message";
+import { createMousepadController } from "./interactions/mousepad";
+import { createPointerController } from "./interactions/pointer";
 
 declare global {
   interface Window {
@@ -69,12 +67,6 @@ declare global {
     };
   }
 }
-
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, value));
-
-const lerpRange = (value: number, start: number, end: number, nextStart: number, nextEnd: number) =>
-  nextStart + ((value - start) / (end - start)) * (nextEnd - nextStart);
 
 export function mountDesktopScene(
   root: HTMLElement,
@@ -112,8 +104,7 @@ export function mountDesktopScene(
   const deskObject = createDeskObject(materials);
   world.add(deskObject.group);
   const { matCanvas, matSurface } = deskObject;
-  const strokes: Point[][] = [];
-  let activeStroke: Point[] | null = null;
+  const mousepad = createMousepadController(matCanvas);
 
   const mainCanvas = makeCanvas(1200, 680);
   const sideCanvas = makeCanvas(440, 880);
@@ -136,36 +127,6 @@ export function mountDesktopScene(
   const drawNote = () => renderNoteScreen(noteCanvas, DAILY_QUOTES[state.quoteIndex]);
 
   const drawMessageBoard = () => renderMessageBoard(messageBoardCanvas, state.message);
-
-  const drawMat = () => {
-    const { context, canvas, texture } = matCanvas;
-    context.fillStyle = "#dfd8cc";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.strokeStyle = "#95a9a0";
-    context.lineWidth = 12;
-    roundRect(context, 10, 10, canvas.width - 20, canvas.height - 20, 38);
-    context.stroke();
-    context.fillStyle = "rgba(119,145,132,0.12)";
-    for (let x = 88; x < canvas.width; x += 200) {
-      context.fillRect(x, 62 + ((x / 200) % 2) * 246, 24, 24);
-      context.fillRect(x + 32, 62 + ((x / 200) % 2) * 246, 24, 24);
-      context.fillRect(x + 16, 86 + ((x / 200) % 2) * 246, 24, 24);
-    }
-    context.strokeStyle = "#4f7264";
-    context.lineWidth = 7;
-    context.lineCap = "round";
-    context.lineJoin = "round";
-    strokes.forEach((stroke) => {
-      if (stroke.length < 2) return;
-      context.beginPath();
-      context.moveTo(stroke[0].x * canvas.width, (1 - stroke[0].y) * canvas.height);
-      stroke.slice(1).forEach((point) => {
-        context.lineTo(point.x * canvas.width, (1 - point.y) * canvas.height);
-      });
-      context.stroke();
-    });
-    texture.needsUpdate = true;
-  };
 
   const monitors = createMonitorsObject({
     mainCanvas,
@@ -217,7 +178,7 @@ export function mountDesktopScene(
     monitors.updateMainActions(state);
     drawNote();
     drawMessageBoard();
-    drawMat();
+    mousepad.draw();
     updatePositions();
     updateModeButtons();
   };
@@ -241,31 +202,12 @@ export function mountDesktopScene(
   };
 
   const clearDrawing = () => {
-    strokes.length = 0;
-    drawMat();
+    mousepad.clear();
     announce("鼠标垫笔迹已清空");
   };
 
   avatarImage.addEventListener("load", drawMainScreen);
   updateScreens();
-
-  const raycaster = new THREE.Raycaster();
-  const pointer = new THREE.Vector2();
-  const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.54);
-  const dragPoint = new THREE.Vector3();
-  let dragTarget: "mouse" | "keyboard" | null = null;
-  let pointerDown = new THREE.Vector2();
-  let movedPixels = 0;
-
-  const updatePointer = (event: PointerEvent) => {
-    const bounds = renderer.domElement.getBoundingClientRect();
-    pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
-    pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
-    raycaster.setFromCamera(pointer, camera);
-  };
-
-  const intersections = () => raycaster.intersectObjects(world.children, true);
-  const matIntersection = () => raycaster.intersectObject(matSurface, false)[0];
 
   const applyAction = (action: SceneAction | undefined) => {
     if (!action) return;
@@ -312,130 +254,49 @@ export function mountDesktopScene(
     }
   };
 
-  renderer.domElement.addEventListener("pointerdown", (event: PointerEvent) => {
-    updatePointer(event);
-    pointerDown.set(event.clientX, event.clientY);
-    movedPixels = 0;
-    const hit = intersections()[0];
-    const action = actionFromObject(hit?.object ?? null);
-
-    if (action === "mouse" || action === "keyboard") {
-      dragTarget = action;
-      renderer.domElement.classList.add("is-dragging");
-      renderer.domElement.setPointerCapture(event.pointerId);
-      if (dragTarget === "keyboard") keyboard.position.y += 0.16;
-      return;
-    }
-
-    if (action === "mat" && state.matMode === "draw") {
-      const matHit = matIntersection();
-      if (matHit?.uv) {
-        activeStroke = [{ x: matHit.uv.x, y: matHit.uv.y }];
-        strokes.push(activeStroke);
-        renderer.domElement.setPointerCapture(event.pointerId);
-      }
-      return;
-    }
-
-    applyAction(action);
-  });
-
-  renderer.domElement.addEventListener("pointermove", (event: PointerEvent) => {
-    updatePointer(event);
-    movedPixels = Math.max(movedPixels, Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y));
-
-    if (dragTarget && raycaster.ray.intersectPlane(dragPlane, dragPoint)) {
-      if (dragTarget === "mouse") {
-        state = movePhysicalMouse(state, {
-          x: lerpRange(clamp(dragPoint.x, 2.65, 4.72), 2.65, 4.72, 0.66, 0.93),
-          y: lerpRange(clamp(dragPoint.z, 1.22, 3.02), 1.22, 3.02, 0.35, 0.72),
-        });
-        updatePositions();
-        drawMainScreen();
-      } else {
-        state = moveKeyboard(state, {
-          x: lerpRange(clamp(dragPoint.x, -0.95, -0.2), -0.95, -0.2, 0.2, 0.7),
-          y: lerpRange(clamp(dragPoint.z, 1.82, 2.34), 1.82, 2.34, 0.48, 0.82),
-        });
-        updatePositions();
-        keyboard.position.y += 0.16;
-      }
-      return;
-    }
-
-    if (activeStroke) {
-      const matHit = matIntersection();
-      if (matHit?.uv) {
-        activeStroke.push({ x: matHit.uv.x, y: matHit.uv.y });
-        drawMat();
-      }
-      return;
-    }
-
-    const action = actionFromObject(intersections()[0]?.object ?? null);
-    renderer.domElement.classList.toggle("is-interactive", Boolean(action));
-  });
-
-  renderer.domElement.addEventListener(
-    "wheel",
-    (event: WheelEvent) => {
-      if (state.contentView.kind !== "list" || Math.abs(event.deltaY) < 8) return;
-      updatePointer(event as unknown as PointerEvent);
-      if (!raycaster.intersectObject(mainScreen, false).length) return;
-
-      const page = getContentPage(
-        itemsForSection(state.contentView.section),
-        state.contentView.page,
-        4,
-      );
-      const nextPage = clamp(page.page + (event.deltaY > 0 ? 1 : -1), 0, page.pageCount - 1);
-      if (nextPage === page.page) return;
-
-      event.preventDefault();
-      state = setContentPage(state, nextPage);
-      updateScreens();
-    },
-    { passive: false },
-  );
-
-  const finishPointer = (event: PointerEvent) => {
-    if (dragTarget === "keyboard") updatePositions();
-    if (dragTarget && movedPixels > 6) announce(dragTarget === "mouse" ? "鼠标位置已更新" : "键盘位置已更新");
-    dragTarget = null;
-    activeStroke = null;
-    renderer.domElement.classList.remove("is-dragging");
-    if (renderer.domElement.hasPointerCapture(event.pointerId)) renderer.domElement.releasePointerCapture(event.pointerId);
+  const getState = () => state;
+  const setState = (nextState: DesktopState) => {
+    state = nextState;
   };
-  renderer.domElement.addEventListener("pointerup", finishPointer);
-  renderer.domElement.addEventListener("pointercancel", finishPointer);
-
-  root.querySelectorAll<HTMLButtonElement>("[data-screen]").forEach((button) => {
-    button.addEventListener("click", () => setScreen(button.dataset.screen as ScreenId));
+  const dragging = createDraggingController({
+    element: renderer.domElement,
+    keyboard,
+    getState,
+    setState,
+    updatePositions,
+    drawMainScreen,
+    announce,
   });
-  root.querySelectorAll<HTMLButtonElement>("[data-section]").forEach((button) => {
-    button.addEventListener("click", () => setSection(button.dataset.section as ContentSectionId));
+  const pointerController = createPointerController({
+    root,
+    renderer,
+    camera,
+    world,
+    matSurface,
+    mainScreen,
+    reducedMotion,
+    dragging,
+    mousepad,
+    getState,
+    setState,
+    itemsForSection,
+    updateScreens,
+    applyAction,
   });
-  root.querySelectorAll<HTMLButtonElement>("[data-mode]").forEach((button) => {
-    button.addEventListener("click", () => setMode(button.dataset.mode as MatMode));
-  });
-  root.querySelector<HTMLButtonElement>('[data-action="quote"]')?.addEventListener("click", () => applyAction("quote"));
-  root.querySelector<HTMLButtonElement>('[data-action="badge"]')?.addEventListener("click", () => applyAction("badge"));
-  root.querySelector<HTMLButtonElement>('[data-action="clear"]')?.addEventListener("click", clearDrawing);
-
-  messagePanel.addEventListener("submit", (event) => {
-    event.preventDefault();
-    state = setMessage(state, messageInput.value.trim());
-    drawMainScreen();
-    drawMessageBoard();
-    announce(state.message ? "留言已经写在洞洞板上" : "留言已清空");
-  });
-
-  let parallaxX = 0;
-  let parallaxY = 0;
-  root.addEventListener("pointermove", (event) => {
-    if (reducedMotion || dragTarget || activeStroke) return;
-    parallaxX = (event.clientX / window.innerWidth - 0.5) * 0.32;
-    parallaxY = (event.clientY / window.innerHeight - 0.5) * 0.18;
+  const messageController = createMessageController({
+    root,
+    messagePanel,
+    messageInput,
+    getState,
+    setState,
+    setScreen,
+    setSection,
+    setMode,
+    applyAction,
+    clearDrawing,
+    drawMainScreen,
+    drawMessageBoard,
+    announce,
   });
 
   window.__ERYU_DESKTOP__ = {
@@ -463,8 +324,7 @@ export function mountDesktopScene(
        drawMessageBoard();
     },
     addStroke: (points) => {
-      strokes.push(points.map((point) => ({ x: clamp(point.x, 0, 1), y: clamp(point.y, 0, 1) })));
-      drawMat();
+      mousepad.addStroke(points);
     },
     clearDrawing,
     cycleQuote: () => applyAction("quote"),
@@ -478,8 +338,9 @@ export function mountDesktopScene(
       const progress = 1 - Math.pow(1 - Math.min(elapsed / 1400, 1), 3);
       camera.position.lerpVectors(environment.introCamera, environment.finalCamera, progress);
     } else {
-      camera.position.x += (environment.finalCamera.x + parallaxX - camera.position.x) * 0.035;
-      camera.position.y += (environment.finalCamera.y - parallaxY - camera.position.y) * 0.035;
+      const parallax = pointerController.getParallax();
+      camera.position.x += (environment.finalCamera.x + parallax.x - camera.position.x) * 0.035;
+      camera.position.y += (environment.finalCamera.y - parallax.y - camera.position.y) * 0.035;
     }
     camera.lookAt(cameraTarget);
     renderer.render(scene, camera);
@@ -493,4 +354,13 @@ export function mountDesktopScene(
     loading.classList.add("is-ready");
     root.dataset.ready = "true";
   });
+
+  return () => {
+    pointerController.dispose();
+    dragging.dispose();
+    mousepad.dispose();
+    messageController.dispose();
+    window.removeEventListener("resize", environment.resize);
+    avatarImage.removeEventListener("load", drawMainScreen);
+  };
 }
