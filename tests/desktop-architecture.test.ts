@@ -12,6 +12,8 @@ const screenModulePaths = [
   "note-screen.ts",
   "message-board.ts",
 ].map((fileName) => new URL(`../src/desktop/screens/${fileName}`, import.meta.url));
+const actionModulePath = new URL("../src/desktop/core/actions.ts", import.meta.url);
+const typeModulePath = new URL("../src/desktop/core/types.ts", import.meta.url);
 
 describe("desktop scene architecture", () => {
   it("delegates reusable canvas drawing helpers to the screens layer", () => {
@@ -39,5 +41,17 @@ describe("desktop scene architecture", () => {
     expect(sceneSource).not.toContain("const drawBadgeScreen =");
     expect(sceneSource).not.toContain("const drawContentList =");
     expect(sceneSource).not.toContain("const drawContentPreview =");
+  });
+
+  it("delegates scene action metadata and shared object contracts to core modules", () => {
+    expect(existsSync(actionModulePath)).toBe(true);
+    expect(existsSync(typeModulePath)).toBe(true);
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./core/actions"');
+    expect(sceneSource).toContain('from "./core/types"');
+    expect(sceneSource).not.toContain("type SceneAction =");
+    expect(sceneSource).not.toContain("const addAction =");
+    expect(sceneSource).not.toContain("const actionFromObject =");
   });
 });

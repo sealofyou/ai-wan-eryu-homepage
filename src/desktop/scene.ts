@@ -20,6 +20,8 @@ import {
 } from "./model";
 import { createKeyboardModel } from "./keyboard";
 import { DESK_LAYOUT } from "./layout";
+import { actionFromObject, addAction } from "./core/actions";
+import type { SceneAction } from "./core/types";
 import {
   getContentPage,
   resolveContentUrl,
@@ -36,24 +38,6 @@ import { renderMessageBoard } from "./screens/message-board";
 import { renderNoteScreen } from "./screens/note-screen";
 import { DESKTOP_SECTIONS } from "./screens/sections";
 import { renderSideScreen } from "./screens/side-screen";
-
-type SceneAction =
-  | `screen:${ScreenId}`
-  | `section:${ContentSectionId}`
-  | `content:${string}`
-  | `mode:${MatMode}`
-  | "content-back"
-  | "content-open"
-  | "page-prev"
-  | "page-next"
-  | "quote"
-  | "badge"
-  | "clear"
-  | "mouse"
-  | "keyboard"
-  | "mat"
-  | "message"
-  | "lamp";
 
 declare global {
   interface Window {
@@ -95,20 +79,6 @@ const makeTextMaterial = (
   context.fillText(text, 256, 82);
   texture.needsUpdate = true;
   return new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
-};
-
-const addAction = <T extends THREE.Object3D>(object: T, action: SceneAction): T => {
-  object.userData.action = action;
-  return object;
-};
-
-const actionFromObject = (object: THREE.Object3D | null): SceneAction | undefined => {
-  let current: THREE.Object3D | null = object;
-  while (current) {
-    if (current.userData.action) return current.userData.action as SceneAction;
-    current = current.parent;
-  }
-  return undefined;
 };
 
 const roundedMesh = (
