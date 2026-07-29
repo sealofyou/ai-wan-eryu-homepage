@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs";
 import { DESK_LAYOUT } from "../src/desktop/layout";
 
 const sceneSource = readFileSync(new URL("../src/desktop/scene.ts", import.meta.url), "utf8");
+const canvasUtilsSource = readFileSync(
+  new URL("../src/desktop/screens/canvas-utils.ts", import.meta.url),
+  "utf8",
+);
 
 describe("approved desktop composition layout", () => {
   it("turns the left monitor slightly toward the main viewing position", () => {
@@ -21,7 +25,6 @@ describe("approved desktop composition layout", () => {
   });
 
   it("keeps the small pegboard and places a separate angled board on the desk edge", () => {
-    const small = DESK_LAYOUT.pegboards.small;
     const large = DESK_LAYOUT.pegboards.large;
     expect(DESK_LAYOUT.pegboards.large.width).toBeGreaterThan(
       DESK_LAYOUT.pegboards.small.width,
@@ -50,7 +53,7 @@ describe("approved desktop composition layout", () => {
   });
 
   it("preserves the portrait image ratio and gives the mouse gaming details", () => {
-    expect(sceneSource).toContain("const drawImageCover = (");
+    expect(canvasUtilsSource).toContain("export const drawImageCover = (");
     expect(sceneSource).toContain("drawImageCover(context, avatarImage, 48, 52, 440, 576)");
     expect(sceneSource).toContain("const rearHump");
     expect(sceneSource).toContain("const dpiButton");
