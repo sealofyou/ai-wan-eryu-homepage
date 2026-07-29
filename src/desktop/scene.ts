@@ -21,6 +21,11 @@ import {
 import { createKeyboardModel } from "./keyboard";
 import { DESK_LAYOUT } from "./layout";
 import { actionFromObject, addAction } from "./core/actions";
+import { createDesktopImage, DESKTOP_IMAGE_URLS } from "./core/assets";
+import {
+  createDesktopRendererEnvironment,
+  type DesktopRendererEnvironment,
+} from "./core/renderer";
 import type { SceneAction } from "./core/types";
 import {
   getContentPage,
@@ -109,42 +114,16 @@ export function mountDesktopScene(
     contentItems.filter((item) => item.section === section);
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let renderer: THREE.WebGLRenderer;
+  let environment: DesktopRendererEnvironment;
   try {
-    renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    environment = createDesktopRendererEnvironment(mount, reducedMotion);
   } catch {
     fallback.hidden = false;
     loading.hidden = true;
     return;
   }
-
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
-  mount.appendChild(renderer.domElement);
-
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color("#6d5c4b");
-  scene.fog = new THREE.Fog("#6d5c4b", 16, 28);
-
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 60);
-  const baseAspect = 16 / 9;
-  const getFramedCamera = (aspect: number, intro = false) => {
-    const distance = clamp(12.3 * Math.pow(baseAspect / Math.max(aspect, 1.15), 2.2), 11.2, 17);
-    return new THREE.Vector3(0.15, intro ? 6.5 : 5.5, intro ? distance + 2.9 : distance);
-  };
-  let finalCamera = getFramedCamera(window.innerWidth / window.innerHeight);
-  let introCamera = getFramedCamera(window.innerWidth / window.innerHeight, true);
-  camera.position.copy(reducedMotion ? finalCamera : introCamera);
-  const cameraTarget = new THREE.Vector3(0, 2.9, 0.3);
-  camera.lookAt(cameraTarget);
-
-  const world = new THREE.Group();
-  scene.add(world);
+  const { renderer, scene, camera, world, cameraTarget } = environment;
+  const { lampLight } = environment.lights;
 
   const charcoal = new THREE.MeshStandardMaterial({ color: "#242624", roughness: 0.64, metalness: 0.32 });
   const charcoalSoft = new THREE.MeshStandardMaterial({ color: "#353633", roughness: 0.72, metalness: 0.18 });
@@ -192,8 +171,7 @@ export function mountDesktopScene(
   const sideCanvas = makeCanvas(440, 880);
   const noteCanvas = makeCanvas(420, 300);
   const messageBoardCanvas = makeCanvas(640, 440);
-  const avatarImage = new Image();
-  avatarImage.src = "/desktop/main-avatar.png";
+  const avatarImage = createDesktopImage(DESKTOP_IMAGE_URLS.avatar);
 
   const drawMainScreen = () => {
     renderMainScreen({
@@ -431,8 +409,7 @@ export function mountDesktopScene(
   toyBase.castShadow = true;
   world.add(toyBase);
   const toyCanvas = makeCanvas(420, 520);
-  const toyImage = new Image();
-  toyImage.src = "/desktop/q-avatar.png";
+  const toyImage = createDesktopImage(DESKTOP_IMAGE_URLS.toy);
   toyImage.addEventListener("load", () => {
     const { context, canvas, texture } = toyCanvas;
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -554,24 +531,6 @@ export function mountDesktopScene(
   bulb.rotation.z = -0.92;
   lamp.add(bulb);
   world.add(lamp);
-
-  const lampLight = new THREE.PointLight("#ffd39a", 55, 8, 2);
-  lampLight.position.set(4.62, 3.7, 0.35);
-  lampLight.castShadow = true;
-  scene.add(lampLight);
-  const screenLight = new THREE.PointLight("#cfe3d8", 28, 8, 2);
-  screenLight.position.set(0.8, 3.7, 1.8);
-  scene.add(screenLight);
-  scene.add(new THREE.HemisphereLight("#ffe8c8", "#3d3229", 2.2));
-  const keyLight = new THREE.DirectionalLight("#fff0d8", 3.4);
-  keyLight.position.set(-3, 9, 7);
-  keyLight.castShadow = true;
-  keyLight.shadow.mapSize.set(2048, 2048);
-  keyLight.shadow.camera.left = -10;
-  keyLight.shadow.camera.right = 10;
-  keyLight.shadow.camera.top = 10;
-  keyLight.shadow.camera.bottom = -6;
-  scene.add(keyLight);
 
   const keyboard = addAction(createKeyboardModel(), "keyboard");
   world.add(keyboard);
@@ -946,10 +905,10 @@ export function mountDesktopScene(
     const elapsed = time - startTime;
     if (!reducedMotion && elapsed < 1400) {
       const progress = 1 - Math.pow(1 - Math.min(elapsed / 1400, 1), 3);
-      camera.position.lerpVectors(introCamera, finalCamera, progress);
+      camera.position.lerpVectors(environment.introCamera, environment.finalCamera, progress);
     } else {
-      camera.position.x += (finalCamera.x + parallaxX - camera.position.x) * 0.035;
-      camera.position.y += (finalCamera.y - parallaxY - camera.position.y) * 0.035;
+      camera.position.x += (environment.finalCamera.x + parallaxX - camera.position.x) * 0.035;
+      camera.position.y += (environment.finalCamera.y - parallaxY - camera.position.y) * 0.035;
     }
     camera.lookAt(cameraTarget);
     renderer.render(scene, camera);
@@ -957,15 +916,7 @@ export function mountDesktopScene(
   };
   requestAnimationFrame(animate);
 
-  const resize = () => {
-    const aspect = window.innerWidth / window.innerHeight;
-    finalCamera = getFramedCamera(aspect);
-    introCamera = getFramedCamera(aspect, true);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  };
-  window.addEventListener("resize", resize);
+  window.addEventListener("resize", environment.resize);
 
   requestAnimationFrame(() => {
     loading.classList.add("is-ready");

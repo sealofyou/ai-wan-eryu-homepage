@@ -14,6 +14,8 @@ const screenModulePaths = [
 ].map((fileName) => new URL(`../src/desktop/screens/${fileName}`, import.meta.url));
 const actionModulePath = new URL("../src/desktop/core/actions.ts", import.meta.url);
 const typeModulePath = new URL("../src/desktop/core/types.ts", import.meta.url);
+const rendererModulePath = new URL("../src/desktop/core/renderer.ts", import.meta.url);
+const assetsModulePath = new URL("../src/desktop/core/assets.ts", import.meta.url);
 
 describe("desktop scene architecture", () => {
   it("delegates reusable canvas drawing helpers to the screens layer", () => {
@@ -53,5 +55,20 @@ describe("desktop scene architecture", () => {
     expect(sceneSource).not.toContain("type SceneAction =");
     expect(sceneSource).not.toContain("const addAction =");
     expect(sceneSource).not.toContain("const actionFromObject =");
+  });
+
+  it("delegates WebGL setup, camera framing, fixed lights, and image creation to core", () => {
+    expect(existsSync(rendererModulePath)).toBe(true);
+    expect(existsSync(assetsModulePath)).toBe(true);
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./core/renderer"');
+    expect(sceneSource).toContain('from "./core/assets"');
+    expect(sceneSource).not.toContain("new THREE.WebGLRenderer");
+    expect(sceneSource).not.toContain("const getFramedCamera =");
+    expect(sceneSource).not.toContain("const resize =");
+    expect(sceneSource).not.toContain("const screenLight =");
+    expect(sceneSource).not.toContain("const keyLight =");
+    expect(sceneSource).not.toContain("new Image()");
   });
 });
