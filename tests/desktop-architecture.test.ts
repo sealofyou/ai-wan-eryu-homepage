@@ -19,6 +19,7 @@ const assetsModulePath = new URL("../src/desktop/core/assets.ts", import.meta.ur
 const objectModulePaths = ["room.ts", "desk.ts", "computer.ts"].map(
   (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
 );
+const monitorModulePath = new URL("../src/desktop/objects/monitors.ts", import.meta.url);
 
 describe("desktop scene architecture", () => {
   it("delegates reusable canvas drawing helpers to the screens layer", () => {
@@ -85,5 +86,16 @@ describe("desktop scene architecture", () => {
     expect(sceneSource).not.toContain("const wall =");
     expect(sceneSource).not.toContain("const deskApron =");
     expect(sceneSource).not.toContain("const tower =");
+  });
+
+  it("encapsulates monitor meshes and Canvas-to-world action hit areas", () => {
+    expect(existsSync(monitorModulePath)).toBe(true);
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./objects/monitors"');
+    expect(sceneSource).not.toContain("const mainFrame =");
+    expect(sceneSource).not.toContain("const mainActionGroup =");
+    expect(sceneSource).not.toContain("const sideMonitor =");
+    expect(sceneSource).not.toContain("const updateMainActions =");
   });
 });

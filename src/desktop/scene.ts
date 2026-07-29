@@ -40,10 +40,10 @@ import {
 import { renderMainScreen } from "./screens/main-screen";
 import { renderMessageBoard } from "./screens/message-board";
 import { renderNoteScreen } from "./screens/note-screen";
-import { DESKTOP_SECTIONS } from "./screens/sections";
 import { renderSideScreen } from "./screens/side-screen";
 import { createComputerObject } from "./objects/computer";
 import { createDeskObject } from "./objects/desk";
+import { createMonitorsObject } from "./objects/monitors";
 import {
   createDesktopMaterials,
   makeTextMaterial,
@@ -168,159 +168,15 @@ export function mountDesktopScene(
     texture.needsUpdate = true;
   };
 
-  const mainFrame = roundedMesh(7.35, 4.45, 0.35, 0.15, charcoal);
-  mainFrame.position.set(0.7, 4.05, -0.92);
-  mainFrame.castShadow = true;
-  world.add(mainFrame);
-  const mainScreen = new THREE.Mesh(
-    new THREE.PlaneGeometry(6.98, 3.98),
-    new THREE.MeshBasicMaterial({ map: mainCanvas.texture, toneMapped: false }),
-  );
-  mainScreen.position.set(0.7, 4.05, -0.724);
-  world.add(mainScreen);
-
-  const mainActionGroup = new THREE.Group();
-  world.add(mainActionGroup);
-
-  const addMainActionHit = (
-    action: SceneAction,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-  ) => {
-    const hit = addAction(
-      new THREE.Mesh(
-        new THREE.PlaneGeometry((width / 1200) * 6.98, (height / 680) * 3.98),
-        new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 }),
-      ),
-      action,
-    );
-    hit.position.set(
-      0.7 + ((x + width / 2) / 1200 - 0.5) * 6.98,
-      4.05 + (0.5 - (y + height / 2) / 680) * 3.98,
-      -0.70,
-    );
-    mainActionGroup.add(hit);
-  };
-
-  const updateMainActions = () => {
-    mainActionGroup.children.forEach((child) => {
-      if (!(child instanceof THREE.Mesh)) return;
-      child.geometry.dispose();
-      const materials = Array.isArray(child.material) ? child.material : [child.material];
-      materials.forEach((material) => material.dispose());
-    });
-    mainActionGroup.clear();
-
-    if (state.activeScreen === "badge") {
-      addMainActionHit("screen:home", 932, 548, 192, 64);
-      return;
-    }
-
-    if (state.contentView.kind === "list") {
-      const page = getContentPage(
-        itemsForSection(state.contentView.section),
-        state.contentView.page,
-        4,
-      );
-      page.items.forEach((item, index) => {
-        addMainActionHit(`content:${item.id}`, 72, 205 + index * 96, 1050, 78);
-      });
-      addMainActionHit("content-back", 72, 582, 174, 58);
-      if (page.page > 0) addMainActionHit("page-prev", 768, 582, 132, 58);
-      if (page.page < page.pageCount - 1) {
-        addMainActionHit("page-next", 916, 582, 132, 58);
-      }
-      return;
-    }
-
-    if (state.contentView.kind === "preview") {
-      addMainActionHit("content-back", 72, 582, 174, 58);
-      const item = contentById.get(state.contentView.itemId);
-      if (item && resolveContentUrl(item)) {
-        addMainActionHit("content-open", 884, 582, 238, 58);
-      }
-    }
-  };
-
-  const stand = roundedMesh(0.72, 1.05, 0.35, 0.08, charcoal);
-  stand.position.set(0.7, 1.47, -0.75);
-  stand.castShadow = true;
-  world.add(stand);
-  const standFoot = roundedMesh(2.8, 0.18, 0.9, 0.08, charcoalSoft);
-  standFoot.position.set(0.7, 0.92, -0.42);
-  standFoot.castShadow = true;
-  world.add(standFoot);
-
-  const soundbar = roundedMesh(4.2, 0.58, 0.75, 0.18, charcoalSoft);
-  soundbar.position.set(0.7, 1.08, 0.1);
-  soundbar.castShadow = true;
-  world.add(soundbar);
-  const soundbarLabel = new THREE.Mesh(new THREE.PlaneGeometry(1.05, 0.3), makeTextMaterial("Eryu", "#c8b391", "#353633"));
-  soundbarLabel.position.set(0.7, 1.08, 0.49);
-  world.add(soundbarLabel);
-
-  const sideMonitor = new THREE.Group();
-  sideMonitor.position.set(
-    DESK_LAYOUT.leftMonitor.center.x,
-    DESK_LAYOUT.leftMonitor.center.y,
-    DESK_LAYOUT.leftMonitor.center.z,
-  );
-  sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw;
-  world.add(sideMonitor);
-
-  const sideFrame = roundedMesh(2.72, 5.2, 0.34, 0.14, charcoal);
-  sideFrame.position.set(0, 0, 0);
-  sideFrame.castShadow = true;
-  sideMonitor.add(sideFrame);
-  const sideScreen = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.44, 4.85),
-    new THREE.MeshBasicMaterial({ map: sideCanvas.texture, toneMapped: false }),
-  );
-  sideScreen.position.set(0, 0, 0.19);
-  sideMonitor.add(sideScreen);
-  DESKTOP_SECTIONS.forEach((section, index) => {
-    const hit = addAction(
-      new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.02), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })),
-      `section:${section.id}`,
-    );
-    hit.position.set(0, 0.8 - index * 1.1, 0.22);
-    sideMonitor.add(hit);
+  const monitors = createMonitorsObject({
+    mainCanvas,
+    sideCanvas,
+    materials,
+    contentById,
+    itemsForSection,
   });
-
-  const sideSupport = new THREE.Group();
-  sideSupport.position.set(
-    DESK_LAYOUT.leftMonitor.center.x,
-    DESK_LAYOUT.leftMonitor.support.baseY - 0.09,
-    DESK_LAYOUT.leftMonitor.center.z,
-  );
-  sideSupport.rotation.y = DESK_LAYOUT.leftMonitor.yaw;
-  const supportPost = roundedMesh(
-    0.56,
-    DESK_LAYOUT.leftMonitor.support.height,
-    0.42,
-    0.08,
-    charcoal,
-  );
-  supportPost.position.set(0, DESK_LAYOUT.leftMonitor.support.height / 2, 0);
-  supportPost.castShadow = true;
-  sideSupport.add(supportPost);
-  const supportHinge = roundedMesh(0.9, 0.2, 0.5, 0.06, charcoalSoft);
-  supportHinge.position.set(0, DESK_LAYOUT.leftMonitor.support.topY - DESK_LAYOUT.leftMonitor.support.baseY, 0);
-  supportHinge.castShadow = true;
-  sideSupport.add(supportHinge);
-  const supportFoot = roundedMesh(
-    DESK_LAYOUT.leftMonitor.support.footWidth,
-    0.18,
-    DESK_LAYOUT.leftMonitor.support.footDepth,
-    0.08,
-    charcoalSoft,
-  );
-  supportFoot.position.set(0, 0.09, 0.08);
-  supportFoot.castShadow = true;
-  sideSupport.add(supportFoot);
-  world.add(sideSupport);
+  world.add(monitors.group);
+  const { mainScreen } = monitors;
 
   world.add(createComputerObject(materials).group);
 
@@ -571,7 +427,7 @@ export function mountDesktopScene(
   const updateScreens = () => {
     drawMainScreen();
     drawSideScreen();
-    updateMainActions();
+    monitors.updateMainActions(state);
     drawNote();
     drawMessageBoard();
     drawMat();

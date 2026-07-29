@@ -15,13 +15,17 @@ const deskObjectSource = readFileSync(
   new URL("../src/desktop/objects/desk.ts", import.meta.url),
   "utf8",
 );
+const monitorObjectSource = readFileSync(
+  new URL("../src/desktop/objects/monitors.ts", import.meta.url),
+  "utf8",
+);
 
 describe("approved desktop composition layout", () => {
   it("turns the left monitor slightly toward the main viewing position", () => {
     expect(DESK_LAYOUT.leftMonitor.yaw).toBeGreaterThan(0.42);
     expect(DESK_LAYOUT.leftMonitor.yaw).toBeLessThan(0.58);
-    expect(sceneSource).toContain("sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw");
-    expect(sceneSource).not.toContain("sideMonitor.rotation.z");
+    expect(monitorObjectSource).toContain("sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw");
+    expect(monitorObjectSource).not.toContain("sideMonitor.rotation.z");
   });
 
   it("gives the left monitor a visible vertical support and stable foot", () => {
