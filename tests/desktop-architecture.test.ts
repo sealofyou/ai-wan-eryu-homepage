@@ -20,6 +20,9 @@ const objectModulePaths = ["room.ts", "desk.ts", "computer.ts"].map(
   (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
 );
 const monitorModulePath = new URL("../src/desktop/objects/monitors.ts", import.meta.url);
+const sceneFixtureModulePaths = ["decorations.ts", "pegboards.ts", "lamp.ts"].map(
+  (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
+);
 
 describe("desktop scene architecture", () => {
   it("delegates reusable canvas drawing helpers to the screens layer", () => {
@@ -97,5 +100,17 @@ describe("desktop scene architecture", () => {
     expect(sceneSource).not.toContain("const mainActionGroup =");
     expect(sceneSource).not.toContain("const sideMonitor =");
     expect(sceneSource).not.toContain("const updateMainActions =");
+  });
+
+  it("encapsulates decorations, pegboards, and lamp geometry", () => {
+    sceneFixtureModulePaths.forEach((modulePath) => expect(existsSync(modulePath)).toBe(true));
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./objects/decorations"');
+    expect(sceneSource).toContain('from "./objects/pegboards"');
+    expect(sceneSource).toContain('from "./objects/lamp"');
+    expect(sceneSource).not.toContain("const toyBase =");
+    expect(sceneSource).not.toContain("const angledPegboard =");
+    expect(sceneSource).not.toContain("const lamp = new THREE.Group()");
   });
 });

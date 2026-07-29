@@ -114,8 +114,43 @@ export const DESK_LAYOUT = {
       footZ: 0.08,
     },
   },
+  decorations: {
+    note: {
+      size: { width: 0.95, height: 0.72 },
+      position: { x: -6.2, y: 2.7, z: 1.29 },
+      rotationZ: -0.05,
+    },
+    toy: {
+      canvas: { width: 420, height: 520 },
+      base: {
+        size: { width: 1, height: 0.18, depth: 0.75 },
+        radius: 0.1,
+        position: { x: -6.45, y: 4.21, z: 0.12 },
+      },
+      backing: {
+        size: { width: 1.18, height: 1.45, depth: 0.08 },
+        radius: 0.12,
+        position: { x: -6.45, y: 4.92, z: 0.2 },
+      },
+      screen: {
+        size: { width: 1.08, height: 1.34 },
+        position: { x: -6.45, y: 4.92, z: 0.255 },
+      },
+    },
+  },
   pegboards: {
-    small: { width: 2.35, height: 4.6, x: 6.45, y: 3.35, z: -1.98 },
+    small: {
+      width: 2.35,
+      height: 4.6,
+      depth: 0.25,
+      radius: 0.08,
+      x: 6.45,
+      y: 3.35,
+      z: -1.98,
+      holes: { xStart: -0.9, xEnd: 0.9, xStep: 0.3, yStart: -1.85, yEnd: 1.85, yStep: 0.32, radius: 0.035, z: -1.84 },
+      message: { size: { width: 1.2, height: 0.82 }, position: { x: 6.45, y: 4.42, z: -1.72 }, rotationZ: -0.02 },
+      badges: { size: { width: 0.58, height: 0.58, depth: 0.08 }, radius: 0.12, start: { x: 6.82, y: 3.98, z: -1.78 }, xStep: 0.22, yStep: 0.82 },
+    },
     // The second board follows the room's right-hand depth plane instead of facing front.
     large: {
       width: 5.8,
@@ -124,6 +159,17 @@ export const DESK_LAYOUT = {
       y: 4,
       z: 0.1,
       yaw: -Math.PI / 2,
+      depth: 0.22,
+      radius: 0.08,
+      holes: { xStart: -2.65, xEnd: 2.65, xStep: 0.3, yStart: -3.4, yEnd: 3.4, yStep: 0.32, radius: 0.035, z: 0.14 },
     },
+  },
+  lamp: {
+    position: { x: 5.62, y: 0.2, z: 0.05 },
+    base: { size: { width: 1.55, height: 0.22, depth: 1.15 }, radius: 0.22 },
+    lowerArm: { radius: 0.1, height: 2.35, position: { x: 0.15, y: 1.15, z: 0 }, rotationZ: -0.18 },
+    upperArm: { radius: 0.1, height: 2, position: { x: -0.12, y: 2.88, z: 0 }, rotationZ: 0.47 },
+    shade: { radiusTop: 0.34, radiusBottom: 0.68, height: 0.76, position: { x: -0.7, y: 3.82, z: 0.2 }, rotationZ: -0.92 },
+    bulb: { radius: 0.29, height: 0.04, position: { x: -1, y: 3.58, z: 0.2 }, rotationZ: -0.92 },
   },
 } as const;

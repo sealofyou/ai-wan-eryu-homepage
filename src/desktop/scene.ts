@@ -18,7 +18,6 @@ import {
   type ScreenId,
 } from "./model";
 import { createKeyboardModel } from "./keyboard";
-import { DESK_LAYOUT } from "./layout";
 import { actionFromObject, addAction } from "./core/actions";
 import { createDesktopImage, DESKTOP_IMAGE_URLS } from "./core/assets";
 import {
@@ -42,8 +41,11 @@ import { renderMessageBoard } from "./screens/message-board";
 import { renderNoteScreen } from "./screens/note-screen";
 import { renderSideScreen } from "./screens/side-screen";
 import { createComputerObject } from "./objects/computer";
+import { createDecorationsObject } from "./objects/decorations";
 import { createDeskObject } from "./objects/desk";
+import { createLampObject } from "./objects/lamp";
 import { createMonitorsObject } from "./objects/monitors";
+import { createPegboardsObject } from "./objects/pegboards";
 import {
   createDesktopMaterials,
   makeTextMaterial,
@@ -108,7 +110,7 @@ export function mountDesktopScene(
   const { lampLight } = environment.lights;
 
   const materials = createDesktopMaterials();
-  const { charcoal, charcoalSoft, warmWhite, paleGreen } = materials;
+  const { charcoal, charcoalSoft, paleGreen } = materials;
   world.add(createRoomObject().group);
   const deskObject = createDeskObject(materials);
   world.add(deskObject.group);
@@ -179,142 +181,9 @@ export function mountDesktopScene(
   const { mainScreen } = monitors;
 
   world.add(createComputerObject(materials).group);
-
-  const note = addAction(
-    new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.72), new THREE.MeshBasicMaterial({ map: noteCanvas.texture, toneMapped: false })),
-    "quote",
-  );
-  note.position.set(-6.2, 2.7, 1.29);
-  note.rotation.z = -0.05;
-  world.add(note);
-
-  const toyBase = roundedMesh(1.0, 0.18, 0.75, 0.1, charcoalSoft);
-  toyBase.position.set(-6.45, 4.21, 0.12);
-  toyBase.castShadow = true;
-  world.add(toyBase);
-  const toyCanvas = makeCanvas(420, 520);
-  const toyImage = createDesktopImage(DESKTOP_IMAGE_URLS.toy);
-  toyImage.addEventListener("load", () => {
-    const { context, canvas, texture } = toyCanvas;
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    roundRect(context, 8, 8, canvas.width - 16, canvas.height - 16, 54);
-    context.save();
-    context.clip();
-    context.fillStyle = "#eee7dc";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(toyImage, -28, 0, 476, 476);
-    context.restore();
-    texture.needsUpdate = true;
-  });
-  const toyBacking = roundedMesh(1.18, 1.45, 0.08, 0.12, warmWhite);
-  toyBacking.position.set(-6.45, 4.92, 0.2);
-  toyBacking.castShadow = true;
-  world.add(toyBacking);
-  const toy = addAction(
-    new THREE.Mesh(
-      new THREE.PlaneGeometry(1.08, 1.34),
-      new THREE.MeshBasicMaterial({ map: toyCanvas.texture, transparent: true, toneMapped: false }),
-    ),
-    "message",
-  );
-  toy.position.set(-6.45, 4.92, 0.255);
-  world.add(toy);
-
-  const board = roundedMesh(
-    DESK_LAYOUT.pegboards.small.width,
-    DESK_LAYOUT.pegboards.small.height,
-    0.25,
-    0.08,
-    new THREE.MeshStandardMaterial({ color: "#292b29", roughness: 0.82 }),
-  );
-  board.position.set(
-    DESK_LAYOUT.pegboards.small.x,
-    DESK_LAYOUT.pegboards.small.y,
-    DESK_LAYOUT.pegboards.small.z,
-  );
-  board.castShadow = true;
-  world.add(board);
-  for (let x = -0.9; x <= 0.9; x += 0.3) {
-    for (let y = -1.85; y <= 1.85; y += 0.32) {
-      const hole = new THREE.Mesh(new THREE.CircleGeometry(0.035, 10), new THREE.MeshBasicMaterial({ color: "#111311" }));
-      hole.position.set(6.45 + x, 3.35 + y, -1.84);
-      world.add(hole);
-    }
-  }
-  const messageBoard = addAction(
-    new THREE.Mesh(
-      new THREE.PlaneGeometry(1.2, 0.82),
-      new THREE.MeshBasicMaterial({ map: messageBoardCanvas.texture, toneMapped: false }),
-    ),
-    "message",
-  );
-  messageBoard.position.set(6.45, 4.42, -1.72);
-  messageBoard.rotation.z = -0.02;
-  world.add(messageBoard);
-
-  const badgeColors = ["#86a28f", "#9d8797"];
-  badgeColors.forEach((color, index) => {
-    const badge = addAction(
-      roundedMesh(0.58, 0.58, 0.08, 0.12, new THREE.MeshStandardMaterial({ color, roughness: 0.65 })),
-      "badge",
-    );
-    badge.position.set(6.82 + (index % 2) * 0.22, 3.98 - index * 0.82, -1.78);
-    world.add(badge);
-  });
-
-  const angledPegboard = new THREE.Group();
-  angledPegboard.position.set(
-    DESK_LAYOUT.pegboards.large.x,
-    DESK_LAYOUT.pegboards.large.y,
-    DESK_LAYOUT.pegboards.large.z,
-  );
-  angledPegboard.rotation.y = DESK_LAYOUT.pegboards.large.yaw;
-  world.add(angledPegboard);
-
-  const largeBoard = roundedMesh(
-    DESK_LAYOUT.pegboards.large.width,
-    DESK_LAYOUT.pegboards.large.height,
-    0.22,
-    0.08,
-    new THREE.MeshStandardMaterial({ color: "#555a55", roughness: 0.86 }),
-  );
-  largeBoard.position.set(0, 0, 0);
-  largeBoard.castShadow = true;
-  angledPegboard.add(largeBoard);
-  for (let x = -2.65; x <= 2.65; x += 0.3) {
-    for (let y = -3.4; y <= 3.4; y += 0.32) {
-      const hole = new THREE.Mesh(
-        new THREE.CircleGeometry(0.035, 10),
-        new THREE.MeshBasicMaterial({ color: "#272a27" }),
-      );
-      hole.position.set(x, y, 0.14);
-      angledPegboard.add(hole);
-    }
-  }
-
-  const lamp = new THREE.Group();
-  lamp.position.set(5.62, 0.2, 0.05);
-  const lampBase = roundedMesh(1.55, 0.22, 1.15, 0.22, charcoal);
-  lampBase.castShadow = true;
-  lamp.add(lampBase);
-  const lowerArm = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 2.35, 18), charcoalSoft);
-  lowerArm.position.set(0.15, 1.15, 0);
-  lowerArm.rotation.z = -0.18;
-  lamp.add(lowerArm);
-  const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 2.0, 18), charcoalSoft);
-  upperArm.position.set(-0.12, 2.88, 0);
-  upperArm.rotation.z = 0.47;
-  lamp.add(upperArm);
-  const shadeMaterial = new THREE.MeshStandardMaterial({ color: "#242624", roughness: 0.6, metalness: 0.28, side: THREE.DoubleSide });
-  const shade = addAction(new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.68, 0.76, 28, 1, true), shadeMaterial), "lamp");
-  shade.position.set(-0.7, 3.82, 0.2);
-  shade.rotation.z = -0.92;
-  lamp.add(shade);
-  const bulb = new THREE.Mesh(new THREE.CylinderGeometry(0.29, 0.29, 0.04, 24), new THREE.MeshBasicMaterial({ color: "#ffd69a" }));
-  bulb.position.set(-1.0, 3.58, 0.2);
-  bulb.rotation.z = -0.92;
-  lamp.add(bulb);
-  world.add(lamp);
+  world.add(createDecorationsObject(noteCanvas, materials).group);
+  world.add(createPegboardsObject(messageBoardCanvas).group);
+  world.add(createLampObject(materials).group);
 
   const keyboard = addAction(createKeyboardModel(), "keyboard");
   world.add(keyboard);

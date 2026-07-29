@@ -19,6 +19,10 @@ const monitorObjectSource = readFileSync(
   new URL("../src/desktop/objects/monitors.ts", import.meta.url),
   "utf8",
 );
+const pegboardObjectSource = readFileSync(
+  new URL("../src/desktop/objects/pegboards.ts", import.meta.url),
+  "utf8",
+);
 
 describe("approved desktop composition layout", () => {
   it("turns the left monitor slightly toward the main viewing position", () => {
@@ -49,10 +53,10 @@ describe("approved desktop composition layout", () => {
     expect(large.y - large.height / 2).toBeGreaterThan(0.15);
     expect(Math.abs(large.yaw)).toBeGreaterThan(1.5);
     expect(Math.abs(Math.abs(large.yaw) - Math.PI / 2)).toBeLessThan(0.01);
-    expect(sceneSource).toContain("const angledPegboard = new THREE.Group()");
-    expect(sceneSource).toContain("angledPegboard.rotation.y = DESK_LAYOUT.pegboards.large.yaw");
-    expect(sceneSource).toContain("angledPegboard.add(largeBoard)");
-    expect(sceneSource).toContain("angledPegboard.add(hole)");
+    expect(pegboardObjectSource).toContain("const angledPegboard = new THREE.Group()");
+    expect(pegboardObjectSource).toContain("angledPegboard.rotation.y = DESK_LAYOUT.pegboards.large.yaw");
+    expect(pegboardObjectSource).toContain("angledPegboard.add(largeBoard)");
+    expect(pegboardObjectSource).toContain("angledPegboard.add(hole)");
     expect(sceneSource).toContain("messageBoardCanvas");
   });
 
