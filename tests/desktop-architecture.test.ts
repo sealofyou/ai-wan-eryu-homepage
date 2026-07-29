@@ -23,6 +23,9 @@ const monitorModulePath = new URL("../src/desktop/objects/monitors.ts", import.m
 const sceneFixtureModulePaths = ["decorations.ts", "pegboards.ts", "lamp.ts"].map(
   (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
 );
+const inputObjectModulePaths = ["keyboard-object.ts", "mouse.ts"].map(
+  (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
+);
 
 describe("desktop scene architecture", () => {
   it("delegates reusable canvas drawing helpers to the screens layer", () => {
@@ -112,5 +115,16 @@ describe("desktop scene architecture", () => {
     expect(sceneSource).not.toContain("const toyBase =");
     expect(sceneSource).not.toContain("const angledPegboard =");
     expect(sceneSource).not.toContain("const lamp = new THREE.Group()");
+  });
+
+  it("encapsulates draggable keyboard and mouse geometry behind state updaters", () => {
+    inputObjectModulePaths.forEach((modulePath) => expect(existsSync(modulePath)).toBe(true));
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./objects/keyboard-object"');
+    expect(sceneSource).toContain('from "./objects/mouse"');
+    expect(sceneSource).not.toContain("createKeyboardModel()");
+    expect(sceneSource).not.toContain("const mouseBody =");
+    expect(sceneSource).not.toContain("const rearHump =");
   });
 });

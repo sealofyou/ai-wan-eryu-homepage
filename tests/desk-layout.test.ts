@@ -23,6 +23,10 @@ const pegboardObjectSource = readFileSync(
   new URL("../src/desktop/objects/pegboards.ts", import.meta.url),
   "utf8",
 );
+const mouseObjectSource = readFileSync(
+  new URL("../src/desktop/objects/mouse.ts", import.meta.url),
+  "utf8",
+);
 
 describe("approved desktop composition layout", () => {
   it("turns the left monitor slightly toward the main viewing position", () => {
@@ -71,10 +75,10 @@ describe("approved desktop composition layout", () => {
   it("preserves the portrait image ratio and gives the mouse gaming details", () => {
     expect(canvasUtilsSource).toContain("export const drawImageCover = (");
     expect(mainScreenSource).toContain("drawImageCover(context, avatarImage, 48, 52, 440, 576)");
-    expect(sceneSource).toContain("const rearHump");
-    expect(sceneSource).toContain("const dpiButton");
-    expect(sceneSource).toContain("const sideButton");
-    expect(sceneSource).toContain("const mouseLogo");
+    expect(mouseObjectSource).toContain("const rearHump");
+    expect(mouseObjectSource).toContain("const dpiButton");
+    expect(mouseObjectSource).toContain("const sideButton");
+    expect(mouseObjectSource).toContain("const mouseLogo");
     expect(deskObjectSource).toContain("const deskApron");
   });
 });

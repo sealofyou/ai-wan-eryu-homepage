@@ -26,6 +26,14 @@ export const roundedMesh = (
   material: THREE.Material,
 ) => new THREE.Mesh(new RoundedBoxGeometry(width, height, depth, 5, radius), material);
 
+export const mapRange = (
+  value: number,
+  start: number,
+  end: number,
+  nextStart: number,
+  nextEnd: number,
+) => nextStart + ((value - start) / (end - start)) * (nextEnd - nextStart);
+
 export const makeTextMaterial = (
   text: string,
   foreground = "#ece6da",

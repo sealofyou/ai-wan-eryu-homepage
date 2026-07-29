@@ -17,7 +17,6 @@ import {
   type Point,
   type ScreenId,
 } from "./model";
-import { createKeyboardModel } from "./keyboard";
 import { actionFromObject, addAction } from "./core/actions";
 import { createDesktopImage, DESKTOP_IMAGE_URLS } from "./core/assets";
 import {
@@ -44,7 +43,9 @@ import { createComputerObject } from "./objects/computer";
 import { createDecorationsObject } from "./objects/decorations";
 import { createDeskObject } from "./objects/desk";
 import { createLampObject } from "./objects/lamp";
+import { createKeyboardObject } from "./objects/keyboard-object";
 import { createMonitorsObject } from "./objects/monitors";
+import { createMouseObject } from "./objects/mouse";
 import { createPegboardsObject } from "./objects/pegboards";
 import {
   createDesktopMaterials,
@@ -110,7 +111,7 @@ export function mountDesktopScene(
   const { lampLight } = environment.lights;
 
   const materials = createDesktopMaterials();
-  const { charcoal, charcoalSoft, paleGreen } = materials;
+  const { charcoalSoft } = materials;
   world.add(createRoomObject().group);
   const deskObject = createDeskObject(materials);
   world.add(deskObject.group);
@@ -185,63 +186,11 @@ export function mountDesktopScene(
   world.add(createPegboardsObject(messageBoardCanvas).group);
   world.add(createLampObject(materials).group);
 
-  const keyboard = addAction(createKeyboardModel(), "keyboard");
-  world.add(keyboard);
-
-  const mouse = addAction(new THREE.Group(), "mouse");
-  const mouseBody = new THREE.Mesh(new THREE.SphereGeometry(0.55, 40, 24), charcoal);
-  mouseBody.scale.set(0.84, 0.38, 1.2);
-  mouseBody.position.set(0.05, -0.05, 0.02);
-  mouseBody.castShadow = true;
-  mouse.add(mouseBody);
-
-  const rearHump = new THREE.Mesh(new THREE.SphereGeometry(0.45, 36, 20), charcoalSoft);
-  rearHump.scale.set(0.82, 0.46, 0.96);
-  rearHump.position.set(0.04, 0.02, 0.2);
-  rearHump.castShadow = true;
-  mouse.add(rearHump);
-
-  const clickDeck = roundedMesh(0.64, 0.035, 0.4, 0.075, charcoalSoft);
-  clickDeck.position.set(0.03, 0.115, -0.34);
-  clickDeck.castShadow = true;
-  mouse.add(clickDeck);
-
-  const clickSeam = roundedMesh(0.018, 0.012, 0.32, 0.006, charcoal);
-  clickSeam.position.set(0.03, 0.14, -0.34);
-  mouse.add(clickSeam);
-
-  const centerSpine = roundedMesh(0.1, 0.055, 0.46, 0.035, charcoal);
-  centerSpine.position.set(0.03, 0.17, -0.19);
-  mouse.add(centerSpine);
-
-  const mouseWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.12, 20), paleGreen);
-  mouseWheel.rotation.z = Math.PI / 2;
-  mouseWheel.position.set(0.03, 0.23, -0.28);
-  mouse.add(mouseWheel);
-
-  const dpiButton = roundedMesh(0.1, 0.045, 0.15, 0.03, charcoalSoft);
-  dpiButton.position.set(0.03, 0.19, -0.02);
-  mouse.add(dpiButton);
-
-  [-0.07, 0.12].forEach((z) => {
-    const sideButton = roundedMesh(0.05, 0.075, 0.13, 0.02, charcoalSoft);
-    sideButton.position.set(-0.43, 0.035, z);
-    mouse.add(sideButton);
-  });
-
-  const mouseLogo = new THREE.Group();
-  const mouseLogoMaterial = new THREE.MeshBasicMaterial({ color: "#d8cfbd", toneMapped: false });
-  const logoStem = roundedMesh(0.025, 0.018, 0.12, 0.008, mouseLogoMaterial);
-  logoStem.position.x = -0.035;
-  mouseLogo.add(logoStem);
-  [-0.045, 0, 0.045].forEach((z, index) => {
-    const bar = roundedMesh(index === 1 ? 0.075 : 0.095, 0.018, 0.022, 0.007, mouseLogoMaterial);
-    bar.position.set(0.005, 0, z);
-    mouseLogo.add(bar);
-  });
-  mouseLogo.position.set(0.04, 0.2, 0.32);
-  mouse.add(mouseLogo);
-  world.add(mouse);
+  const keyboardObject = createKeyboardObject();
+  const mouseObject = createMouseObject(materials);
+  const keyboard = keyboardObject.group;
+  const mouse = mouseObject.group;
+  world.add(keyboard, mouse);
 
   const modeButtons: Array<{ label: string; action: SceneAction; x: number }> = [
     { label: "移动", action: "mode:move", x: -4.55 },
@@ -272,16 +221,8 @@ export function mountDesktopScene(
   };
 
   const updatePositions = () => {
-    mouse.position.set(
-      lerpRange(state.physicalMouse.x, 0.66, 0.93, 2.65, 4.72),
-      0.63,
-      lerpRange(state.physicalMouse.y, 0.35, 0.72, 1.22, 3.02),
-    );
-    keyboard.position.set(
-      lerpRange(state.keyboard.x, 0.2, 0.7, -0.95, -0.2),
-      0.54,
-      lerpRange(state.keyboard.y, 0.48, 0.82, 1.82, 2.34),
-    );
+    mouseObject.update?.(state);
+    keyboardObject.update?.(state);
   };
 
   const updateModeButtons = () => {
