@@ -10,7 +10,7 @@ interface PointerControllerOptions {
   root: HTMLElement;
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
-  world: THREE.Group;
+  interactiveTargets: THREE.Object3D[];
   matSurface: THREE.Mesh;
   mainScreen: THREE.Mesh;
   reducedMotion: boolean;
@@ -35,7 +35,7 @@ export const createPointerController = ({
   root,
   renderer,
   camera,
-  world,
+  interactiveTargets,
   matSurface,
   mainScreen,
   reducedMotion,
@@ -59,7 +59,7 @@ export const createPointerController = ({
     pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
     raycaster.setFromCamera(pointer, camera);
   };
-  const intersections = () => raycaster.intersectObjects(world.children, true);
+  const intersections = () => raycaster.intersectObjects(interactiveTargets, true);
   const matIntersection = () => raycaster.intersectObject(matSurface, false)[0];
 
   const onPointerDown = (event: PointerEvent) => {

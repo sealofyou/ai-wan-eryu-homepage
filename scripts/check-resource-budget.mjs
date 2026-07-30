@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const root = process.cwd();
@@ -72,6 +72,29 @@ if (existsSync(astroDir)) {
     path: "dist/_astro",
     bytes: null,
     maxBytes: 650_000,
+    status: "missing",
+  });
+}
+
+const indexHtmlPath = join(root, "dist/index.html");
+if (existsSync(indexHtmlPath)) {
+  const indexHtml = readFileSync(indexHtmlPath, "utf8");
+  const hasDefaultModelPreload =
+    indexHtml.includes("GLTFLoader") ||
+    indexHtml.includes("gaming-mouse.glb");
+  rows.push({
+    label: "default model preload",
+    path: relative(root, indexHtmlPath),
+    bytes: hasDefaultModelPreload ? 1 : 0,
+    maxBytes: 0,
+    status: hasDefaultModelPreload ? "over" : "ok",
+  });
+} else {
+  rows.push({
+    label: "default model preload",
+    path: "dist/index.html",
+    bytes: null,
+    maxBytes: 0,
     status: "missing",
   });
 }

@@ -18,11 +18,15 @@ import {
 } from "./model";
 import { createDesktopImage, DESKTOP_IMAGE_URLS } from "./core/assets";
 import {
+  createGlbAssetStore,
+  resolveDesktopMouseVariant,
+} from "./core/model-assets";
+import {
   createDesktopRendererEnvironment,
   disposeObjectGraph,
   type DesktopRendererEnvironment,
 } from "./core/renderer";
-import type { SceneAction } from "./core/types";
+import type { SceneAction, SceneObjectResult } from "./core/types";
 import {
   resolveContentUrl,
   sortDesktopItems,
@@ -105,10 +109,16 @@ export function mountDesktopScene(
   const { renderer, scene, camera, world, cameraTarget } = environment;
   const { lampLight } = environment.lights;
 
+  const sceneObjects: SceneObjectResult[] = [];
+  const addSceneObject = <T extends SceneObjectResult>(object: T) => {
+    sceneObjects.push(object);
+    world.add(object.group);
+    return object;
+  };
+
   const materials = createDesktopMaterials();
-  world.add(createRoomObject().group);
-  const deskObject = createDeskObject(materials);
-  world.add(deskObject.group);
+  addSceneObject(createRoomObject());
+  const deskObject = addSceneObject(createDeskObject(materials));
   const { matCanvas, matSurface } = deskObject;
   const mousepad = createMousepadController(matCanvas);
 
@@ -137,29 +147,38 @@ export function mountDesktopScene(
 
   const drawMessageBoard = () => renderMessageBoard(messageBoardCanvas, state.message);
 
-  const monitors = createMonitorsObject({
+  const monitors = addSceneObject(createMonitorsObject({
     mainCanvas,
     sideCanvas,
     materials,
     contentById,
     itemsForSection,
-  });
-  world.add(monitors.group);
+  }));
   const { mainScreen } = monitors;
 
-  world.add(createComputerObject(materials).group);
-  world.add(createDecorationsObject(noteCanvas, materials).group);
-  world.add(createPegboardsObject(messageBoardCanvas).group);
-  world.add(createLampObject(materials).group);
+  addSceneObject(createComputerObject(materials));
+  addSceneObject(createDecorationsObject(noteCanvas, materials));
+  addSceneObject(createPegboardsObject(messageBoardCanvas));
+  addSceneObject(createLampObject(materials));
 
-  const keyboardObject = createKeyboardObject();
-  const mouseObject = createMouseObject(materials);
+  const keyboardObject = addSceneObject(createKeyboardObject());
+  const mouseVariant = resolveDesktopMouseVariant(window.location.search);
+  const modelAssets = mouseVariant === "glb" ? createGlbAssetStore() : undefined;
+  const mouseObject = addSceneObject(createMouseObject(materials, {
+    variant: mouseVariant,
+    assetStore: modelAssets,
+  }));
   const keyboard = keyboardObject.group;
-  const mouse = mouseObject.group;
-  world.add(keyboard, mouse);
+  let sceneDisposed = false;
+  root.dataset.mouseModel = "procedural";
+  void mouseObject.ready.then((resolvedVariant) => {
+    if (!sceneDisposed) root.dataset.mouseModel = resolvedVariant;
+  });
 
-  const matControls = createMatControlsObject(materials);
-  world.add(matControls.group);
+  const matControls = addSceneObject(createMatControlsObject(materials));
+  const interactiveTargets = sceneObjects.flatMap(
+    (object) => object.interactiveTargets ?? [],
+  );
 
   let state = createInitialDesktopState();
   let statusTimer = 0;
@@ -280,7 +299,7 @@ export function mountDesktopScene(
     root,
     renderer,
     camera,
-    world,
+    interactiveTargets,
     matSurface,
     mainScreen,
     reducedMotion,
@@ -366,6 +385,7 @@ export function mountDesktopScene(
   });
 
   return () => {
+    sceneDisposed = true;
     cancelAnimationFrame(animationFrame);
     cancelAnimationFrame(readyFrame);
     pointerController.dispose();
@@ -375,10 +395,12 @@ export function mountDesktopScene(
     window.removeEventListener("resize", environment.resize);
     avatarImage.removeEventListener("load", drawMainScreen);
     window.clearTimeout(statusTimer);
+    sceneObjects.forEach((object) => object.dispose?.());
     disposeObjectGraph(world);
     renderer.dispose();
     renderer.domElement.remove();
     delete window.__ERYU_DESKTOP__;
     delete root.dataset.ready;
+    delete root.dataset.mouseModel;
   };
 }
