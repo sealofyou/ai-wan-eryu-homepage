@@ -9,14 +9,16 @@
     "preview": "astro preview",
     "check": "astro check",
     "check:assets": "node scripts/check-resource-budget.mjs",
+    "check:release": "node scripts/check-release-candidate.mjs",
     "generate:mouse-model": "node scripts/generate-gaming-mouse-glb.mjs",
     "optimize:desktop-assets": "node scripts/generate-desktop-images.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify:release": "npm test && npm run check && npm run build && npm run check:assets && npm run check:release"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.5.1",
-    "astro": "^7.0.9",
-    "sharp": "^0.34.5",
+    "astro": "^7.1.6",
+    "sharp": "^0.35.3",
     "three": "^0.185.1"
   },
   "devDependencies": {

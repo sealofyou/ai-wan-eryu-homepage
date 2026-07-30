@@ -4,11 +4,11 @@ description: "把一个普通个人主页逐步做成可玩的 3D 电脑桌面�
 date: 2026-07-14
 updated: 2026-07-31
 status: "持续迭代"
-phase: "内容接入"
+phase: "发布候选"
 category: "个人主页实现"
 draft: false
 featured: true
-preview: "当前阶段：Build in Public 已接入站内项目页。最近完成了真实时间线、证据链接和桌面“最近在做”入口，默认 3D 构图保持不变。"
+preview: "当前阶段：已整理为本地发布候选。构建产物、依赖、常见横屏、核心交互和资源释放都有可重复 Gate，默认 3D 构图保持不变。"
 target: "internal"
 internalUrl: "/projects/personal-homepage-build-in-public/"
 repoUrl: "https://github.com/sealofyou/ai-wan-eryu-homepage"
@@ -18,7 +18,7 @@ results:
   - label: "首屏图片"
     value: "6.24 MB → 366 KB"
   - label: "当前测试"
-    value: "64 项通过"
+    value: "91 项通过"
   - label: "模型默认预加载"
     value: "0"
 ---
@@ -37,7 +37,7 @@ results:
 
 桌面版已经有一套通过本地验收的构图和交互。场景代码完成模块化，首屏图片负载明显下降，复杂物件也有了程序化模型与 GLB 候选并存的入口。
 
-现在正在做的是把“最近在做”接成真实项目，而不是一段占位文案。完整开发记录放在这个项目页，3D 主屏只保留摘要和入口。
+“最近在做”已经接成真实项目，而不是一段占位文案。当前版本进一步把测试、构建、资源预算、断链、敏感内容和外链安全收敛成一条发布候选 Gate。完整开发记录放在这个项目页，3D 主屏仍只保留摘要和入口。
 
 ## 两条并行路线
 
