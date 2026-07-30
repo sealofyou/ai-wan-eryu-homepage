@@ -36,7 +36,10 @@ export const createDecorationsObject = (
   group.add(toyBase);
 
   const toyCanvas = makeCanvas(toy.canvas.width, toy.canvas.height);
-  const toyImage = createDesktopImage(DESKTOP_IMAGE_URLS.toy);
+  const toyImage = createDesktopImage(
+    DESKTOP_IMAGE_URLS.toy,
+    DESKTOP_IMAGE_URLS.toyFallback,
+  );
   toyImage.addEventListener("load", () => {
     const { context, canvas, texture } = toyCanvas;
     context.clearRect(0, 0, canvas.width, canvas.height);

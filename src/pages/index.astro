@@ -41,7 +41,12 @@ const desktopContentJson = serializeDesktopContentPayload({
     </div>
 
     <div class="webgl-fallback" data-webgl-fallback hidden>
-      <img src="/desktop/fallback-composition.png" alt="AI玩尔玉三维电脑桌面构图预览" />
+      <img
+        data-fallback-image
+        data-src="/desktop/fallback-composition.png"
+        alt="AI玩尔玉三维电脑桌面构图预览"
+        decoding="async"
+      />
       <p>当前浏览器未能启动三维场景，请尝试开启硬件加速后刷新。</p>
     </div>
 
