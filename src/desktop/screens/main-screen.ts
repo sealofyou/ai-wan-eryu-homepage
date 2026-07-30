@@ -168,7 +168,11 @@ const drawContentPreview = (
   drawScreenButton(context, "返回列表", 72, 582, 174);
   drawScreenButton(
     context,
-    item.section === "activities" ? "查看完整活动" : "阅读全文",
+    item.section === "activities"
+      ? "查看完整活动"
+      : item.section === "recent"
+        ? "查看项目"
+        : "阅读全文",
     884,
     582,
     238,

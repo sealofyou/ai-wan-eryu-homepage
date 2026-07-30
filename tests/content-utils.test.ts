@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   createDesktopContentItem,
   filterNotesByType,
+  getPublicProjectUpdates,
   serializeDesktopContentPayload,
   sortByDateDesc,
+  sortProjectUpdatesByDateDesc,
 } from "../src/lib/content";
 
 const entries = [
@@ -33,6 +35,71 @@ describe("filterNotesByType", () => {
   it("returns only entries matching a note type", () => {
     expect(filterNotesByType(entries, "share")).toHaveLength(2);
     expect(filterNotesByType(entries, "activity")).toEqual([]);
+  });
+});
+
+describe("sortProjectUpdatesByDateDesc", () => {
+  it("returns only public updates for one project in newest-first order", () => {
+    const updates = [
+      {
+        id: "architecture",
+        data: {
+          date: new Date("2026-07-30"),
+          projectId: "homepage",
+          draft: false,
+        },
+      },
+      {
+        id: "visual-baseline",
+        data: {
+          date: new Date("2026-07-29"),
+          projectId: "homepage",
+          draft: false,
+        },
+      },
+      {
+        id: "model-pipeline",
+        data: {
+          date: new Date("2026-07-31"),
+          projectId: "homepage",
+          draft: false,
+        },
+      },
+      {
+        id: "private-note",
+        data: {
+          date: new Date("2026-08-01"),
+          projectId: "homepage",
+          draft: true,
+        },
+      },
+      {
+        id: "other-project",
+        data: {
+          date: new Date("2026-08-02"),
+          projectId: "another-project",
+          draft: false,
+        },
+      },
+    ];
+
+    expect(getPublicProjectUpdates(updates, "homepage").map(({ id }) => id)).toEqual([
+      "model-pipeline",
+      "architecture",
+      "visual-baseline",
+    ]);
+    expect(updates.map(({ id }) => id)).toEqual([
+      "architecture",
+      "visual-baseline",
+      "model-pipeline",
+      "private-note",
+      "other-project",
+    ]);
+    expect(sortProjectUpdatesByDateDesc(updates.slice(0, 3)).map(({ id }) => id)).toEqual([
+      "model-pipeline",
+      "architecture",
+      "visual-baseline",
+    ]);
   });
 });
 

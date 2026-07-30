@@ -1,0 +1,149 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getCollection, render } from "astro:content";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import {
+  formatDate,
+  getPublicProjectUpdates,
+} from "../../lib/content";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects", ({ data }) => !data.draft);
+  return projects.map((project) => ({
+    params: { id: project.id },
+    props: { project },
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<"projects">;
+}
+
+const { project } = Astro.props as Props;
+const { Content: ProjectContent } = await render(project);
+const updates = getPublicProjectUpdates(
+  await getCollection("projectUpdates"),
+  project.id,
+);
+const renderedUpdates = await Promise.all(
+  updates.map(async (entry) => {
+    const { Content } = await render(entry);
+    return { entry, Content };
+  }),
+);
+const kindLabels = {
+  decision: "判断",
+  implementation: "实现",
+  verification: "验证",
+  release: "主线",
+} as const;
+---
+
+<SiteLayout
+  title={project.data.title}
+  description={project.data.description}
+  theme="soft"
+>
+  <header class="project-detail-hero">
+    <div class="project-detail-copy">
+      <a class="back-link" href="/">← 返回桌面</a>
+      <p class="eyebrow">{project.data.category}</p>
+      <h1>{project.data.title}</h1>
+      <p class="project-detail-description">{project.data.description}</p>
+    </div>
+
+    <dl class="project-status" aria-label="项目状态">
+      <div>
+        <dt>状态</dt>
+        <dd>{project.data.status}</dd>
+      </div>
+      <div>
+        <dt>当前阶段</dt>
+        <dd>{project.data.phase}</dd>
+      </div>
+      <div>
+        <dt>最近更新</dt>
+        <dd>{formatDate(project.data.updated)}</dd>
+      </div>
+    </dl>
+  </header>
+
+  <section class="project-summary-band" aria-label="项目概览">
+    <div class="project-summary-inner">
+      <div class="project-copy">
+        <ProjectContent />
+      </div>
+
+      {project.data.results.length > 0 && (
+        <dl class="project-results" aria-label="当前可验证结果">
+          {project.data.results.map((result) => (
+            <div>
+              <dt>{result.label}</dt>
+              <dd>{result.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </div>
+  </section>
+
+  <section class="project-log" aria-labelledby="project-log-title">
+    <header class="project-log-heading">
+      <div>
+        <p class="eyebrow">Build in Public</p>
+        <h2 id="project-log-title">开发记录</h2>
+      </div>
+      <p>{updates.length} 次可追溯更新，最新的排在前面。</p>
+    </header>
+
+    <div class="project-update-list">
+      {renderedUpdates.map(({ entry, Content: UpdateContent }) => (
+        <article class="project-update">
+          <div class="project-update-meta">
+            <time datetime={entry.data.date.toISOString()}>
+              {formatDate(entry.data.date)}
+            </time>
+            <span>{kindLabels[entry.data.kind]}</span>
+          </div>
+
+          <div class="project-update-body">
+            <p class="record-meta">{entry.data.phase}</p>
+            <h3>{entry.data.title}</h3>
+            <p class="project-update-summary">{entry.data.summary}</p>
+
+            {entry.data.highlights.length > 0 && (
+              <ul class="project-highlights">
+                {entry.data.highlights.map((highlight) => <li>{highlight}</li>)}
+              </ul>
+            )}
+
+            <div class="project-update-prose">
+              <UpdateContent />
+            </div>
+
+            {entry.data.evidence.length > 0 && (
+              <div class="project-evidence" aria-label="公开证据">
+                {entry.data.evidence.map((evidence) => (
+                  <a href={evidence.url} target="_blank" rel="noopener noreferrer">
+                    {evidence.label}
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  {project.data.repoUrl && (
+    <footer class="project-footer">
+      <p>代码、提交与后续更新保留在公开仓库。</p>
+      <a href={project.data.repoUrl} target="_blank" rel="noopener noreferrer">
+        查看 GitHub 仓库
+        <span aria-hidden="true">↗</span>
+      </a>
+    </footer>
+  )}
+</SiteLayout>
