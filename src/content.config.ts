@@ -2,6 +2,12 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
+const publicHttpsUrl = z.url().refine(
+  (value) => new URL(value).protocol === "https:",
+  "Public URLs must use HTTPS",
+);
+const internalPath = z.string().regex(/^\/(?!\/)/, "Internal URLs must be root-relative");
+
 const articles = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/articles" }),
   schema: z.object({
@@ -38,4 +44,56 @@ const notes = defineCollection({
   }),
 });
 
-export const collections = { articles, notes };
+const projects = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/projects" }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    date: z.coerce.date(),
+    updated: z.coerce.date(),
+    status: z.string(),
+    phase: z.string(),
+    category: z.string(),
+    draft: z.boolean().default(false),
+    featured: z.boolean().default(false),
+    preview: z.string().default(""),
+    target: z.literal("internal"),
+    internalUrl: internalPath,
+    repoUrl: publicHttpsUrl.optional(),
+    results: z
+      .array(
+        z.object({
+          label: z.string(),
+          value: z.string(),
+        }),
+      )
+      .default([]),
+  }),
+});
+
+const projectUpdates = defineCollection({
+  loader: glob({
+    pattern: "**/*.{md,mdx}",
+    base: "./src/content/project-updates",
+  }),
+  schema: z.object({
+    title: z.string(),
+    summary: z.string(),
+    date: z.coerce.date(),
+    projectId: z.string(),
+    phase: z.string(),
+    kind: z.enum(["decision", "implementation", "verification", "release"]),
+    draft: z.boolean().default(false),
+    highlights: z.array(z.string()).default([]),
+    evidence: z
+      .array(
+        z.object({
+          label: z.string(),
+          url: publicHttpsUrl,
+        }),
+      )
+      .default([]),
+  }),
+});
+
+export const collections = { articles, notes, projects, projectUpdates };

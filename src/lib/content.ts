@@ -14,6 +14,13 @@ type DatedEntry = {
   };
 };
 
+type ProjectUpdateEntry = DatedEntry & {
+  data: DatedEntry["data"] & {
+    projectId: string;
+    draft?: boolean;
+  };
+};
+
 type TypedEntry = {
   data: {
     type: string;
@@ -22,6 +29,23 @@ type TypedEntry = {
 
 export function sortByDateDesc<T extends DatedEntry>(entries: readonly T[]): T[] {
   return [...entries].sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+}
+
+export function sortProjectUpdatesByDateDesc<T extends DatedEntry>(
+  entries: readonly T[],
+): T[] {
+  return sortByDateDesc(entries);
+}
+
+export function getPublicProjectUpdates<T extends ProjectUpdateEntry>(
+  entries: readonly T[],
+  projectId: string,
+): T[] {
+  return sortProjectUpdatesByDateDesc(
+    entries.filter(
+      (entry) => !entry.data.draft && entry.data.projectId === projectId,
+    ),
+  );
 }
 
 export function filterNotesByType<T extends TypedEntry>(entries: readonly T[], filter: NoteFilter): T[] {

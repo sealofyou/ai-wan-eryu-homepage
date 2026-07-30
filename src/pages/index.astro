@@ -10,6 +10,7 @@ import "../styles/desktop.css";
 
 const articles = await getCollection("articles");
 const notes = await getCollection("notes");
+const projects = await getCollection("projects");
 
 const desktopItems = [
   ...articles.map((entry) => createDesktopContentItem("articles", entry)),
@@ -19,6 +20,7 @@ const desktopItems = [
       entry,
     ),
   ),
+  ...projects.map((entry) => createDesktopContentItem("recent", entry)),
 ].filter((item): item is DesktopContentItem => item !== null);
 
 const desktopContentJson = serializeDesktopContentPayload({
