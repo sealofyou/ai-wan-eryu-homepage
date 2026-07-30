@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -30,5 +30,15 @@ describe("desktop first-load assets", () => {
     expect(avatarBytes).toBeLessThan(250_000);
     expect(toyBytes).toBeLessThan(150_000);
     expect(avatarBytes + toyBytes).toBeLessThan(400_000);
+  });
+
+  it("keeps desktop model assets documented and inside the GLB budget", () => {
+    const modelDirectory = join(root, "public/models/desktop");
+    const readmePath = join(modelDirectory, "README.md");
+    const mousePath = join(modelDirectory, "gaming-mouse.glb");
+
+    expect(existsSync(readmePath)).toBe(true);
+    expect(existsSync(mousePath)).toBe(true);
+    expect(statSync(mousePath).size).toBeLessThan(500_000);
   });
 });

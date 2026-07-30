@@ -27,6 +27,7 @@ const inputObjectModulePaths = ["keyboard-object.ts", "mouse.ts"].map(
   (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
 );
 const matControlsModulePath = new URL("../src/desktop/objects/mat-controls.ts", import.meta.url);
+const modelAssetsModulePath = new URL("../src/desktop/core/model-assets.ts", import.meta.url);
 const interactionModulePaths = ["pointer.ts", "dragging.ts", "mousepad.ts", "message.ts"].map(
   (fileName) => new URL(`../src/desktop/interactions/${fileName}`, import.meta.url),
 );
@@ -151,5 +152,18 @@ describe("desktop scene architecture", () => {
     expect(sceneSource).not.toContain("const raycaster =");
     expect(sceneSource).not.toContain('renderer.domElement.addEventListener("pointerdown"');
     expect(sceneSource).not.toContain('messagePanel.addEventListener("submit"');
+  });
+
+  it("routes pointer hits through explicit object targets and releases object-owned assets", () => {
+    expect(existsSync(modelAssetsModulePath)).toBe(true);
+
+    const pointerSource = readFileSync(interactionModulePaths[0], "utf8");
+    expect(pointerSource).toContain("interactiveTargets");
+    expect(pointerSource).toContain("raycaster.intersectObjects(interactiveTargets, true)");
+    expect(pointerSource).not.toContain("raycaster.intersectObjects(world.children, true)");
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain("sceneObjects");
+    expect(sceneSource).toContain("object.dispose?.()");
   });
 });

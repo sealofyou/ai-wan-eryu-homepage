@@ -210,6 +210,7 @@ export const createMonitorsObject = ({
   );
   sideScreen.position.z = leftMonitor.screen.z;
   sideMonitor.add(sideScreen);
+  const sideActionHits: THREE.Object3D[] = [];
   DESKTOP_SECTIONS.forEach((section, index) => {
     const hit = addAction(
       new THREE.Mesh(
@@ -220,6 +221,7 @@ export const createMonitorsObject = ({
     );
     hit.position.set(0, leftMonitor.hit.startY - index * leftMonitor.hit.stepY, leftMonitor.hit.z);
     sideMonitor.add(hit);
+    sideActionHits.push(hit);
   });
 
   const sideSupport = new THREE.Group();
@@ -261,5 +263,10 @@ export const createMonitorsObject = ({
   sideSupport.add(supportFoot);
   group.add(sideSupport);
 
-  return { group, mainScreen, updateMainActions };
+  return {
+    group,
+    mainScreen,
+    updateMainActions,
+    interactiveTargets: [mainActionGroup, ...sideActionHits],
+  };
 };

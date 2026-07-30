@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "check:assets": "node scripts/check-resource-budget.mjs",
+    "generate:mouse-model": "node scripts/generate-gaming-mouse-glb.mjs",
     "optimize:desktop-assets": "node scripts/generate-desktop-images.mjs",
     "test": "vitest run"
   },
