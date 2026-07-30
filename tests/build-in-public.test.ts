@@ -86,7 +86,7 @@ describe("Build in Public content contract", () => {
     expect(data.results).toHaveLength(4);
     expect(data.results).toContainEqual({
       label: "当前测试",
-      value: "91 项通过",
+      value: "99 项通过",
     });
     expect(item).not.toBeNull();
     expect(resolveContentUrl(item!)).toBe(
@@ -98,6 +98,9 @@ describe("Build in Public content contract", () => {
     expect(updateFiles.length).toBeGreaterThanOrEqual(5);
     expect(updateFiles).toContain(
       "2026-07-31-release-candidate-hardening.md",
+    );
+    expect(updateFiles).toContain(
+      "2026-07-31-model-intake-gate.md",
     );
 
     const updateSources = updateFiles.map((name) =>

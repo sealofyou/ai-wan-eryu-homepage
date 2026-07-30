@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "id": "gaming-mouse-v0-5",
+      "object": "mouse",
+      "file": "gaming-mouse.glb",
+      "provenance": {
+        "sourceType": "repository-generated",
+        "tool": "Three.js GLTFExporter",
+        "generatedAt": "2026-07-31",
+        "inputRights": "Repository-owned procedural geometry; no external photos or third-party meshes.",
+        "license": "Project-owned asset for use with this website."
+      },
+      "geometry": {
+        "upAxis": "Y",
+        "forwardAxis": "-Z",
+        "origin": "interaction-container-center",
+        "unit": "meter",
+        "sceneScale": 1
+      },
+      "budgetBytes": 500000,
+      "defaultEnabled": false,
+      "approval": {
+        "status": "candidate"
+      },
+      "previewQuery": "mouse=glb"
+    }
+  ]
+}

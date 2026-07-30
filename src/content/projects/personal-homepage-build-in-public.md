@@ -18,7 +18,7 @@ results:
   - label: "首屏图片"
     value: "6.24 MB → 366 KB"
   - label: "当前测试"
-    value: "91 项通过"
+    value: "99 项通过"
   - label: "模型默认预加载"
     value: "0"
 ---

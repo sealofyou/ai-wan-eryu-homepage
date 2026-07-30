@@ -9,11 +9,12 @@
     "preview": "astro preview",
     "check": "astro check",
     "check:assets": "node scripts/check-resource-budget.mjs",
+    "check:models": "node scripts/check-model-assets.mjs",
     "check:release": "node scripts/check-release-candidate.mjs",
     "generate:mouse-model": "node scripts/generate-gaming-mouse-glb.mjs",
     "optimize:desktop-assets": "node scripts/generate-desktop-images.mjs",
     "test": "vitest run",
-    "verify:release": "npm test && npm run check && npm run build && npm run check:assets && npm run check:release"
+    "verify:release": "npm test && npm run check && npm run build && npm run check:assets && npm run check:models && npm run check:release"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.5.1",
