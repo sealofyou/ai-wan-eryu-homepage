@@ -39,6 +39,8 @@ type ProjectFrontmatter = {
   date: string;
   draft: boolean;
   featured: boolean;
+  phase: string;
+  preview: string;
   category: string;
   target: "internal";
   internalUrl: string;
@@ -76,10 +78,16 @@ describe("Build in Public content contract", () => {
       title: "个人主页实现｜Build in Public",
       draft: false,
       featured: true,
+      phase: "发布候选",
       target: "internal",
       internalUrl: "/projects/personal-homepage-build-in-public/",
     });
+    expect(data.preview).toContain("发布候选");
     expect(data.results).toHaveLength(4);
+    expect(data.results).toContainEqual({
+      label: "当前测试",
+      value: "91 项通过",
+    });
     expect(item).not.toBeNull();
     expect(resolveContentUrl(item!)).toBe(
       "/projects/personal-homepage-build-in-public/",
@@ -88,6 +96,9 @@ describe("Build in Public content contract", () => {
 
   it("keeps the first public timeline factual and free of local or secret placeholders", () => {
     expect(updateFiles.length).toBeGreaterThanOrEqual(5);
+    expect(updateFiles).toContain(
+      "2026-07-31-release-candidate-hardening.md",
+    );
 
     const updateSources = updateFiles.map((name) =>
       readOptional(`src/content/project-updates/${name}`),
