@@ -8,6 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "check:assets": "node scripts/check-resource-budget.mjs",
+    "optimize:desktop-assets": "node scripts/generate-desktop-images.mjs",
     "test": "vitest run"
   },
   "dependencies": {

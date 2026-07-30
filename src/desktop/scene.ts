@@ -78,6 +78,9 @@ export function mountDesktopScene(
   const mount = root.querySelector<HTMLElement>("[data-scene-mount]");
   const loading = root.querySelector<HTMLElement>("[data-scene-loading]");
   const fallback = root.querySelector<HTMLElement>("[data-webgl-fallback]");
+  const fallbackImage = fallback?.querySelector<HTMLImageElement>(
+    "[data-fallback-image]",
+  );
   const status = root.querySelector<HTMLElement>("[data-interaction-status]");
   const messagePanel = root.querySelector<HTMLFormElement>("[data-message-panel]");
   const messageInput = root.querySelector<HTMLInputElement>("#mat-message");
@@ -93,6 +96,8 @@ export function mountDesktopScene(
   try {
     environment = createDesktopRendererEnvironment(mount, reducedMotion);
   } catch {
+    const fallbackSource = fallbackImage?.dataset.src;
+    if (fallbackImage && fallbackSource) fallbackImage.src = fallbackSource;
     fallback.hidden = false;
     loading.hidden = true;
     return;
@@ -111,7 +116,10 @@ export function mountDesktopScene(
   const sideCanvas = makeCanvas(440, 880);
   const noteCanvas = makeCanvas(420, 300);
   const messageBoardCanvas = makeCanvas(640, 440);
-  const avatarImage = createDesktopImage(DESKTOP_IMAGE_URLS.avatar);
+  const avatarImage = createDesktopImage(
+    DESKTOP_IMAGE_URLS.avatar,
+    DESKTOP_IMAGE_URLS.avatarFallback,
+  );
 
   const drawMainScreen = () => {
     renderMainScreen({
