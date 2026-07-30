@@ -35,9 +35,18 @@
 
 确定性视觉回归使用 `prefers-reduced-motion: reduce` 关闭入场动画，避免截图时间差产生假阳性。验证记录保存在 `.omx/state/scene-modularization/ralph-progress.json`，截图保存在忽略提交的 `output/scene-refactor-deterministic/`。
 
+### 主线合并状态
+
+- 用户已完成本地视觉与交互验收。
+- 已通过合并提交 `0d970d4` 接入 GitHub `main`。
+- 合并前旧主线由标签 `public-main-before-modularization-20260730` 保护。
+- 已验收桌面版本继续由标签 `homepage-desktop-baseline-20260729` 保护。
+- 下一阶段分支为 `codex/desktop-model-pipeline`。
+- 本次只更新 GitHub 代码主线，没有触发公网部署。
+
 ### 发布 Gate
 
-当前分支只推送到 GitHub，不合并、不部署。下一步由用户打开本地地址完成视觉与交互验收；确认通过后，才进入 GLB 模型试验、Build in Public 内容接入和后续公网发布。
+当前已完成本地验收和 GitHub 主线合并，但尚未重新部署公网。下一步先在独立分支完成资源基线和鼠标 GLB 管线试验，再单独接入 Build in Public 内容；所有阶段仍需本地验收后才能进入公网发布。
 
 ## 实现概览
 
