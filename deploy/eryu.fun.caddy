@@ -1,0 +1,3 @@
+eryu.fun, www.eryu.fun {
+    import eryu_static_site
+}

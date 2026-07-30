@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { filterNotesByType, sortByDateDesc } from "../src/lib/content";
+import {
+  createDesktopContentItem,
+  filterNotesByType,
+  serializeDesktopContentPayload,
+  sortByDateDesc,
+} from "../src/lib/content";
 
 const entries = [
   { data: { date: new Date("2026-05-31"), type: "share" } },
@@ -28,5 +33,78 @@ describe("filterNotesByType", () => {
   it("returns only entries matching a note type", () => {
     expect(filterNotesByType(entries, "share")).toHaveLength(2);
     expect(filterNotesByType(entries, "activity")).toEqual([]);
+  });
+});
+
+describe("desktop content serialization", () => {
+  it("creates public desktop records only when a complete target exists", () => {
+    const publicItem = createDesktopContentItem("articles", {
+      id: "public-article",
+      data: {
+        title: "Public article",
+        description: "List summary",
+        preview: "Monitor preview",
+        date: new Date("2026-07-23"),
+        category: "AI",
+        draft: false,
+        featured: true,
+        target: "feishu",
+        externalUrl: "https://my.feishu.cn/wiki/public",
+      },
+    });
+    const draft = createDesktopContentItem("articles", {
+      id: "draft-article",
+      data: {
+        title: "Draft",
+        description: "Draft",
+        preview: "Draft",
+        date: new Date("2026-07-23"),
+        draft: true,
+        featured: false,
+        target: "feishu",
+        externalUrl: "https://my.feishu.cn/wiki/draft",
+      },
+    });
+    const missingTarget = createDesktopContentItem("articles", {
+      id: "missing-target",
+      data: {
+        title: "Missing",
+        description: "Missing",
+        preview: "Missing",
+        date: new Date("2026-07-23"),
+        draft: false,
+        featured: false,
+      },
+    });
+
+    expect(publicItem).toMatchObject({
+      id: "public-article",
+      section: "articles",
+      date: "2026-07-23",
+      target: "feishu",
+      featured: true,
+    });
+    expect(draft).toBeNull();
+    expect(missingTarget).toBeNull();
+  });
+
+  it("escapes script-closing characters in the homepage payload", () => {
+    expect(
+      serializeDesktopContentPayload({
+        items: [
+          {
+            id: "safe",
+            section: "articles",
+            title: "</script><script>alert(1)</script>",
+            description: "safe",
+            preview: "safe",
+            date: "2026-07-23",
+            target: "internal",
+            internalUrl: "/articles/safe/",
+            featured: false,
+          },
+        ],
+      }),
+    ).not.toContain("</script>");
   });
 });

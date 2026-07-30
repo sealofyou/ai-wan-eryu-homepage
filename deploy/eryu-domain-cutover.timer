@@ -1,0 +1,10 @@
+[Unit]
+Description=Check eryu.fun DNS before enabling HTTPS
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

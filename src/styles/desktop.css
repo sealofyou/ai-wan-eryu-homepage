@@ -103,30 +103,13 @@ body.is-immersive main {
 }
 
 .mat-message-panel {
-  position: absolute;
-  top: 43%;
-  right: 4.5%;
-  z-index: 3;
-  width: 270px;
-  padding: 9px 11px 11px;
-  border: 1px solid rgba(108, 78, 25, 0.2);
-  border-radius: 2px;
-  background: rgba(229, 199, 110, 0.96);
-  box-shadow: 6px 9px 18px rgba(41, 32, 25, 0.24);
-  color: #58431f;
-  transform: rotate(1deg);
-  backdrop-filter: blur(10px);
-}
-
-.mat-message-panel[hidden] {
-  display: none;
-}
-
-.mat-message-panel label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 11px;
-  font-weight: 800;
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  clip-path: inset(50%);
 }
 
 .mat-message-panel > div {

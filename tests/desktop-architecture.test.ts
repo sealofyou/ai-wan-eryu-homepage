@@ -1,0 +1,155 @@
+import { existsSync, readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+
+const scenePath = new URL("../src/desktop/scene.ts", import.meta.url);
+const canvasUtilsPath = new URL(
+  "../src/desktop/screens/canvas-utils.ts",
+  import.meta.url,
+);
+const screenModulePaths = [
+  "main-screen.ts",
+  "side-screen.ts",
+  "note-screen.ts",
+  "message-board.ts",
+].map((fileName) => new URL(`../src/desktop/screens/${fileName}`, import.meta.url));
+const actionModulePath = new URL("../src/desktop/core/actions.ts", import.meta.url);
+const typeModulePath = new URL("../src/desktop/core/types.ts", import.meta.url);
+const rendererModulePath = new URL("../src/desktop/core/renderer.ts", import.meta.url);
+const assetsModulePath = new URL("../src/desktop/core/assets.ts", import.meta.url);
+const objectModulePaths = ["room.ts", "desk.ts", "computer.ts"].map(
+  (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
+);
+const monitorModulePath = new URL("../src/desktop/objects/monitors.ts", import.meta.url);
+const sceneFixtureModulePaths = ["decorations.ts", "pegboards.ts", "lamp.ts"].map(
+  (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
+);
+const inputObjectModulePaths = ["keyboard-object.ts", "mouse.ts"].map(
+  (fileName) => new URL(`../src/desktop/objects/${fileName}`, import.meta.url),
+);
+const matControlsModulePath = new URL("../src/desktop/objects/mat-controls.ts", import.meta.url);
+const interactionModulePaths = ["pointer.ts", "dragging.ts", "mousepad.ts", "message.ts"].map(
+  (fileName) => new URL(`../src/desktop/interactions/${fileName}`, import.meta.url),
+);
+
+describe("desktop scene architecture", () => {
+  it("delegates reusable canvas drawing helpers to the screens layer", () => {
+    expect(existsSync(canvasUtilsPath)).toBe(true);
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./screens/canvas-utils"');
+    expect(sceneSource).not.toContain("const makeCanvas =");
+    expect(sceneSource).not.toContain("const roundRect =");
+    expect(sceneSource).not.toContain("const wrapText =");
+    expect(sceneSource).not.toContain("const truncateToWidth =");
+    expect(sceneSource).not.toContain("const drawImageCover =");
+  });
+
+  it("delegates monitor and paper-surface rendering to focused screen modules", () => {
+    screenModulePaths.forEach((modulePath) => {
+      expect(existsSync(modulePath)).toBe(true);
+    });
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./screens/main-screen"');
+    expect(sceneSource).toContain('from "./screens/side-screen"');
+    expect(sceneSource).toContain('from "./screens/note-screen"');
+    expect(sceneSource).toContain('from "./screens/message-board"');
+    expect(sceneSource).not.toContain("const drawBadgeScreen =");
+    expect(sceneSource).not.toContain("const drawContentList =");
+    expect(sceneSource).not.toContain("const drawContentPreview =");
+  });
+
+  it("delegates scene action metadata and shared object contracts to core modules", () => {
+    expect(existsSync(actionModulePath)).toBe(true);
+    expect(existsSync(typeModulePath)).toBe(true);
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./core/types"');
+    expect(sceneSource).not.toContain("type SceneAction =");
+    expect(sceneSource).not.toContain("const addAction =");
+    expect(sceneSource).not.toContain("const actionFromObject =");
+  });
+
+  it("delegates WebGL setup, camera framing, fixed lights, and image creation to core", () => {
+    expect(existsSync(rendererModulePath)).toBe(true);
+    expect(existsSync(assetsModulePath)).toBe(true);
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./core/renderer"');
+    expect(sceneSource).toContain('from "./core/assets"');
+    expect(sceneSource).not.toContain("new THREE.WebGLRenderer");
+    expect(sceneSource).not.toContain("const getFramedCamera =");
+    expect(sceneSource).not.toContain("const resize =");
+    expect(sceneSource).not.toContain("const screenLight =");
+    expect(sceneSource).not.toContain("const keyLight =");
+    expect(sceneSource).not.toContain("new Image()");
+  });
+
+  it("builds stable room, desk, and computer objects through focused factories", () => {
+    objectModulePaths.forEach((modulePath) => expect(existsSync(modulePath)).toBe(true));
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./objects/room"');
+    expect(sceneSource).toContain('from "./objects/desk"');
+    expect(sceneSource).toContain('from "./objects/computer"');
+    expect(sceneSource).not.toContain("const wall =");
+    expect(sceneSource).not.toContain("const deskApron =");
+    expect(sceneSource).not.toContain("const tower =");
+  });
+
+  it("encapsulates monitor meshes and Canvas-to-world action hit areas", () => {
+    expect(existsSync(monitorModulePath)).toBe(true);
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./objects/monitors"');
+    expect(sceneSource).not.toContain("const mainFrame =");
+    expect(sceneSource).not.toContain("const mainActionGroup =");
+    expect(sceneSource).not.toContain("const sideMonitor =");
+    expect(sceneSource).not.toContain("const updateMainActions =");
+  });
+
+  it("encapsulates decorations, pegboards, and lamp geometry", () => {
+    sceneFixtureModulePaths.forEach((modulePath) => expect(existsSync(modulePath)).toBe(true));
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./objects/decorations"');
+    expect(sceneSource).toContain('from "./objects/pegboards"');
+    expect(sceneSource).toContain('from "./objects/lamp"');
+    expect(sceneSource).not.toContain("const toyBase =");
+    expect(sceneSource).not.toContain("const angledPegboard =");
+    expect(sceneSource).not.toContain("const lamp = new THREE.Group()");
+  });
+
+  it("encapsulates draggable keyboard and mouse geometry behind state updaters", () => {
+    inputObjectModulePaths.forEach((modulePath) => expect(existsSync(modulePath)).toBe(true));
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./objects/keyboard-object"');
+    expect(sceneSource).toContain('from "./objects/mouse"');
+    expect(sceneSource).not.toContain("createKeyboardModel()");
+    expect(sceneSource).not.toContain("const mouseBody =");
+    expect(sceneSource).not.toContain("const rearHump =");
+  });
+
+  it("encapsulates physical mousepad mode buttons", () => {
+    expect(existsSync(matControlsModulePath)).toBe(true);
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./objects/mat-controls"');
+    expect(sceneSource).not.toContain("const modeButtons:");
+    expect(sceneSource).not.toContain("const buttonMeshes:");
+  });
+
+  it("delegates pointer, dragging, mousepad, and message listeners to disposable controllers", () => {
+    interactionModulePaths.forEach((modulePath) => expect(existsSync(modulePath)).toBe(true));
+
+    const sceneSource = readFileSync(scenePath, "utf8");
+    expect(sceneSource).toContain('from "./interactions/pointer"');
+    expect(sceneSource).toContain('from "./interactions/dragging"');
+    expect(sceneSource).toContain('from "./interactions/mousepad"');
+    expect(sceneSource).toContain('from "./interactions/message"');
+    expect(sceneSource).not.toContain("const raycaster =");
+    expect(sceneSource).not.toContain('renderer.domElement.addEventListener("pointerdown"');
+    expect(sceneSource).not.toContain('messagePanel.addEventListener("submit"');
+  });
+});

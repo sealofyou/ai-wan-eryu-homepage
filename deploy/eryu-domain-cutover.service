@@ -1,0 +1,8 @@
+[Unit]
+Description=Enable eryu.fun Caddy site after DNS cutover
+After=network-online.target caddy.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/eryu-domain-cutover
