@@ -10,7 +10,7 @@
 
 1. [PRD.md](./PRD.md)：范围、页面行为与非目标。
 2. [ASSET_MANIFEST.md](./ASSET_MANIFEST.md)：上传给秒哒的参考资产和使用边界。
-3. [MIAODA_FIRST_ROUND_PROMPT.md](./MIAODA_FIRST_ROUND_PROMPT.md)：首次生成时直接使用的提示词。
+3. [MIAODA_FIRST_ROUND_PROMPT.md](./MIAODA_FIRST_ROUND_PROMPT.md)：已归档的 V1 首轮提示词与失败边界。
 4. [ACCEPTANCE_AND_STOP_RULES.md](./ACCEPTANCE_AND_STOP_RULES.md)：预览验收、修改顺序和秒点止损规则。
 
 ## 已确认边界
@@ -20,7 +20,11 @@
 - 现有个人主页的构图、真实设备照片和个人视觉资产只能作为参考，不可把整张构图图当作页面背景，再叠透明点击区域。
 - 首轮的成败只看构图、主屏可读性、物件关系和关键互动是否成立；内容先用克制占位，后续由用户逐条补充。
 
-## 参考方法
+## Three.js 物件代码管线
 
-参考文章介绍的 img2threejs 不直接作为秒哒依赖。可复用的是其工作方法：先拆真实物件，再定义可动部件，按“构图、材质、互动”分阶段复核，并以参考图而不是想象作为判断依据。
+img2threejs 不作为秒哒运行时依赖，但它生成的可编辑 Three.js / TypeScript 物件代码会经过独立渲染和视觉验收，再作为模型资产源码接入秒哒原生项目。秒哒负责场景装配、屏幕内容和互动，不再根据整张构图图自行猜测设备外形。
+
+完整边界见 [img2threejs 物件代码接入秒哒设计](../superpowers/specs/2026-07-31-img2threejs-miaoda-object-pipeline-design.md)。首个试验对象是有线 Logitech G502 游戏鼠标。
+
+现有秒哒 V1 仅证明交互骨架可行，其 CSS 几何占位视觉不作为后续基线，也不得直接发布。
 
