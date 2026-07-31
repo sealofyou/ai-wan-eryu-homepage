@@ -205,6 +205,27 @@ V0.7 已通过合并提交 `0854200` 接入 `master/main`，并由标签 `homepa
 
 当前本地验收地址为 `http://127.0.0.1:4331/portfolio/`。本轮不会自动部署或更新 `eryu.fun`；用户确认作品集视觉后，再合并到 `master`，公网发布仍是单独动作。
 
+## 2026-08-01 V0.10 主线与 Gate 收口
+
+用户确认作品集界面可以作为当前基线后，V0.10 先吸收远程默认主线 `main` 中新增的秒哒与 img2threejs 资料，再运行完整 `npm run verify:release`。集成结果为提交 `4a1e3da`：
+
+- `17` 个测试文件、`107` 项测试全部通过。
+- Astro check 为 `0 errors / 0 warnings / 0 hints`。
+- 生产构建生成 `7` 个静态页面。
+- 图片、首页 JS、GLB、模型清单和发布候选 Gate 全部通过。
+- `main` 与 `master` 已快进到同一提交，V0.10 功能分支也保留在该节点。
+- 标签 `homepage-v0.10-portfolio-accepted-20260801` 已创建并推送。
+- `main`、`master`、`codex/v0.10-portfolio-redesign` 和标签均已推送 GitHub。
+- 本轮没有部署或更新 `eryu.fun`。
+
+## 2026-08-01 V0.11 img2threejs 接入评估
+
+微信文章介绍的项目确认为 `img2threejs`。本机已安装受控版本 `1.4.3`，许可证为 `Apache-2.0`。它输出可编辑的 Three.js / TypeScript 工厂，而不是传统网格文件，与当前 `SceneObjectResult` 物件边界兼容。
+
+本机使用 G502 参考图完成了图片预检和临时预评估：`3072×4096` JPEG 通过技术检查且没有警告，complex 质量合同和本地规格检索正常生成。已有 G502 分支也证明该路线可以运行，但自动生成版只有 `38/100`，四轮人工与 Agent 精修后为 `82/100`，尚未达到默认替换要求的 `90/100`。
+
+因此后续采用“img2threejs 规格与初稿 + 独立实验页 + 多轮精修 + 生产适配层”的路线，不采用一键输出直接替换。完整判断、素材要求、包体风险和阶段顺序见 `docs/superpowers/specs/2026-08-01-img2threejs-homepage-integration-assessment.md`。
+
 ## 实现概览
 
 首页已替换为仅面向桌面端的 Three.js 三维电脑桌面。场景使用真实相机、灯光、阴影、圆角网格、屏幕纹理和射线交互，不使用批准构图图作为页面背景。批准构图图仅在 WebGL 初始化失败时作为降级预览。
