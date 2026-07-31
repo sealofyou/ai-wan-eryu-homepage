@@ -86,7 +86,7 @@ describe("Build in Public content contract", () => {
     expect(data.results).toHaveLength(4);
     expect(data.results).toContainEqual({
       label: "当前测试",
-      value: "99 项通过",
+      value: "107 项通过",
     });
     expect(item).not.toBeNull();
     expect(resolveContentUrl(item!)).toBe(

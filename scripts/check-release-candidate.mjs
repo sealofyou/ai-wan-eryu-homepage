@@ -957,10 +957,72 @@ export function findReleaseCandidateIssues({
   return issues;
 }
 
+export function findPortfolioOutputIssues({ distDirectory }) {
+  const portfolioPath = join(
+    resolve(distDirectory),
+    "portfolio",
+    "index.html",
+  );
+  if (!existsSync(portfolioPath)) return [];
+
+  const content = readFileSync(portfolioPath, "utf8");
+  const tags = extractHtmlStartTags(content);
+  const expectedProjectPath =
+    "/projects/personal-homepage-build-in-public/";
+  const expectedCoverPath = "/portfolio/personal-homepage-desktop.webp";
+  const hasClass = (tag, className) =>
+    tag.attributes
+      .get("class")
+      ?.split(/\s+/)
+      .includes(className) ?? false;
+  const issues = [];
+
+  const hasProjectLink = tags.some(
+    (tag) =>
+      tag.name === "a" &&
+      tag.attributes.get("href") === expectedProjectPath &&
+      (hasClass(tag, "portfolio-feature-link") ||
+        hasClass(tag, "portfolio-feature-media")),
+  );
+  if (!hasProjectLink) {
+    issues.push({
+      code: "portfolio-project-link",
+      file: "portfolio/index.html",
+      detail: `Missing portfolio link to ${expectedProjectPath}`,
+    });
+  }
+
+  const projectCover = tags.find(
+    (tag) =>
+      tag.name === "img" &&
+      tag.attributes.get("src") === expectedCoverPath,
+  );
+  if (!projectCover?.attributes.get("alt")?.trim()) {
+    issues.push({
+      code: "portfolio-project-cover",
+      file: "portfolio/index.html",
+      detail: `Missing portfolio cover or alt text for ${expectedCoverPath}`,
+    });
+  }
+
+  if (content.includes("tech-cover-16x9-v1")) {
+    issues.push({
+      code: "portfolio-legacy-cover",
+      file: "portfolio/index.html",
+      detail: "Retired generic portfolio cover is still referenced",
+    });
+  }
+
+  return issues;
+}
+
 const run = () => {
   const root = process.cwd();
   const distDirectory = join(root, "dist");
-  const issues = findReleaseCandidateIssues({ distDirectory });
+  const issues = [
+    ...findReleaseCandidateIssues({ distDirectory }),
+    ...findPortfolioOutputIssues({ distDirectory }),
+  ];
 
   if (issues.length === 0) {
     console.log(

@@ -21,6 +21,19 @@ type ProjectUpdateEntry = DatedEntry & {
   };
 };
 
+type ProjectEntry = {
+  data: {
+    updated: Date;
+    draft?: boolean;
+    featured?: boolean;
+  };
+};
+
+type ProjectCoverData = {
+  cover?: string;
+  coverAlt?: string;
+};
+
 type TypedEntry = {
   data: {
     type: string;
@@ -46,6 +59,29 @@ export function getPublicProjectUpdates<T extends ProjectUpdateEntry>(
       (entry) => !entry.data.draft && entry.data.projectId === projectId,
     ),
   );
+}
+
+export function getPublicProjects<T extends ProjectEntry>(
+  entries: readonly T[],
+): T[] {
+  return entries
+    .filter((entry) => !entry.data.draft)
+    .toSorted((a, b) => {
+      const featuredDifference =
+        Number(b.data.featured ?? false) - Number(a.data.featured ?? false);
+      return (
+        featuredDifference ||
+        b.data.updated.getTime() - a.data.updated.getTime()
+      );
+    });
+}
+
+export function getProjectCover(
+  data: ProjectCoverData,
+): { src: string; alt: string } | null {
+  const src = data.cover?.trim();
+  const alt = data.coverAlt?.trim();
+  return src && alt ? { src, alt } : null;
 }
 
 export function filterNotesByType<T extends TypedEntry>(entries: readonly T[], filter: NoteFilter): T[] {

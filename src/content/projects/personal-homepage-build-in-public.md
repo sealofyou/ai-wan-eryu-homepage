@@ -11,6 +11,8 @@ featured: true
 preview: "当前阶段：已整理为本地发布候选。构建产物、依赖、常见横屏、核心交互和资源释放都有可重复 Gate，默认 3D 构图保持不变。"
 target: "internal"
 internalUrl: "/projects/personal-homepage-build-in-public/"
+cover: "/portfolio/personal-homepage-desktop.webp"
+coverAlt: "AI玩尔玉个人主页的 3D 电脑桌面"
 repoUrl: "https://github.com/sealofyou/ai-wan-eryu-homepage"
 results:
   - label: "场景入口"
@@ -18,7 +20,7 @@ results:
   - label: "首屏图片"
     value: "6.24 MB → 366 KB"
   - label: "当前测试"
-    value: "99 项通过"
+    value: "107 项通过"
   - label: "模型默认预加载"
     value: "0"
 ---

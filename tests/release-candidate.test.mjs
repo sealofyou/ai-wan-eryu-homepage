@@ -10,6 +10,7 @@ import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   findReleaseCandidateIssues,
+  findPortfolioOutputIssues,
   resolveOutputReference,
 } from "../scripts/check-release-candidate.mjs";
 
@@ -70,6 +71,41 @@ describe("release candidate output references", () => {
 });
 
 describe("release candidate output audit", () => {
+  it("accepts the rendered portfolio project link and real cover contract", () => {
+    const distDirectory = createSite({
+      "portfolio/index.html": `
+        <a class="portfolio-feature-media" href="/projects/personal-homepage-build-in-public/">
+          <img
+            src="/portfolio/personal-homepage-desktop.webp"
+            alt="AI玩尔玉个人主页的 3D 电脑桌面"
+          >
+        </a>
+        <a class="portfolio-feature-link" href="/projects/personal-homepage-build-in-public/">
+          查看项目档案
+        </a>
+      `,
+    });
+
+    expect(findPortfolioOutputIssues({ distDirectory })).toEqual([]);
+  });
+
+  it("reports missing portfolio evidence and the retired generic cover", () => {
+    const distDirectory = createSite({
+      "portfolio/index.html": `
+        <a class="portfolio-feature-media" href="/projects/demo/"></a>
+        <img src="/_astro/tech-cover-16x9-v1.png" alt="">
+      `,
+    });
+
+    expect(
+      findPortfolioOutputIssues({ distDirectory }).map(({ code }) => code),
+    ).toEqual([
+      "portfolio-project-link",
+      "portfolio-project-cover",
+      "portfolio-legacy-cover",
+    ]);
+  });
+
   it("accepts a complete static site with safe internal and external links", () => {
     const distDirectory = createSite({
       "index.html": `

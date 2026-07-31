@@ -1,40 +1,152 @@
 ---
-import { Image } from "astro:assets";
-import techCover from "../assets/tech-cover-16x9-v1.png";
-import { projects } from "../data/projects";
+import { getCollection } from "astro:content";
 import SiteLayout from "../layouts/SiteLayout.astro";
+import {
+  formatDate,
+  getProjectCover,
+  getPublicProjects,
+} from "../lib/content";
+
+const projects = getPublicProjects(await getCollection("projects"));
+const featuredProject = projects.at(0);
+const featuredCover = featuredProject
+  ? getProjectCover(featuredProject.data)
+  : null;
+const featuredTitleParts = featuredProject?.data.title
+  .split("｜", 2)
+  .map((part) => part.trim());
 ---
 
-<SiteLayout title="作品集" description="AI玩尔玉的项目、原型和研究实践。">
-  <header class="portfolio-hero">
-    <div class="portfolio-hero-copy">
-      <p class="eyebrow">作品集</p>
-      <h1>我做过的项目</h1>
-      <p>先放少量能讲清问题、过程和边界的项目。项目不靠数量撑场面。</p>
+<SiteLayout
+  title="作品集"
+  description="AI玩尔玉实际做过、正在维护，并且可以讲清过程和结果的项目。"
+  theme="soft"
+>
+  <header class="portfolio-intro">
+    <div class="portfolio-intro-copy">
+      <p class="eyebrow">Portfolio / 作品集</p>
+      <h1>项目与作品</h1>
+      <p>这里记录我实际做过、正在维护，并且能把过程和结果讲清楚的项目。</p>
     </div>
-    <Image
-      src={techCover}
-      alt="尔玉站在工作台与系统流程白板前"
-      widths={[900, 1400, 1800]}
-      sizes="100vw"
-      class="portfolio-cover"
-    />
+
+    <div class="portfolio-count" aria-label={`当前公开 ${projects.length} 个项目`}>
+      <span>当前公开</span>
+      <strong>{String(projects.length).padStart(2, "0")}</strong>
+      <span>按项目持续更新</span>
+    </div>
   </header>
 
-  <section class="project-list" aria-label="项目列表">
-    {projects.map((project) => (
-      <article class="project-row">
-        <div class="project-index">{project.index}</div>
-        <div class="project-body">
-          <p class="record-meta">{project.status}</p>
-          <h2>{project.title}</h2>
-          <p>{project.description}</p>
-          <ul>
-            {project.details.map((detail) => <li>{detail}</li>)}
-          </ul>
+  {featuredProject && (
+    <section
+      class:list={[
+        "portfolio-feature",
+        { "is-text-only": !featuredCover },
+      ]}
+      aria-labelledby="featured-project-title"
+    >
+      {featuredCover && (
+        <a
+          class="portfolio-feature-media"
+          href={featuredProject.data.internalUrl}
+          aria-label={`查看${featuredProject.data.title}项目档案`}
+        >
+          <img
+            src={featuredCover.src}
+            alt={featuredCover.alt}
+            width="1440"
+            height="810"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </a>
+      )}
+
+      <div class="portfolio-feature-copy">
+        <div class="portfolio-feature-kicker">
+          <p class="eyebrow">重点项目 / 01</p>
+          <span>{featuredProject.data.status}</span>
         </div>
-        <span class="project-category">{project.category}</span>
-      </article>
-    ))}
+
+        <h2 id="featured-project-title">
+          <a href={featuredProject.data.internalUrl}>
+            {featuredTitleParts?.at(0)}
+            {featuredTitleParts?.at(1) && (
+              <span class="portfolio-feature-title-note">
+                {featuredTitleParts.at(1)}
+              </span>
+            )}
+          </a>
+        </h2>
+        <p class="portfolio-feature-description">
+          {featuredProject.data.description}
+        </p>
+
+        <dl class="portfolio-feature-status" aria-label="重点项目状态">
+          <div>
+            <dt>当前阶段</dt>
+            <dd>{featuredProject.data.phase}</dd>
+          </div>
+          <div>
+            <dt>最近更新</dt>
+            <dd>
+              <time datetime={featuredProject.data.updated.toISOString()}>
+                {formatDate(featuredProject.data.updated)}
+              </time>
+            </dd>
+          </div>
+        </dl>
+
+        {featuredProject.data.results.length > 0 && (
+          <dl class="portfolio-feature-results" aria-label="重点项目结果">
+            {featuredProject.data.results.slice(0, 4).map((result) => (
+              <div>
+                <dt>{result.label}</dt>
+                <dd>{result.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        <a class="portfolio-feature-link" href={featuredProject.data.internalUrl}>
+          查看项目档案
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </section>
+  )}
+
+  <section class="portfolio-index" aria-labelledby="portfolio-index-title">
+    <header class="portfolio-index-heading">
+      <div>
+        <p class="eyebrow">Project Index</p>
+        <h2 id="portfolio-index-title">项目索引</h2>
+      </div>
+      <p>{projects.length} 个公开项目，推荐项目优先，其余按最近更新时间排列。</p>
+    </header>
+
+    <ol class="portfolio-index-list">
+      {projects.map((project, index) => (
+        <li>
+          <a href={project.data.internalUrl}>
+            <span class="portfolio-index-number">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <span class="portfolio-index-copy">
+              <strong>{project.data.title}</strong>
+              <span>{project.data.description}</span>
+            </span>
+            <span class="portfolio-index-meta">
+              <span>{project.data.category}</span>
+              <span>{project.data.status}</span>
+              <time datetime={project.data.updated.toISOString()}>
+                {formatDate(project.data.updated)}
+              </time>
+            </span>
+            <span class="portfolio-index-arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+      ))}
+    </ol>
   </section>
 </SiteLayout>

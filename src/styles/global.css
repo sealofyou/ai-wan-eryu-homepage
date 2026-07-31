@@ -128,7 +128,7 @@ p {
 
 .brand-en,
 .eyebrow,
-.project-index,
+.portfolio-index-number,
 .article-meta,
 .record-meta,
 .timeline time {
@@ -351,41 +351,26 @@ main {
   font-weight: 800;
 }
 
-.portfolio-hero {
-  position: relative;
-  min-height: min(720px, calc(100svh - var(--header-height)));
-  display: flex;
-  align-items: flex-end;
-  overflow: hidden;
-  background: var(--carbon);
-  color: white;
+.portfolio-intro {
+  min-height: 218px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  align-items: end;
+  gap: 72px;
+  padding: 48px max(32px, calc((100vw - var(--page-max)) / 2)) 44px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
 }
 
-.portfolio-cover {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  opacity: 0.58;
-}
-
-.portfolio-hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(19, 21, 23, 0.58);
-}
-
-.portfolio-hero-copy {
-  position: relative;
-  z-index: 1;
+.portfolio-intro-copy {
   max-width: 760px;
-  padding: 90px max(32px, calc((100vw - var(--page-max)) / 2));
 }
 
-.portfolio-hero h1,
+.portfolio-intro h1 {
+  margin-bottom: 22px;
+  font-size: 58px;
+}
+
 .soft-page-hero h1,
 .about-hero h1,
 .content-header h1,
@@ -394,14 +379,304 @@ main {
   font-size: clamp(46px, 6vw, 76px);
 }
 
-.portfolio-hero p:last-child {
-  max-width: 620px;
+.portfolio-intro-copy > p:last-child {
+  max-width: 680px;
   margin-bottom: 0;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 19px;
+  color: rgba(29, 32, 35, 0.68);
+  font-size: 18px;
+  line-height: 1.7;
 }
 
-.project-list,
+.portfolio-count {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 4px 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.portfolio-count span {
+  color: rgba(29, 32, 35, 0.56);
+  font-size: 12px;
+}
+
+.portfolio-count span:last-child {
+  grid-column: 1 / -1;
+}
+
+.portfolio-count strong {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  color: var(--cold-green);
+  font-size: 38px;
+  line-height: 1;
+}
+
+.portfolio-feature {
+  max-width: var(--page-max);
+  display: grid;
+  grid-template-columns: minmax(0, 1.32fr) minmax(360px, 0.68fr);
+  align-items: center;
+  gap: 54px;
+  margin: 0 auto;
+  padding: 50px 32px 64px;
+  background: var(--white);
+}
+
+.portfolio-feature.is-text-only {
+  grid-template-columns: minmax(0, 760px);
+}
+
+.portfolio-feature-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  aspect-ratio: 16 / 9;
+  background: var(--carbon);
+  box-shadow: 0 18px 48px rgba(29, 32, 35, 0.12);
+}
+
+.portfolio-feature-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+
+.portfolio-feature-media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.portfolio-feature-media:hover img {
+  transform: scale(1.012);
+}
+
+.portfolio-feature-media img {
+  transition: transform 180ms ease;
+}
+
+.portfolio-feature-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.portfolio-feature-kicker .eyebrow {
+  margin: 0;
+}
+
+.portfolio-feature-kicker > span {
+  color: rgba(29, 32, 35, 0.58);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.portfolio-feature-copy h2 {
+  margin: 18px 0 16px;
+  font-size: 36px;
+  line-height: 1.18;
+}
+
+.portfolio-feature-copy h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.portfolio-feature-title-note {
+  display: block;
+  margin-top: 4px;
+  font-size: 30px;
+  font-weight: 720;
+}
+
+.portfolio-feature-copy h2 a:hover {
+  color: var(--cold-green);
+}
+
+.portfolio-feature-description {
+  margin: 0;
+  color: rgba(29, 32, 35, 0.68);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.portfolio-feature-status,
+.portfolio-feature-results {
+  margin: 24px 0 0;
+}
+
+.portfolio-feature-status {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.portfolio-feature-status > div {
+  padding: 14px 0;
+}
+
+.portfolio-feature-status > div + div {
+  padding-left: 18px;
+  border-left: 1px solid var(--line);
+}
+
+.portfolio-feature-status dt,
+.portfolio-feature-results dt {
+  margin-bottom: 5px;
+  color: rgba(29, 32, 35, 0.5);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.portfolio-feature-status dd,
+.portfolio-feature-results dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.portfolio-feature-results {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 24px;
+}
+
+.portfolio-feature-results > div {
+  min-width: 0;
+}
+
+.portfolio-feature-results dd {
+  overflow-wrap: anywhere;
+}
+
+.portfolio-feature-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--cold-green);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+.portfolio-feature-link:hover {
+  color: var(--cold-green);
+}
+
+.portfolio-feature-link span {
+  font-size: 20px;
+  transition: transform 160ms ease;
+}
+
+.portfolio-feature-link:hover span {
+  transform: translateX(4px);
+}
+
+.portfolio-index {
+  padding: 64px max(32px, calc((100vw - var(--page-max)) / 2)) 96px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.portfolio-index-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 34px;
+}
+
+.portfolio-index-heading h2 {
+  margin: 8px 0 0;
+  font-size: 34px;
+}
+
+.portfolio-index-heading > p {
+  max-width: 440px;
+  margin: 0;
+  color: rgba(29, 32, 35, 0.6);
+  text-align: right;
+}
+
+.portfolio-index-list {
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--line);
+  list-style: none;
+}
+
+.portfolio-index-list li {
+  border-top: 1px solid var(--line);
+}
+
+.portfolio-index-list a {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 260px 24px;
+  align-items: center;
+  gap: 24px;
+  min-height: 132px;
+  padding: 26px 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.portfolio-index-list a:hover {
+  background: rgba(255, 253, 248, 0.62);
+}
+
+.portfolio-index-number {
+  color: var(--cold-green);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.portfolio-index-copy {
+  min-width: 0;
+}
+
+.portfolio-index-copy strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 24px;
+}
+
+.portfolio-index-copy > span {
+  display: block;
+  max-width: 660px;
+  color: rgba(29, 32, 35, 0.64);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.portfolio-index-meta {
+  display: grid;
+  gap: 5px;
+  color: rgba(29, 32, 35, 0.54);
+  font-size: 12px;
+  text-align: right;
+}
+
+.portfolio-index-arrow {
+  font-size: 20px;
+  transition: transform 160ms ease;
+}
+
+.portfolio-index-list a:hover .portfolio-index-arrow {
+  transform: translateX(4px);
+}
+
 .article-ledger,
 .timeline,
 .note-filters {
@@ -411,62 +686,9 @@ main {
   padding-right: 32px;
 }
 
-.project-list,
 .article-ledger,
 .timeline {
   padding-bottom: 96px;
-}
-
-.project-row {
-  display: grid;
-  grid-template-columns: 70px minmax(0, 1fr) 150px;
-  gap: 28px;
-  padding: 42px 0;
-  border-top: 1px solid var(--line);
-}
-
-.project-row:first-child {
-  border-top: 0;
-}
-
-.project-index {
-  color: var(--cold-green);
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.project-body h2 {
-  margin-bottom: 10px;
-  font-size: 32px;
-}
-
-.project-body > p:not(.record-meta) {
-  max-width: 760px;
-  color: rgba(29, 32, 35, 0.72);
-}
-
-.project-body ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 28px;
-  padding: 0;
-  margin: 18px 0 0;
-  color: rgba(29, 32, 35, 0.62);
-  font-size: 13px;
-  list-style: none;
-}
-
-.project-body li::before {
-  content: "·";
-  margin-right: 8px;
-  color: var(--cold-green);
-}
-
-.project-category {
-  align-self: start;
-  justify-self: end;
-  color: rgba(29, 32, 35, 0.58);
-  font-size: 13px;
 }
 
 .soft-page-hero {
@@ -1078,13 +1300,9 @@ main {
     padding-left: 28px;
   }
 
-  .project-row {
-    grid-template-columns: 50px minmax(0, 1fr);
-  }
-
-  .project-category {
-    grid-column: 2;
-    justify-self: start;
+  .portfolio-feature {
+    grid-template-columns: minmax(0, 1.15fr) minmax(330px, 0.85fr);
+    gap: 34px;
   }
 
   .about-hero {
@@ -1150,7 +1368,6 @@ main {
   }
 
   .home-band,
-  .portfolio-hero-copy,
   .soft-page-hero,
   .about-hero,
   .about-grid > section {
@@ -1173,16 +1390,18 @@ main {
     gap: 10px;
   }
 
-  .portfolio-hero {
-    min-height: 620px;
+  .portfolio-intro {
+    min-height: auto;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 44px 20px 38px;
   }
 
-  .portfolio-hero-copy {
-    padding-top: 260px;
-    padding-bottom: 56px;
+  .portfolio-count {
+    max-width: 220px;
   }
 
-  .portfolio-hero h1,
+  .portfolio-intro h1,
   .soft-page-hero h1,
   .about-hero h1,
   .content-header h1,
@@ -1191,7 +1410,53 @@ main {
     font-size: 40px;
   }
 
-  .project-list,
+  .portfolio-feature {
+    grid-template-columns: 1fr;
+    gap: 34px;
+    padding: 36px 20px 52px;
+  }
+
+  .portfolio-feature-copy h2 {
+    font-size: 30px;
+  }
+
+  .portfolio-feature-title-note {
+    font-size: 27px;
+  }
+
+  .portfolio-index {
+    padding: 50px 20px 76px;
+  }
+
+  .portfolio-index-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .portfolio-index-heading > p {
+    text-align: left;
+  }
+
+  .portfolio-index-list a {
+    grid-template-columns: 34px minmax(0, 1fr) 20px;
+    gap: 12px;
+    min-height: 0;
+  }
+
+  .portfolio-index-meta {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    text-align: left;
+  }
+
+  .portfolio-index-arrow {
+    grid-row: 1 / span 2;
+    grid-column: 3;
+  }
+
   .article-ledger,
   .timeline,
   .note-filters,
@@ -1200,12 +1465,6 @@ main {
     padding-right: 20px;
   }
 
-  .project-row {
-    grid-template-columns: 34px minmax(0, 1fr);
-    gap: 12px;
-  }
-
-  .project-body h2,
   .article-copy h2,
   .timeline-entry h2 {
     font-size: 23px;

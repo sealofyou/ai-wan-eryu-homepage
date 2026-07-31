@@ -46,29 +46,39 @@ const notes = defineCollection({
 
 const projects = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/projects" }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    date: z.coerce.date(),
-    updated: z.coerce.date(),
-    status: z.string(),
-    phase: z.string(),
-    category: z.string(),
-    draft: z.boolean().default(false),
-    featured: z.boolean().default(false),
-    preview: z.string().default(""),
-    target: z.literal("internal"),
-    internalUrl: internalPath,
-    repoUrl: publicHttpsUrl.optional(),
-    results: z
-      .array(
-        z.object({
-          label: z.string(),
-          value: z.string(),
-        }),
-      )
-      .default([]),
-  }),
+  schema: z
+    .object({
+      title: z.string(),
+      description: z.string(),
+      date: z.coerce.date(),
+      updated: z.coerce.date(),
+      status: z.string(),
+      phase: z.string(),
+      category: z.string(),
+      draft: z.boolean().default(false),
+      featured: z.boolean().default(false),
+      preview: z.string().default(""),
+      target: z.literal("internal"),
+      internalUrl: internalPath,
+      cover: internalPath.optional(),
+      coverAlt: z.string().optional(),
+      repoUrl: publicHttpsUrl.optional(),
+      results: z
+        .array(
+          z.object({
+            label: z.string(),
+            value: z.string(),
+          }),
+        )
+        .default([]),
+    })
+    .refine(
+      (data) => Boolean(data.cover) === Boolean(data.coverAlt?.trim()),
+      {
+        message: "Project cover and coverAlt must be provided together",
+        path: ["coverAlt"],
+      },
+    ),
 });
 
 const projectUpdates = defineCollection({
