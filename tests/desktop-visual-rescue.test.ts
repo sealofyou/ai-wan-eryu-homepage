@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { DESK_LAYOUT } from "../src/desktop/layout";
-import { createDesktopCameraPose } from "../src/desktop/core/renderer";
+import {
+  createDesktopCameraPose,
+  resolveDesktopCameraMode,
+} from "../src/desktop/core/renderer";
 import {
   MAIN_SCREEN_BUTTON,
   MAIN_SCREEN_TYPOGRAPHY,
@@ -28,6 +31,13 @@ describe("desktop visual rescue contract", () => {
     const compactOverview = createDesktopCameraPose(1440 / 900, "overview");
     expect(compactOverview.position.z).toBeGreaterThanOrEqual(14.7);
     expect(compactOverview.position.z).toBeLessThanOrEqual(15.4);
+  });
+
+  it("keeps reduced-motion users on the stable overview camera", () => {
+    expect(resolveDesktopCameraMode(false, true)).toBe("overview");
+    expect(resolveDesktopCameraMode(true, true)).toBe("overview");
+    expect(resolveDesktopCameraMode(false, false)).toBe("overview");
+    expect(resolveDesktopCameraMode(true, false)).toBe("content");
   });
 
   it("makes the two displays the dominant composition", () => {

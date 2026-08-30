@@ -25,6 +25,7 @@ import {
 import {
   createDesktopRendererEnvironment,
   disposeObjectGraph,
+  resolveDesktopCameraMode,
   type DesktopRendererEnvironment,
 } from "./core/renderer";
 import type { SceneAction, SceneObjectResult } from "./core/types";
@@ -374,7 +375,11 @@ export function mountDesktopScene(
   let animationFrame = 0;
   const animate = (time: number) => {
     const elapsed = time - startTime;
-    if (!reducedMotion && elapsed < 1200) {
+    if (reducedMotion) {
+      const pose = environment.cameraPoses.overview;
+      camera.position.copy(pose.position);
+      currentCameraTarget.copy(pose.target);
+    } else if (elapsed < 1200) {
       const progress = 1 - Math.pow(1 - Math.min(elapsed / 1200, 1), 3);
       camera.position.lerpVectors(
         environment.cameraPoses.intro.position,
@@ -387,7 +392,7 @@ export function mountDesktopScene(
         progress,
       );
     } else {
-      const mode = state.activeScreen === "home" ? "overview" : "content";
+      const mode = resolveDesktopCameraMode(state.activeScreen !== "home", reducedMotion);
       const pose = environment.cameraPoses[mode];
       const parallax = mode === "overview" ? pointerController.getParallax() : { x: 0, y: 0 };
       desiredCameraPosition.copy(pose.position);

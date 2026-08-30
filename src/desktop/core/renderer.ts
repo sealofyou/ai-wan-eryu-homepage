@@ -25,6 +25,12 @@ export interface DesktopCameraPose {
   target: THREE.Vector3;
 }
 
+export const resolveDesktopCameraMode = (
+  contentActive: boolean,
+  reducedMotion: boolean,
+): Exclude<DesktopCameraMode, "intro"> =>
+  !reducedMotion && contentActive ? "content" : "overview";
+
 export const createDesktopCameraPose = (
   aspect: number,
   mode: DesktopCameraMode,
