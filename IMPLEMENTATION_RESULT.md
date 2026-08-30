@@ -315,7 +315,7 @@ V0.7 已通过合并提交 `0854200` 接入 `master/main`，并由标签 `homepa
 
 ## 2026-08-31 V0.12 现有 3D 桌面视觉救援
 
-本轮在独立工作树 `ai-wan-eryu-homepage-v0.12-visual-rescue` 和分支 `codex/v0.12-visual-rescue` 中执行。起点为 `b492b1f`，救援 Brief 提交为 `1cc881b`，结构性实现提交为 `bdd7031`。完整 Gate 通过后仅把 feature branch 推送到 `origin/codex/v0.12-visual-rescue` 作为交接备份；没有创建或合并 PR，没有合并 `main` / `master`，没有部署或修改 `https://eryu.fun/`。
+本轮在独立工作树 `ai-wan-eryu-homepage-v0.12-visual-rescue` 和分支 `codex/v0.12-visual-rescue` 中执行。起点为 `b492b1f`，救援 Brief 提交为 `1cc881b`，结构性实现提交为 `bdd7031`，审查后 reduced-motion 修复提交为 `fd7a2d6`。完整 Gate 通过后仅把 feature branch 推送到 `origin/codex/v0.12-visual-rescue` 作为交接备份；没有创建或合并 PR，没有合并 `main` / `master`，没有部署或修改 `https://eryu.fun/`。
 
 ### 本地观看
 
@@ -330,7 +330,7 @@ V0.7 已通过合并提交 `0854200` 接入 `master/main`，并由标签 `homepa
 - 从两块洞洞板收敛为台灯后方一块交互徽章板；物件收敛为主屏、副屏、机箱、键盘、鼠标垫与鼠标、台灯与徽章板六组。
 - 统一为暖木、炭黑、暖白和低饱和绿，降低设备金属度，收敛墙面与桌体的橙色和视觉重量。
 - 主屏改为大标题、短简介和两条真实状态；副屏强化三个真实内容入口。
-- 点击副屏后使用独立内容镜头聚焦主屏，并在 `420ms` 内淡入；返回首页恢复总览镜头。`prefers-reduced-motion` 下立即切换。
+- 点击副屏后使用独立内容镜头聚焦主屏，并在 `420ms` 内淡入；返回首页恢复总览镜头。`prefers-reduced-motion` 下镜头稳定保持总览，只立即切换屏幕内容。
 - 桌垫移动、画笔、留言、清空按钮改成低对比嵌入式标签，不再成为四个黑色前景块。
 - 修复主屏透明点击代理参与颜色/深度写入造成的“返回按钮黑块”；命中代理现在只参与射线检测。
 
@@ -340,7 +340,8 @@ V0.7 已通过合并提交 `0854200` 接入 `master/main`，并由标签 `homepa
 - 基线 `1920×1080`：`output/screenshots/baseline/home-1920x1080.png`
 - 最终 `1440×900`：`output/screenshots/final/home-1440x900.png`
 - 最终 `1920×1080`：`output/screenshots/final/home-1920x1080.png`
-- 最终内容聚焦：`output/screenshots/iteration-4/recent-focus-1440x900.png`
+- 最终内容聚焦：`output/screenshots/final/recent-focus-1440x900.png`
+- reduced-motion 稳定总览：`output/screenshots/final/recent-reduced-1440x900.png`
 - David Heckhoff / Bruno Simon 真实对标截图：`output/benchmarks/`
 
 visual-verdict 从基线 `56` 经过 `72`、`86`、`88` 迭代到最终 `91 / pass`。这个 pass 只表示达到已提交 Brief 的“可本地观看”门槛，不冒充用户审美确认或 Bruno Simon 级资产完成度。
@@ -355,10 +356,10 @@ visual-verdict 从基线 `56` 经过 `72`、`86`、`88` 迭代到最终 `91 / pa
 
 - 新增 `tests/desktop-visual-rescue.test.ts`，并更新 `tests/desk-layout.test.ts`；视觉合同先出现预期失败再转绿。
 - `npm run verify:release`：通过。
-- Vitest：`18` 个测试文件、`115` 项测试全部通过。
+- Vitest：`18` 个测试文件、`116` 项测试全部通过。
 - Astro check：`0 errors / 0 warnings / 0 hints`。
 - 生产构建：生成 `7` 个静态页面。
-- 资源预算：桌面入口 JS `610,820` 字节，低于 `650,000` 字节预算；图片与 GLB 均在原有预算内。
+- 资源预算：桌面入口 JS `610,923` 字节，低于 `650,000` 字节预算；图片与 GLB 均在原有预算内。
 - 模型清单和发布候选检查：通过。
 - 真实浏览器控制台：`0 errors / 0 warnings`。
 - WebGL：Canvas 数量 `1`，PNG data URL 长度 `483,018`，非空；采样渲染循环为 `148fps`。
@@ -371,11 +372,17 @@ visual-verdict 从基线 `56` 经过 `72`、`86`、`88` 迭代到最终 `91 / pa
 - 鼠标边界输入得到实体位置 `(0.93, 0.35)` 和屏幕光标 `(0.95, 0.08)`；键盘边界输入得到 `(0.2, 0.82)`。
 - 画笔写入与清空、留言 `视觉救援验证`、徽章打开均通过浏览器内状态验证。
 
+### 完成前代码审查
+
+- 独立 code-reviewer 对 `b492b1f..1adf473` 做了完整只读审查，没有发现 Critical。
+- 审查发现 reduced-motion 仍会逐帧聚焦内容镜头；该 Important 已先写失败测试，再由 `fd7a2d6` 修复。Playwright 证据显示 reduced-motion 内容切换保持总览构图，普通模式仍使用内容聚焦。
+- 审查结论是“适合本地交给用户观看；不适合直接作为生产部署放行”。生产阻塞项是既有依赖审计风险和后续用户审美确认，本任务没有获得依赖升级或部署授权。
+
 ### 已知限制与下一步边界
 
 - 程序化台灯、键盘和 Q 版立牌的资产细节仍低于 David Heckhoff 的成熟软 3D 作品；本轮先解决结构、主次和可读性，不继续物件建模。
 - 最近在做当前只有一条真实内容，聚焦态会保留较多留白；没有为了填满屏幕新增虚构条目。
-- 生产构建仍有 Three.js 入口超过 `500 kB` 的提示，但 `610,820` 字节仍在既定 `650,000` 字节预算内。
+- 生产构建仍有 Three.js 入口超过 `500 kB` 的提示，但 `610,923` 字节仍在既定 `650,000` 字节预算内。
 - `npm ci` 的依赖审计仍报告 `1 moderate / 3 high`；本轮没有获得依赖升级授权，也没有改变依赖树。
 - 900px 以下的手机版继续保持静态提示，本轮没有设计或实现手机版。
 - 下一步只交给用户本地观看和评价；用户明确确认前不合并、不部署。
