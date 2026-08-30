@@ -315,7 +315,7 @@ V0.7 已通过合并提交 `0854200` 接入 `master/main`，并由标签 `homepa
 
 ## 2026-08-31 V0.12 现有 3D 桌面视觉救援
 
-本轮在独立工作树 `ai-wan-eryu-homepage-v0.12-visual-rescue` 和分支 `codex/v0.12-visual-rescue` 中执行。起点为 `b492b1f`，救援 Brief 提交为 `1cc881b`，结构性实现提交为 `bdd7031`。没有合并 `main` / `master`，没有部署或修改 `https://eryu.fun/`。
+本轮在独立工作树 `ai-wan-eryu-homepage-v0.12-visual-rescue` 和分支 `codex/v0.12-visual-rescue` 中执行。起点为 `b492b1f`，救援 Brief 提交为 `1cc881b`，结构性实现提交为 `bdd7031`。完整 Gate 通过后仅把 feature branch 推送到 `origin/codex/v0.12-visual-rescue` 作为交接备份；没有创建或合并 PR，没有合并 `main` / `master`，没有部署或修改 `https://eryu.fun/`。
 
 ### 本地观看
 
