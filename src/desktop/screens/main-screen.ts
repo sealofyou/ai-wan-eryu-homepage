@@ -22,6 +22,24 @@ interface MainScreenOptions {
   itemsForSection: (section: ContentSectionId) => DesktopContentItem[];
 }
 
+export const MAIN_SCREEN_TYPOGRAPHY = {
+  homeTitle: 84,
+  homeBody: 30,
+  listTitle: 62,
+  listItemTitle: 30,
+  listItemDescription: 21,
+  previewTitle: 54,
+} as const;
+
+export const MAIN_SCREEN_BUTTON = {
+  height: 60,
+  fontSize: 28,
+  background: "#465047",
+  foreground: "#fffaf1",
+  disabledBackground: "#dce2dc",
+  disabledForeground: "#646d66",
+} as const;
+
 const drawScreenButton = (
   context: CanvasRenderingContext2D,
   label: string,
@@ -30,14 +48,20 @@ const drawScreenButton = (
   width: number,
   active = true,
 ) => {
-  roundRect(context, x, y, width, 58, 16);
-  context.fillStyle = active ? "#282c29" : "#dfe3dc";
+  context.save();
+  roundRect(context, x, y, width, MAIN_SCREEN_BUTTON.height, 16);
+  context.fillStyle = active
+    ? MAIN_SCREEN_BUTTON.background
+    : MAIN_SCREEN_BUTTON.disabledBackground;
   context.fill();
-  context.fillStyle = active ? "#fffdf8" : "#626b65";
-  context.font = '700 22px "Microsoft YaHei", sans-serif';
+  context.fillStyle = active
+    ? MAIN_SCREEN_BUTTON.foreground
+    : MAIN_SCREEN_BUTTON.disabledForeground;
+  context.font = `700 ${MAIN_SCREEN_BUTTON.fontSize}px "Microsoft YaHei", sans-serif`;
   context.textAlign = "center";
-  context.fillText(label, x + width / 2, y + 38);
-  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillText(label, x + width / 2, y + MAIN_SCREEN_BUTTON.height / 2 + 1);
+  context.restore();
 };
 
 const drawBadgeScreen = (context: CanvasRenderingContext2D, height: number) => {
@@ -83,7 +107,7 @@ const drawContentList = (
   context.font = '700 22px "Microsoft YaHei", sans-serif';
   context.fillText(`${section.eyebrow} / ${page.items.length ? "LATEST" : "EMPTY"}`, 72, 72);
   context.fillStyle = "#222622";
-  context.font = '900 54px "Microsoft YaHei", sans-serif';
+  context.font = `900 ${MAIN_SCREEN_TYPOGRAPHY.listTitle}px "Microsoft YaHei", sans-serif`;
   context.fillText(section.title, 72, 140);
   context.fillStyle = "#707771";
   context.font = '500 21px "Microsoft YaHei", sans-serif';
@@ -116,10 +140,10 @@ const drawContentList = (
       context.font = '800 18px "Microsoft YaHei", sans-serif';
       context.fillText(item.date.slice(5).replace("-", "."), 118, y + 46);
       context.fillStyle = "#252925";
-      context.font = '800 24px "Microsoft YaHei", sans-serif';
+      context.font = `800 ${MAIN_SCREEN_TYPOGRAPHY.listItemTitle}px "Microsoft YaHei", sans-serif`;
       context.fillText(truncateToWidth(context, item.title, 520), 246, y + 34);
-      context.fillStyle = "#6d746e";
-      context.font = '500 17px "Microsoft YaHei", sans-serif';
+      context.fillStyle = "#565f58";
+      context.font = `600 ${MAIN_SCREEN_TYPOGRAPHY.listItemDescription}px "Microsoft YaHei", sans-serif`;
       context.fillText(truncateToWidth(context, item.description, 730), 246, y + 61);
     });
   }
@@ -148,7 +172,7 @@ const drawContentPreview = (
   context.font = '700 22px "Microsoft YaHei", sans-serif';
   context.fillText(`${section.eyebrow} / ${item.date}`, 72, 76);
   context.fillStyle = "#222622";
-  context.font = '900 48px "Microsoft YaHei", sans-serif';
+  context.font = `900 ${MAIN_SCREEN_TYPOGRAPHY.previewTitle}px "Microsoft YaHei", sans-serif`;
   wrapText(context, item.title, 72, 150, 1030, 55);
   context.fillStyle = "#6d746e";
   context.font = '600 20px "Microsoft YaHei", sans-serif';
@@ -190,60 +214,61 @@ export const renderMainScreen = ({
   const { context, canvas, texture } = surface;
   const { width, height } = canvas;
   context.clearRect(0, 0, width, height);
-  context.fillStyle = "#f1eee8";
+  context.fillStyle = "#f5efe6";
   context.fillRect(0, 0, width, height);
-  context.fillStyle = "#d7e1dc";
-  context.fillRect(0, 0, 14, height);
+  context.fillStyle = "#91a796";
+  context.fillRect(0, 0, 18, height);
   context.fillStyle = "#202521";
 
   if (state.activeScreen === "home") {
-    roundRect(context, 48, 52, 440, 576, 28);
+    roundRect(context, 50, 54, 410, 572, 34);
     context.save();
     context.clip();
-    context.fillStyle = "#d8d4cb";
-    context.fillRect(48, 52, 440, 576);
+    context.fillStyle = "#ddd7ce";
+    context.fillRect(50, 54, 410, 572);
     if (avatarImage.complete && avatarImage.naturalWidth > 0) {
-      drawImageCover(context, avatarImage, 48, 52, 440, 576);
+      drawImageCover(context, avatarImage, 50, 54, 410, 572);
     }
+    const portraitShade = context.createLinearGradient(50, 54, 50, 626);
+    portraitShade.addColorStop(0, "rgba(245,239,230,0.02)");
+    portraitShade.addColorStop(1, "rgba(50,48,43,0.13)");
+    context.fillStyle = portraitShade;
+    context.fillRect(50, 54, 410, 572);
     context.restore();
 
-    context.font = '800 28px "Microsoft YaHei", sans-serif';
-    context.fillStyle = "#5f8f78";
-    context.fillText("ERYU / PERSONAL SYSTEM", 548, 84);
-    context.font = '900 66px "Microsoft YaHei", sans-serif';
+    context.font = '800 25px "Microsoft YaHei", sans-serif';
+    context.fillStyle = "#718c7a";
+    context.fillText("ERYU / PERSONAL SYSTEM", 520, 92);
+    context.font = `900 ${MAIN_SCREEN_TYPOGRAPHY.homeTitle}px "Microsoft YaHei", sans-serif`;
     context.fillStyle = "#202521";
-    context.fillText("AI玩尔玉", 548, 165);
-    context.font = '700 26px "Microsoft YaHei", sans-serif';
-    context.fillStyle = "#4c514d";
-    context.fillText("Eryu", 552, 212);
-    context.font = '500 27px "Microsoft YaHei", sans-serif';
+    context.fillText("AI玩尔玉", 516, 182);
+    context.fillStyle = "#c7b69f";
+    context.fillRect(520, 218, 600, 2);
+    context.font = `500 ${MAIN_SCREEN_TYPOGRAPHY.homeBody}px "Microsoft YaHei", sans-serif`;
     context.fillStyle = "#333733";
     wrapText(
       context,
       "把 AI 接进真实工作流，做成能运行、能验证、也能继续交接的系统。",
-      548,
-      286,
-      570,
-      44,
+      520,
+      280,
+      600,
+      50,
     );
 
-    roundRect(context, 548, 400, 580, 190, 22);
-    context.fillStyle = "rgba(255,255,255,0.72)";
+    roundRect(context, 520, 416, 610, 168, 24);
+    context.fillStyle = "#e4e9e3";
     context.fill();
-    context.strokeStyle = "rgba(32,37,33,0.14)";
-    context.lineWidth = 2;
-    context.stroke();
-    context.fillStyle = "#5f8f78";
+    context.fillStyle = "#77917f";
     context.beginPath();
-    context.arc(586, 444, 9, 0, Math.PI * 2);
+    context.arc(558, 456, 9, 0, Math.PI * 2);
     context.fill();
     context.fillStyle = "#222622";
-    context.font = '800 25px "Microsoft YaHei", sans-serif';
-    context.fillText("当前状态", 610, 454);
-    context.font = '500 22px "Microsoft YaHei", sans-serif';
+    context.font = '800 26px "Microsoft YaHei", sans-serif';
+    context.fillText("当前状态", 582, 466);
+    context.font = '500 24px "Microsoft YaHei", sans-serif';
     context.fillStyle = "#4d524d";
-    context.fillText("整理个人 AI 操作系统", 584, 503);
-    context.fillText("打磨可交接的项目流程", 584, 543);
+    context.fillText("整理个人 AI 操作系统", 554, 518);
+    context.fillText("打磨可交接的项目流程", 554, 558);
   } else if (state.activeScreen === "badge") {
     drawBadgeScreen(context, height);
   } else if (state.contentView.kind === "list") {

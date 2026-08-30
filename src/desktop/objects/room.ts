@@ -11,7 +11,7 @@ export const createRoomObject = (): SceneObjectResult => {
     wall.size.height,
     wall.size.depth,
     wall.radius,
-    new THREE.MeshStandardMaterial({ color: "#9b846c", roughness: 0.96 }),
+    new THREE.MeshStandardMaterial({ color: "#decfbc", roughness: 1 }),
   );
   wallMesh.position.set(wall.position.x, wall.position.y, wall.position.z);
   wallMesh.receiveShadow = true;

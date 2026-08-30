@@ -2,7 +2,7 @@ import { wrapText, type CanvasSurface } from "./canvas-utils";
 
 export const renderMessageBoard = (surface: CanvasSurface, message: string) => {
   const { context, canvas, texture } = surface;
-  context.fillStyle = "#e5c76e";
+  context.fillStyle = "#e9cb78";
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = "rgba(108,78,25,0.16)";
   for (let y = 88; y < canvas.height; y += 54) {

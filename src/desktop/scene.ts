@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import {
   DAILY_QUOTES,
   createInitialDesktopState,
@@ -106,8 +107,11 @@ export function mountDesktopScene(
     loading.hidden = true;
     return;
   }
-  const { renderer, scene, camera, world, cameraTarget } = environment;
+  const { renderer, scene, camera, world } = environment;
   const { lampLight } = environment.lights;
+  const currentCameraTarget = (
+    reducedMotion ? environment.cameraPoses.overview.target : environment.cameraPoses.intro.target
+  ).clone();
 
   const sceneObjects: SceneObjectResult[] = [];
   const addSceneObject = <T extends SceneObjectResult>(object: T) => {
@@ -214,12 +218,14 @@ export function mountDesktopScene(
   const setScreen = (screen: ScreenId) => {
     state = selectScreen(state, screen);
     updateScreens();
+    monitors.beginMainTransition(reducedMotion);
     announce(screen === "home" ? "已返回主屏首页" : "主屏内容已切换");
   };
 
   const setSection = (section: ContentSectionId) => {
     state = selectSection(state, section);
     updateScreens();
+    monitors.beginMainTransition(reducedMotion);
     announce("主屏已打开内容列表");
   };
 
@@ -246,17 +252,20 @@ export function mountDesktopScene(
     } else if (action.startsWith("content:")) {
       state = selectContentItem(state, action.slice(8));
       updateScreens();
+      monitors.beginMainTransition(reducedMotion);
       announce("已打开内容预览");
     } else if (action.startsWith("mode:")) {
       setMode(action.slice(5) as MatMode);
     } else if (action === "content-back") {
       state = returnFromContent(state);
       updateScreens();
+      monitors.beginMainTransition(reducedMotion);
     } else if (action === "page-prev" || action === "page-next") {
       if (state.contentView.kind === "list") {
         const nextPage = state.contentView.page + (action === "page-next" ? 1 : -1);
         state = setContentPage(state, nextPage);
         updateScreens();
+        monitors.beginMainTransition(reducedMotion);
       }
     } else if (action === "content-open") {
       if (state.contentView.kind === "preview") {
@@ -334,6 +343,7 @@ export function mountDesktopScene(
     selectContentItem: (itemId) => {
       state = selectContentItem(state, itemId);
       updateScreens();
+      monitors.beginMainTransition(reducedMotion);
     },
     moveMouseNormalized: (x, y) => {
       state = movePhysicalMouse(state, { x, y });
@@ -360,18 +370,34 @@ export function mountDesktopScene(
   };
 
   const startTime = performance.now();
+  const desiredCameraPosition = new THREE.Vector3();
   let animationFrame = 0;
   const animate = (time: number) => {
     const elapsed = time - startTime;
-    if (!reducedMotion && elapsed < 1400) {
-      const progress = 1 - Math.pow(1 - Math.min(elapsed / 1400, 1), 3);
-      camera.position.lerpVectors(environment.introCamera, environment.finalCamera, progress);
+    if (!reducedMotion && elapsed < 1200) {
+      const progress = 1 - Math.pow(1 - Math.min(elapsed / 1200, 1), 3);
+      camera.position.lerpVectors(
+        environment.cameraPoses.intro.position,
+        environment.cameraPoses.overview.position,
+        progress,
+      );
+      currentCameraTarget.lerpVectors(
+        environment.cameraPoses.intro.target,
+        environment.cameraPoses.overview.target,
+        progress,
+      );
     } else {
-      const parallax = pointerController.getParallax();
-      camera.position.x += (environment.finalCamera.x + parallax.x - camera.position.x) * 0.035;
-      camera.position.y += (environment.finalCamera.y - parallax.y - camera.position.y) * 0.035;
+      const mode = state.activeScreen === "home" ? "overview" : "content";
+      const pose = environment.cameraPoses[mode];
+      const parallax = mode === "overview" ? pointerController.getParallax() : { x: 0, y: 0 };
+      desiredCameraPosition.copy(pose.position);
+      desiredCameraPosition.x += parallax.x;
+      desiredCameraPosition.y -= parallax.y;
+      camera.position.lerp(desiredCameraPosition, 0.065);
+      currentCameraTarget.lerp(pose.target, 0.075);
     }
-    camera.lookAt(cameraTarget);
+    monitors.updateMainTransition(time);
+    camera.lookAt(currentCameraTarget);
     renderer.render(scene, camera);
     animationFrame = requestAnimationFrame(animate);
   };

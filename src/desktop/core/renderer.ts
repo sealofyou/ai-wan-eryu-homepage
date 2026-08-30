@@ -5,9 +5,7 @@ export interface DesktopRendererEnvironment {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   world: THREE.Group;
-  cameraTarget: THREE.Vector3;
-  finalCamera: THREE.Vector3;
-  introCamera: THREE.Vector3;
+  cameraPoses: Record<DesktopCameraMode, DesktopCameraPose>;
   lights: {
     lampLight: THREE.PointLight;
     screenLight: THREE.PointLight;
@@ -20,14 +18,39 @@ export interface DesktopRendererEnvironment {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
-export const createFramedCameraPosition = (aspect: number, intro = false) => {
-  const baseAspect = 16 / 9;
-  const distance = clamp(
-    12.3 * Math.pow(baseAspect / Math.max(aspect, 1.15), 2.2),
-    11.2,
-    17,
-  );
-  return new THREE.Vector3(0.15, intro ? 6.5 : 5.5, intro ? distance + 2.9 : distance);
+export type DesktopCameraMode = "overview" | "content" | "intro";
+
+export interface DesktopCameraPose {
+  position: THREE.Vector3;
+  target: THREE.Vector3;
+}
+
+export const createDesktopCameraPose = (
+  aspect: number,
+  mode: DesktopCameraMode,
+): DesktopCameraPose => {
+  const aspectScale = clamp(Math.pow((16 / 9) / Math.max(aspect, 1.15), 0.9), 0.94, 1.2);
+  const overviewDistance = 13.8 * aspectScale;
+  const target = new THREE.Vector3(0.2, 2.95, 0.3);
+
+  if (mode === "content") {
+    return {
+      position: new THREE.Vector3(0.72, 4.65, 11.7 * aspectScale),
+      target: new THREE.Vector3(0.68, 4.08, -0.74),
+    };
+  }
+
+  if (mode === "intro") {
+    return {
+      position: new THREE.Vector3(0.18, 6.15, overviewDistance + 2.2),
+      target,
+    };
+  }
+
+  return {
+    position: new THREE.Vector3(0.18, 5.45, overviewDistance),
+    target,
+  };
 };
 
 export const createDesktopRendererEnvironment = (
@@ -41,37 +64,41 @@ export const createDesktopRendererEnvironment = (
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+  renderer.toneMappingExposure = 1.02;
   mount.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color("#6d5c4b");
-  scene.fog = new THREE.Fog("#6d5c4b", 16, 28);
+  scene.background = new THREE.Color("#d8c8b4");
+  scene.fog = new THREE.Fog("#d8c8b4", 17, 30);
 
   const camera = new THREE.PerspectiveCamera(
-    45,
+    42,
     window.innerWidth / window.innerHeight,
     0.1,
     60,
   );
-  const cameraTarget = new THREE.Vector3(0, 2.9, 0.3);
+  const cameraPoses = {
+    overview: createDesktopCameraPose(window.innerWidth / window.innerHeight, "overview"),
+    content: createDesktopCameraPose(window.innerWidth / window.innerHeight, "content"),
+    intro: createDesktopCameraPose(window.innerWidth / window.innerHeight, "intro"),
+  };
   const world = new THREE.Group();
   scene.add(world);
 
-  const lampLight = new THREE.PointLight("#ffd39a", 55, 8, 2);
-  lampLight.position.set(4.62, 3.7, 0.35);
+  const lampLight = new THREE.PointLight("#ffd8a5", 42, 8, 2);
+  lampLight.position.set(4.55, 3.7, 0.35);
   lampLight.castShadow = true;
   scene.add(lampLight);
 
-  const screenLight = new THREE.PointLight("#cfe3d8", 28, 8, 2);
+  const screenLight = new THREE.PointLight("#d9e4dc", 18, 7, 2);
   screenLight.position.set(0.8, 3.7, 1.8);
   scene.add(screenLight);
 
-  const hemisphereLight = new THREE.HemisphereLight("#ffe8c8", "#3d3229", 2.2);
+  const hemisphereLight = new THREE.HemisphereLight("#fff4e5", "#8a6f5c", 2.7);
   scene.add(hemisphereLight);
 
-  const keyLight = new THREE.DirectionalLight("#fff0d8", 3.4);
-  keyLight.position.set(-3, 9, 7);
+  const keyLight = new THREE.DirectionalLight("#fff0dc", 2.8);
+  keyLight.position.set(-4, 9, 7);
   keyLight.castShadow = true;
   keyLight.shadow.mapSize.set(2048, 2048);
   keyLight.shadow.camera.left = -10;
@@ -85,22 +112,22 @@ export const createDesktopRendererEnvironment = (
     scene,
     camera,
     world,
-    cameraTarget,
-    finalCamera: createFramedCameraPosition(window.innerWidth / window.innerHeight),
-    introCamera: createFramedCameraPosition(window.innerWidth / window.innerHeight, true),
+    cameraPoses,
     lights: { lampLight, screenLight, hemisphereLight, keyLight },
     resize: () => {
       const aspect = window.innerWidth / window.innerHeight;
-      environment.finalCamera = createFramedCameraPosition(aspect);
-      environment.introCamera = createFramedCameraPosition(aspect, true);
+      environment.cameraPoses.overview = createDesktopCameraPose(aspect, "overview");
+      environment.cameraPoses.content = createDesktopCameraPose(aspect, "content");
+      environment.cameraPoses.intro = createDesktopCameraPose(aspect, "intro");
       camera.aspect = aspect;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     },
   };
 
-  camera.position.copy(reducedMotion ? environment.finalCamera : environment.introCamera);
-  camera.lookAt(cameraTarget);
+  const initialPose = reducedMotion ? environment.cameraPoses.overview : environment.cameraPoses.intro;
+  camera.position.copy(initialPose.position);
+  camera.lookAt(initialPose.target);
 
   return environment;
 };

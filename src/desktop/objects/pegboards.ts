@@ -9,14 +9,14 @@ export const createPegboardsObject = (
   messageBoardCanvas: CanvasSurface,
 ): SceneObjectResult => {
   const group = new THREE.Group();
-  const { small, large } = DESK_LAYOUT.pegboards;
+  const { small } = DESK_LAYOUT.pegboards;
 
   const board = roundedMesh(
     small.width,
     small.height,
     small.depth,
     small.radius,
-    new THREE.MeshStandardMaterial({ color: "#292b29", roughness: 0.82 }),
+    new THREE.MeshStandardMaterial({ color: "#343632", roughness: 0.94 }),
   );
   board.position.set(small.x, small.y, small.z);
   board.castShadow = true;
@@ -47,7 +47,7 @@ export const createPegboardsObject = (
   messageBoard.rotation.z = small.message.rotationZ;
   group.add(messageBoard);
 
-  const badgeColors = ["#86a28f", "#9d8797"];
+  const badgeColors = ["#8ea391", "#b39a8f"];
   const badges: THREE.Object3D[] = [];
   badgeColors.forEach((color, index) => {
     const badge = addAction(
@@ -68,31 +68,6 @@ export const createPegboardsObject = (
     group.add(badge);
     badges.push(badge);
   });
-
-  const angledPegboard = new THREE.Group();
-  angledPegboard.position.set(large.x, large.y, large.z);
-  angledPegboard.rotation.y = DESK_LAYOUT.pegboards.large.yaw;
-  group.add(angledPegboard);
-
-  const largeBoard = roundedMesh(
-    large.width,
-    large.height,
-    large.depth,
-    large.radius,
-    new THREE.MeshStandardMaterial({ color: "#555a55", roughness: 0.86 }),
-  );
-  largeBoard.castShadow = true;
-  angledPegboard.add(largeBoard);
-  for (let x = large.holes.xStart; x <= large.holes.xEnd; x += large.holes.xStep) {
-    for (let y = large.holes.yStart; y <= large.holes.yEnd; y += large.holes.yStep) {
-      const hole = new THREE.Mesh(
-        new THREE.CircleGeometry(large.holes.radius, 10),
-        new THREE.MeshBasicMaterial({ color: "#272a27" }),
-      );
-      hole.position.set(x, y, large.holes.z);
-      angledPegboard.add(hole);
-    }
-  }
 
   return { group, interactiveTargets: [messageBoard, ...badges] };
 };

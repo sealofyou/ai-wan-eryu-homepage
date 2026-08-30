@@ -20,7 +20,7 @@ export const createLampObject = (materials: DesktopMaterials): SceneObjectResult
   group.add(lampBase);
 
   const lowerArm = new THREE.Mesh(
-    new THREE.CylinderGeometry(lamp.lowerArm.radius, lamp.lowerArm.radius, lamp.lowerArm.height, 18),
+    new THREE.CylinderGeometry(lamp.lowerArm.radius, lamp.lowerArm.radius, lamp.lowerArm.height, 28),
     materials.charcoalSoft,
   );
   lowerArm.position.set(lamp.lowerArm.position.x, lamp.lowerArm.position.y, lamp.lowerArm.position.z);
@@ -28,7 +28,7 @@ export const createLampObject = (materials: DesktopMaterials): SceneObjectResult
   group.add(lowerArm);
 
   const upperArm = new THREE.Mesh(
-    new THREE.CylinderGeometry(lamp.upperArm.radius, lamp.upperArm.radius, lamp.upperArm.height, 18),
+    new THREE.CylinderGeometry(lamp.upperArm.radius, lamp.upperArm.radius, lamp.upperArm.height, 28),
     materials.charcoalSoft,
   );
   upperArm.position.set(lamp.upperArm.position.x, lamp.upperArm.position.y, lamp.upperArm.position.z);
@@ -36,9 +36,9 @@ export const createLampObject = (materials: DesktopMaterials): SceneObjectResult
   group.add(upperArm);
 
   const shadeMaterial = new THREE.MeshStandardMaterial({
-    color: "#242624",
-    roughness: 0.6,
-    metalness: 0.28,
+    color: "#2d2f2c",
+    roughness: 0.82,
+    metalness: 0.08,
     side: THREE.DoubleSide,
   });
   const shade = addAction(

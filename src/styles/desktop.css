@@ -1,6 +1,6 @@
 body.is-immersive {
   overflow: hidden;
-  background: #171613;
+  background: #d8c8b4;
 }
 
 body.is-immersive main {
@@ -14,7 +14,7 @@ body.is-immersive main {
   min-width: 1024px;
   overflow: hidden;
   isolation: isolate;
-  background: #27231e;
+  background: #d8c8b4;
 }
 
 .scene-mount,
@@ -47,8 +47,8 @@ body.is-immersive main {
   place-content: center;
   justify-items: center;
   gap: 14px;
-  background: #28231e;
-  color: #eee7da;
+  background: #d8c8b4;
+  color: #3f403b;
   transition: opacity 500ms ease, visibility 500ms ease;
 }
 
@@ -60,8 +60,8 @@ body.is-immersive main {
 .scene-loading span {
   width: 34px;
   height: 34px;
-  border: 3px solid rgba(238, 231, 218, 0.22);
-  border-top-color: #78a894;
+  border: 3px solid rgba(63, 64, 59, 0.18);
+  border-top-color: #7f9b87;
   border-radius: 50%;
   animation: desktop-spin 900ms linear infinite;
 }

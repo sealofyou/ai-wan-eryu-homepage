@@ -84,6 +84,14 @@
 - 控制台 0 error；WebGL canvas 非空；常驻帧率开发机实测不低于 45fps。
 - visual-verdict 达到 90 才可称为视觉 Gate 通过；未达标继续迭代并记录仍存问题。
 
+## 非 GPT 审美 Gate 与工具状态
+
+- Kimi Code CLI `0.36.1` / `kimi-code/k3` 已用于关键路线裁决，结论是保留整屏 3D、结构性重做镜头与视觉层；记录位于 `.omx/artifacts/kimi-homepage-visual-rescue-brief-20260831.md`。
+- 主任务提供的稳定入口为 `gemini-cpa` `0.57.0`，模型 `gemini-3.1-pro`，关键审查只允许使用 `--skip-trust --approval-mode plan`。本轮两次调用分别遇到远端 `fetch failed` 与长时间无输出，没有产生有效审美意见；记录位于 `.omx/artifacts/gemini-homepage-visual-rescue-review-20260831.md`。
+- 系统默认 `gemini` 走 Node 24，不用于关键自动化。Claude 尚未真实接通，不得写成可用。
+- Grok 继续保留为反方批评角色；当前委派环境没有可调用的 `grok` 命令，因此没有新增 Grok 意见，也不把交接包中的历史复核冒充本版审查。
+- Codex 的 visual-verdict 只用于判断是否达到本 Brief 的本地观看 Gate；“审美完成”仍由用户本地观看或后续真实非 GPT 复核决定。
+
 ## 明确不做
 
 不做手机版，不做 G502 或 img2threejs，不新增虚构项目/活动/徽章故事，不升级依赖，不部署，不合并 `main` / `master`。

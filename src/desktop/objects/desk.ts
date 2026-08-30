@@ -44,7 +44,7 @@ export const createDeskObject = (materials: DesktopMaterials): DeskObjectResult 
     mat.base.size.height,
     mat.base.size.depth,
     mat.base.radius,
-    new THREE.MeshStandardMaterial({ color: "#ded7ca", roughness: 0.92 }),
+    new THREE.MeshStandardMaterial({ color: "#efe7db", roughness: 0.98 }),
   );
   matBase.position.set(mat.base.position.x, mat.base.position.y, mat.base.position.z);
   matBase.receiveShadow = true;

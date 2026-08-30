@@ -24,7 +24,18 @@ interface MonitorObjectOptions {
 export interface MonitorObjectResult extends SceneObjectResult {
   mainScreen: THREE.Mesh;
   updateMainActions: (state: DesktopState) => void;
+  beginMainTransition: (reducedMotion: boolean) => void;
+  updateMainTransition: (time: number) => void;
 }
+
+const createHitMaterial = () =>
+  new THREE.MeshBasicMaterial({
+    transparent: true,
+    opacity: 0,
+    colorWrite: false,
+    depthWrite: false,
+    depthTest: false,
+  });
 
 export const createMonitorsObject = ({
   mainCanvas,
@@ -51,9 +62,14 @@ export const createMonitorsObject = ({
   mainFrame.castShadow = true;
   group.add(mainFrame);
 
+  const mainScreenMaterial = new THREE.MeshBasicMaterial({
+    map: mainCanvas.texture,
+    toneMapped: false,
+    transparent: true,
+  });
   const mainScreen = new THREE.Mesh(
     new THREE.PlaneGeometry(mainMonitor.screen.size.width, mainMonitor.screen.size.height),
-    new THREE.MeshBasicMaterial({ map: mainCanvas.texture, toneMapped: false }),
+    mainScreenMaterial,
   );
   mainScreen.position.set(
     mainMonitor.screen.position.x,
@@ -61,6 +77,19 @@ export const createMonitorsObject = ({
     mainMonitor.screen.position.z,
   );
   group.add(mainScreen);
+  let transitionStartedAt = -1;
+
+  const beginMainTransition = (reducedMotion: boolean) => {
+    transitionStartedAt = reducedMotion ? -1 : performance.now();
+    mainScreenMaterial.opacity = reducedMotion ? 1 : 0.38;
+  };
+
+  const updateMainTransition = (time: number) => {
+    if (transitionStartedAt < 0) return;
+    const progress = Math.min((time - transitionStartedAt) / 420, 1);
+    mainScreenMaterial.opacity = 0.38 + (1 - Math.pow(1 - progress, 3)) * 0.62;
+    if (progress >= 1) transitionStartedAt = -1;
+  };
 
   const mainActionGroup = new THREE.Group();
   group.add(mainActionGroup);
@@ -78,7 +107,7 @@ export const createMonitorsObject = ({
           (width / mainMonitor.canvas.width) * mainMonitor.screen.size.width,
           (height / mainMonitor.canvas.height) * mainMonitor.screen.size.height,
         ),
-        new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 }),
+        createHitMaterial(),
       ),
       action,
     );
@@ -215,7 +244,7 @@ export const createMonitorsObject = ({
     const hit = addAction(
       new THREE.Mesh(
         new THREE.PlaneGeometry(leftMonitor.hit.size.width, leftMonitor.hit.size.height),
-        new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 }),
+        createHitMaterial(),
       ),
       `section:${section.id}`,
     );
@@ -267,6 +296,8 @@ export const createMonitorsObject = ({
     group,
     mainScreen,
     updateMainActions,
+    beginMainTransition,
+    updateMainTransition,
     interactiveTargets: [mainActionGroup, ...sideActionHits],
   };
 };

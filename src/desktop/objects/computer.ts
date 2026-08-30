@@ -23,7 +23,7 @@ export const createComputerObject = (materials: DesktopMaterials): SceneObjectRe
     inset.size.height,
     inset.size.depth,
     inset.radius,
-    new THREE.MeshStandardMaterial({ color: "#151716", roughness: 0.7 }),
+    new THREE.MeshStandardMaterial({ color: "#20221f", roughness: 0.9 }),
   );
   towerInset.position.set(inset.position.x, inset.position.y, inset.position.z);
   group.add(towerInset);
@@ -33,7 +33,7 @@ export const createComputerObject = (materials: DesktopMaterials): SceneObjectRe
     glow.size.height,
     glow.size.depth,
     glow.radius,
-    new THREE.MeshBasicMaterial({ color: "#60ab79" }),
+    new THREE.MeshBasicMaterial({ color: "#7da58d", toneMapped: false }),
   );
   towerGlow.position.set(glow.position.x, glow.position.y, glow.position.z);
   group.add(towerGlow);

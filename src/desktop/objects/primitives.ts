@@ -11,11 +11,11 @@ export interface DesktopMaterials {
 }
 
 export const createDesktopMaterials = (): DesktopMaterials => ({
-  charcoal: new THREE.MeshStandardMaterial({ color: "#242624", roughness: 0.64, metalness: 0.32 }),
-  charcoalSoft: new THREE.MeshStandardMaterial({ color: "#353633", roughness: 0.72, metalness: 0.18 }),
-  warmWhite: new THREE.MeshStandardMaterial({ color: "#e9e3d7", roughness: 0.83 }),
-  paleGreen: new THREE.MeshStandardMaterial({ color: "#91aa98", roughness: 0.72 }),
-  wood: new THREE.MeshStandardMaterial({ color: "#805536", roughness: 0.58 }),
+  charcoal: new THREE.MeshStandardMaterial({ color: "#2d2f2c", roughness: 0.84, metalness: 0.06 }),
+  charcoalSoft: new THREE.MeshStandardMaterial({ color: "#40413c", roughness: 0.9, metalness: 0.02 }),
+  warmWhite: new THREE.MeshStandardMaterial({ color: "#f1e9dc", roughness: 0.94 }),
+  paleGreen: new THREE.MeshStandardMaterial({ color: "#8ea391", roughness: 0.88 }),
+  wood: new THREE.MeshStandardMaterial({ color: "#825f4d", roughness: 0.84 }),
 });
 
 export const roundedMesh = (
@@ -37,7 +37,7 @@ export const mapRange = (
 export const makeTextMaterial = (
   text: string,
   foreground = "#ece6da",
-  background = "#2a2a27",
+  background = "#40413c",
 ) => {
   const { context, texture } = makeCanvas(512, 160);
   context.fillStyle = background;

@@ -22,17 +22,17 @@ export const createMousepadController = (surface: CanvasSurface): MousepadContro
 
   const draw = () => {
     const { context, canvas, texture } = surface;
-    context.fillStyle = "#dfd8cc";
+    context.fillStyle = "#eee7dc";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    context.strokeStyle = "#95a9a0";
-    context.lineWidth = 12;
+    context.strokeStyle = "#a9baad";
+    context.lineWidth = 9;
     roundRect(context, 10, 10, canvas.width - 20, canvas.height - 20, 38);
     context.stroke();
-    context.fillStyle = "rgba(119,145,132,0.12)";
-    for (let x = 88; x < canvas.width; x += 200) {
-      context.fillRect(x, 62 + ((x / 200) % 2) * 246, 24, 24);
-      context.fillRect(x + 32, 62 + ((x / 200) % 2) * 246, 24, 24);
-      context.fillRect(x + 16, 86 + ((x / 200) % 2) * 246, 24, 24);
+    context.fillStyle = "rgba(119,145,132,0.075)";
+    for (let x = 96; x < canvas.width; x += 236) {
+      context.beginPath();
+      context.arc(x, 78 + ((x / 236) % 2) * 260, 8, 0, Math.PI * 2);
+      context.fill();
     }
     context.strokeStyle = "#4f7264";
     context.lineWidth = 7;

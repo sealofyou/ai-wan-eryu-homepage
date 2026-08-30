@@ -29,9 +29,9 @@ const mouseObjectSource = readFileSync(
 );
 
 describe("approved desktop composition layout", () => {
-  it("turns the left monitor slightly toward the main viewing position", () => {
-    expect(DESK_LAYOUT.leftMonitor.yaw).toBeGreaterThan(0.42);
-    expect(DESK_LAYOUT.leftMonitor.yaw).toBeLessThan(0.58);
+  it("keeps the side screen readable instead of narrowing it with perspective", () => {
+    expect(DESK_LAYOUT.leftMonitor.yaw).toBeGreaterThan(0.16);
+    expect(DESK_LAYOUT.leftMonitor.yaw).toBeLessThan(0.34);
     expect(monitorObjectSource).toContain("sideMonitor.rotation.y = DESK_LAYOUT.leftMonitor.yaw");
     expect(monitorObjectSource).not.toContain("sideMonitor.rotation.z");
   });
@@ -44,23 +44,12 @@ describe("approved desktop composition layout", () => {
     );
   });
 
-  it("keeps the small pegboard and places a separate angled board on the desk edge", () => {
-    const large = DESK_LAYOUT.pegboards.large;
-    expect(DESK_LAYOUT.pegboards.large.width).toBeGreaterThan(
-      DESK_LAYOUT.pegboards.small.width,
-    );
-    expect(DESK_LAYOUT.pegboards.large.height).toBeGreaterThan(
-      DESK_LAYOUT.pegboards.small.height,
-    );
-    expect(large.x).toBeGreaterThan(8);
-    expect(large.width).toBeGreaterThan(5);
-    expect(large.y - large.height / 2).toBeGreaterThan(0.15);
-    expect(Math.abs(large.yaw)).toBeGreaterThan(1.5);
-    expect(Math.abs(Math.abs(large.yaw) - Math.PI / 2)).toBeLessThan(0.01);
-    expect(pegboardObjectSource).toContain("const angledPegboard = new THREE.Group()");
-    expect(pegboardObjectSource).toContain("angledPegboard.rotation.y = DESK_LAYOUT.pegboards.large.yaw");
-    expect(pegboardObjectSource).toContain("angledPegboard.add(largeBoard)");
-    expect(pegboardObjectSource).toContain("angledPegboard.add(hole)");
+  it("uses one compact pegboard behind the lamp instead of a second empty wall", () => {
+    expect("large" in DESK_LAYOUT.pegboards).toBe(false);
+    expect(DESK_LAYOUT.pegboards.small.width).toBeLessThan(2.5);
+    expect(DESK_LAYOUT.pegboards.small.x).toBeGreaterThan(5.5);
+    expect(pegboardObjectSource).not.toContain("angledPegboard");
+    expect(pegboardObjectSource).not.toContain("largeBoard");
     expect(sceneSource).toContain("messageBoardCanvas");
   });
 
@@ -72,9 +61,15 @@ describe("approved desktop composition layout", () => {
     expect(sceneSource).toContain("messageInput.focus()");
   });
 
+  it("keeps invisible screen hit targets out of the rendered color and depth buffers", () => {
+    expect(monitorObjectSource).toContain("colorWrite: false");
+    expect(monitorObjectSource).toContain("depthWrite: false");
+    expect(monitorObjectSource).toContain("depthTest: false");
+  });
+
   it("preserves the portrait image ratio and gives the mouse gaming details", () => {
     expect(canvasUtilsSource).toContain("export const drawImageCover = (");
-    expect(mainScreenSource).toContain("drawImageCover(context, avatarImage, 48, 52, 440, 576)");
+    expect(mainScreenSource).toContain("drawImageCover(context, avatarImage");
     expect(mouseObjectSource).toContain("const rearHump");
     expect(mouseObjectSource).toContain("const dpiButton");
     expect(mouseObjectSource).toContain("const sideButton");

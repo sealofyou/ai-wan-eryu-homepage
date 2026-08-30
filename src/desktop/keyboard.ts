@@ -142,15 +142,15 @@ export const createKeyboardModel = () => {
   const unit = worldWidth / layout.width;
   const worldDepth = layout.depth * unit;
 
-  const shell = new THREE.MeshStandardMaterial({ color: "#ded6c8", roughness: 0.58, metalness: 0.16 });
-  const shellEdge = new THREE.MeshStandardMaterial({ color: "#aaa397", roughness: 0.72, metalness: 0.08 });
-  const plate = new THREE.MeshStandardMaterial({ color: "#181917", roughness: 0.72, metalness: 0.18 });
-  const dark = new THREE.MeshStandardMaterial({ color: "#171816", roughness: 0.7 });
-  const darkTop = new THREE.MeshStandardMaterial({ color: "#262725", roughness: 0.62 });
-  const utility = new THREE.MeshStandardMaterial({ color: "#292b28", roughness: 0.68 });
-  const utilityTop = new THREE.MeshStandardMaterial({ color: "#383a36", roughness: 0.62 });
-  const accent = new THREE.MeshStandardMaterial({ color: "#829b88", roughness: 0.64 });
-  const accentTop = new THREE.MeshStandardMaterial({ color: "#94ad9a", roughness: 0.58 });
+  const shell = new THREE.MeshStandardMaterial({ color: "#e9e1d5", roughness: 0.86, metalness: 0.04 });
+  const shellEdge = new THREE.MeshStandardMaterial({ color: "#bbb3a7", roughness: 0.9, metalness: 0.02 });
+  const plate = new THREE.MeshStandardMaterial({ color: "#242522", roughness: 0.88, metalness: 0.03 });
+  const dark = new THREE.MeshStandardMaterial({ color: "#20211f", roughness: 0.86 });
+  const darkTop = new THREE.MeshStandardMaterial({ color: "#30312e", roughness: 0.8 });
+  const utility = new THREE.MeshStandardMaterial({ color: "#333531", roughness: 0.84 });
+  const utilityTop = new THREE.MeshStandardMaterial({ color: "#454742", roughness: 0.78 });
+  const accent = new THREE.MeshStandardMaterial({ color: "#829b88", roughness: 0.86 });
+  const accentTop = new THREE.MeshStandardMaterial({ color: "#9cb1a0", roughness: 0.8 });
 
   const base = roundedMesh(worldWidth + 0.18, 0.22, worldDepth + 0.22, 0.13, shell);
   base.position.y = -0.01;

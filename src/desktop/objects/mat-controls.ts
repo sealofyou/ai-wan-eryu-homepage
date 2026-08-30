@@ -11,13 +11,14 @@ export const createMatControlsObject = (
   const buttonMeshes: Array<{ action: string; mesh: THREE.Mesh }> = [];
 
   DESK_LAYOUT.matControls.buttons.forEach(({ label, action, x }) => {
+    const buttonMaterial = materials.warmWhite.clone();
     const button = addAction(
       roundedMesh(
         DESK_LAYOUT.matControls.button.size.width,
         DESK_LAYOUT.matControls.button.size.height,
         DESK_LAYOUT.matControls.button.size.depth,
         DESK_LAYOUT.matControls.button.radius,
-        materials.charcoalSoft,
+        buttonMaterial,
       ),
       action,
     );
@@ -29,7 +30,7 @@ export const createMatControlsObject = (
         DESK_LAYOUT.matControls.label.size.width,
         DESK_LAYOUT.matControls.label.size.height,
       ),
-      makeTextMaterial(label),
+      makeTextMaterial(label, "#4e5c53", "#eee6d9"),
     );
     labelMesh.rotation.x = DESK_LAYOUT.matControls.label.rotationX;
     labelMesh.position.set(x, DESK_LAYOUT.matControls.label.y, DESK_LAYOUT.matControls.label.z);
@@ -43,7 +44,7 @@ export const createMatControlsObject = (
     update: (state) => {
       buttonMeshes.forEach(({ action, mesh }) => {
         const active = action === `mode:${state.matMode}`;
-        (mesh.material as THREE.MeshStandardMaterial).color.set(active ? "#759481" : "#353633");
+        (mesh.material as THREE.MeshStandardMaterial).color.set(active ? "#a8baaa" : "#e7ded0");
       });
     },
   };
