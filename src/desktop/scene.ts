@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { resolveDesktopFinish } from "./core/finish-mode";
 import {
   DAILY_QUOTES,
   createInitialDesktopState,
@@ -164,7 +165,7 @@ export function mountDesktopScene(
   addSceneObject(createComputerObject(materials));
   addSceneObject(createDecorationsObject(noteCanvas, materials));
   addSceneObject(createPegboardsObject(messageBoardCanvas));
-  addSceneObject(createLampObject(materials));
+  const lampObject = addSceneObject(createLampObject(materials));
 
   const keyboardObject = addSceneObject(createKeyboardObject());
   const mouseVariant = resolveDesktopMouseVariant(window.location.search);
@@ -184,6 +185,23 @@ export function mountDesktopScene(
   const interactiveTargets = sceneObjects.flatMap(
     (object) => object.interactiveTargets ?? [],
   );
+  let disposeFinish: (() => void) | undefined;
+  root.dataset.finish = "baseline";
+  if (resolveDesktopFinish(window.location.search) === "studio") {
+    void import("./finishes/studio").then(({ applyStudioFinish }) => {
+      if (sceneDisposed) return;
+      disposeFinish = applyStudioFinish({
+        environment, materials, matSurface,
+        monitors: monitors.group, lamp: lampObject.group,
+      });
+      root.dataset.finish = "studio";
+    }).catch((error: unknown) => {
+      if (!sceneDisposed) {
+        root.dataset.finish = "unavailable";
+        console.warn("Material preview could not be applied; baseline retained.", error);
+      }
+    });
+  }
 
   let state = createInitialDesktopState();
   let statusTimer = 0;
@@ -427,11 +445,13 @@ export function mountDesktopScene(
     avatarImage.removeEventListener("load", drawMainScreen);
     window.clearTimeout(statusTimer);
     sceneObjects.forEach((object) => object.dispose?.());
+    disposeFinish?.();
     disposeObjectGraph(world);
     renderer.dispose();
     renderer.domElement.remove();
     delete window.__ERYU_DESKTOP__;
     delete root.dataset.ready;
     delete root.dataset.mouseModel;
+    delete root.dataset.finish;
   };
 }
