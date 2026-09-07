@@ -156,7 +156,7 @@ export const createMouseObject = (
   proceduralVisual.add(mouseLogo);
 
   const hitProxy = addAction(
-    new THREE.Mesh(
+    new THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>(
       new THREE.SphereGeometry(mouse.body.radius, 16, 10),
       new THREE.MeshBasicMaterial({
         transparent: true,
@@ -177,6 +177,13 @@ export const createMouseObject = (
     mouse.body.position.y + 0.03,
     mouse.body.position.z,
   );
+  if (options.variant === "study") {
+    hitProxy.geometry.dispose();
+    hitProxy.geometry = new THREE.BoxGeometry(0.86, 0.48, 1.46);
+    hitProxy.scale.set(1, 1, 1);
+    hitProxy.position.set(-0.035, -0.06, -0.02);
+    hitProxy.material.colorWrite = false;
+  }
   group.add(hitProxy);
 
   let disposed = false;
@@ -184,13 +191,13 @@ export const createMouseObject = (
   let activeModel: THREE.Group | undefined;
   const variant = options.variant ?? "procedural";
   const modelRequest =
-    variant === "glb" && options.assetStore
+    variant !== "procedural" && options.assetStore
       ? new AbortController()
       : undefined;
   const ready: Promise<DesktopMouseVariant> =
     modelRequest && options.assetStore
       ? options.assetStore
-          .acquire(options.modelUrl ?? DESKTOP_MODEL_URLS.mouse, {
+          .acquire(options.modelUrl ?? (variant === "study" ? DESKTOP_MODEL_URLS.mouseStudy : DESKTOP_MODEL_URLS.mouse), {
             signal: modelRequest.signal,
           })
           .then((lease) => {
@@ -200,15 +207,15 @@ export const createMouseObject = (
             }
             activeLease = lease;
             activeModel = lease.scene;
-            activeModel.name = "gaming-mouse-glb";
+            activeModel.name = variant === "study" ? "eryu-mouse-study" : "gaming-mouse-glb";
             activeModel.traverse((object) => {
               if (object instanceof THREE.Mesh) object.castShadow = true;
             });
             proceduralVisual.visible = false;
             group.add(activeModel);
-            group.userData.modelVariant = "glb";
+            group.userData.modelVariant = variant;
             delete group.userData.modelError;
-            return "glb";
+            return variant;
           })
           .catch((error: unknown) => {
             if (

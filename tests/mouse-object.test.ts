@@ -6,6 +6,23 @@ import { createMouseObject } from "../src/desktop/objects/mouse";
 import { createDesktopMaterials } from "../src/desktop/objects/primitives";
 
 describe("replaceable desktop mouse", () => {
+  it("loads the reference study through the same interaction container", async () => {
+    const model = new THREE.Group();
+    const release = vi.fn();
+    const acquire = vi.fn(async (_url: string) => ({ scene: model, release }));
+    const mouse = createMouseObject(createDesktopMaterials(), { variant: "study", assetStore: { acquire } });
+    expect(await mouse.ready).toBe("study");
+    expect(acquire.mock.calls[0][0]).toBe("/models/desktop/eryu-mouse-study.glb");
+    expect(mouse.interactiveTargets).toHaveLength(1);
+    expect(mouse.interactiveTargets?.[0].userData.action).toBe("mouse");
+    const hitBounds = new THREE.Box3().setFromObject(mouse.interactiveTargets![0]);
+    expect(hitBounds.min.x).toBeLessThan(-0.45);
+    expect(hitBounds.min.z).toBeLessThan(-0.73);
+    mouse.dispose?.();
+    mouse.dispose?.();
+    expect(release).toHaveBeenCalledOnce();
+  });
+
   it("uses the procedural visual by default without requesting a model", async () => {
     const acquire = vi.fn();
     const mouse = createMouseObject(createDesktopMaterials(), {

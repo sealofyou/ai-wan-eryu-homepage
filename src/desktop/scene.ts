@@ -169,7 +169,7 @@ export function mountDesktopScene(
 
   const keyboardObject = addSceneObject(createKeyboardObject());
   const mouseVariant = resolveDesktopMouseVariant(window.location.search);
-  const modelAssets = mouseVariant === "glb" ? createGlbAssetStore() : undefined;
+  const modelAssets = mouseVariant !== "procedural" ? createGlbAssetStore() : undefined;
   const mouseObject = addSceneObject(createMouseObject(materials, {
     variant: mouseVariant,
     assetStore: modelAssets,

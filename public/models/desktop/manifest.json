@@ -25,6 +25,29 @@
         "status": "candidate"
       },
       "previewQuery": "mouse=glb"
+    },
+    {
+      "id": "eryu-mouse-study-20260907",
+      "object": "mouse",
+      "file": "eryu-mouse-study.glb",
+      "provenance": {
+        "sourceType": "user-photo-generated",
+        "tool": "Reference-led control-surface mesh authoring and Three.js GLTFExporter",
+        "generatedAt": "2026-09-07",
+        "inputRights": "User supplied top, rear-left and low-left photographs and authorized use for the personal homepage. Original photographs are not embedded.",
+        "license": "Project-authored mesh with Eryu branding; no third-party mesh or texture assets."
+      },
+      "geometry": {
+        "upAxis": "Y",
+        "forwardAxis": "-Z",
+        "origin": "interaction-container-center",
+        "unit": "meter",
+        "sceneScale": 1
+      },
+      "budgetBytes": 500000,
+      "defaultEnabled": false,
+      "approval": { "status": "candidate" },
+      "previewQuery": "mouse=study"
     }
   ]
 }

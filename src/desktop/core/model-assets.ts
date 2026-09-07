@@ -1,16 +1,19 @@
 import * as THREE from "three";
 import { disposeObjectGraph } from "./renderer";
 
-export type DesktopMouseVariant = "procedural" | "glb";
+export type DesktopMouseVariant = "procedural" | "glb" | "study";
 
 export const DESKTOP_MODEL_URLS = {
   mouse: "/models/desktop/gaming-mouse.glb",
+  mouseStudy: "/models/desktop/eryu-mouse-study.glb",
 } as const;
 
 export const resolveDesktopMouseVariant = (
   search: string,
-): DesktopMouseVariant =>
-  new URLSearchParams(search).get("mouse") === "glb" ? "glb" : "procedural";
+): DesktopMouseVariant => {
+  const variant = new URLSearchParams(search).get("mouse");
+  return variant === "glb" || variant === "study" ? variant : "procedural";
+};
 
 export interface GlbModelLease {
   scene: THREE.Group;
