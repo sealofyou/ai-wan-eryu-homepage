@@ -99,7 +99,7 @@ export const createMouseStudyModel = () => {
   const model = new THREE.Group();
   model.name = "eryu-reference-mouse-study";
   const shell = new THREE.MeshStandardMaterial({ name: "black-abs-shell", color: "#22252a", roughness: 0.42, metalness: 0.08 });
-  const buttons = new THREE.MeshStandardMaterial({ name: "satin-button-panels", color: "#2d3035", roughness: 0.52, metalness: 0.06 });
+  const rearCover = new THREE.MeshStandardMaterial({ name: "rear-satin-cover", color: "#2d3035", roughness: 0.52, metalness: 0.06 });
   const rubber = new THREE.MeshStandardMaterial({ name: "soft-grip-and-chassis", color: "#111418", roughness: 0.85 });
   const polished = new THREE.MeshStandardMaterial({ name: "polished-divider", color: "#111318", roughness: 0.25, metalness: 0.16 });
   const metal = new THREE.MeshStandardMaterial({ name: "brushed-scroll-metal", color: "#adb3ba", roughness: 0.26, metalness: 0.90 });
@@ -133,7 +133,7 @@ export const createMouseStudyModel = () => {
     const p = surface(THREE.MathUtils.lerp(-0.985, tailSeam(t) - 0.023, u), t, 0.5);
     p[1] = rearLeftHeight(THREE.MathUtils.lerp(-0.985, tailSeam(t) - 0.023, u), t);
     return p;
-  }, 12, 25, 1.05), buttons);
+  }, 12, 25, 1.05), rearCover);
 
   for (const side of [-1, 1]) {
     mesh(side < 0 ? "left-main-button" : "right-main-button", gridSurface((u, v) => {
@@ -148,7 +148,7 @@ export const createMouseStudyModel = () => {
       p[1] = THREE.MathUtils.lerp(innerY, outerY, outer) + Math.sin(Math.PI * u) * 0.7;
       p[1] -= 0.65 * (1-smooth(Math.min(u,1-u)/0.10)) + 0.55 * (1-smooth(v/0.07));
       return p;
-    }, 16, 24, 2.4), buttons);
+    }, 16, 24, 2.4), shell);
   }
 
   // Thin outer case walls support the separate upper panels without a second dome.
@@ -203,19 +203,19 @@ export const createMouseStudyModel = () => {
     }, 3, 26, 0.9), polished);
   }
   box("wheel-well-front-rim", [12.5, 1.5, 4], [0.5, 17.8, -56], polished, 0.6);
-  box("wheel-mode-button", [9, 2.4, 8], [0.5, 30.5, -24], polished, 0.8, [-0.2, 0, 0]);
-  box("dpi-button", [8, 2.6, 10], [0.5, 33.5, -11], buttons, 0.8, [-0.12, 0, 0]);
+  box("wheel-mode-button", [9, 2.4, 8], [0.5, 30.5, -24], shell, 0.8, [-0.2, 0, 0]);
+  box("dpi-button", [8, 2.6, 10], [0.5, 33.5, -11], shell, 0.8, [-0.12, 0, 0]);
 
   const wheel = new THREE.Group();
   wheel.name = "scroll-wheel";
   wheel.position.set(...worldPoint([0.5, 21.8, -43]));
   model.add(wheel);
   const wheelVertices = [], wheelIndices = [];
-  const radial = 80;
-  for (const x of [-4.2, 4.2]) {
+  const radial = 96;
+  for (const x of [-2.8, 2.8]) {
     for (let i = 0; i < radial; i += 1) {
       const a = i / radial * Math.PI * 2;
-      const radius = i % 4 === 0 || i % 4 === 3 ? 6.9 : 6.3;
+      const radius = i % 4 === 0 || i % 4 === 3 ? 6.1 : 5.85;
       wheelVertices.push(x / 100, Math.cos(a) * radius / 100, Math.sin(a) * radius / 100);
     }
   }
@@ -228,21 +228,18 @@ export const createMouseStudyModel = () => {
   barrel.setIndex(wheelIndices); barrel.computeVertexNormals();
   wheel.add(new THREE.Mesh(barrel, metal));
   for (const side of [-1, 1]) {
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.0075, 6, 32), metal);
-    rim.rotation.y = Math.PI / 2; rim.position.x = side * 0.040;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.058, 0.004, 6, 32), metal);
+    rim.rotation.y = Math.PI / 2; rim.position.x = side * 0.027;
     wheel.add(rim);
-    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.053, 0.053, 0.009, 24), polished);
-    disc.rotation.z = Math.PI / 2; disc.position.x = side * 0.032;
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.049, 0.049, 0.007, 24), polished);
+    disc.rotation.z = Math.PI / 2; disc.position.x = side * 0.021;
     wheel.add(disc);
   }
-  const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.013, 0.013, 0.10, 16), metal);
+  const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.010, 0.010, 0.065, 16), metal);
   axle.rotation.z = Math.PI / 2; wheel.add(axle);
 
-  box("side-button-forward", [3.2, 3.1, 16], [-28.5, 23.3, -28], polished, 0.75, [-0.26, -0.10, -0.15]);
-  box("side-button-back", [3.2, 3.1, 18], [-28.0, 27.0, -9], polished, 0.75, [-0.15, -0.09, -0.12]);
-  box("thumb-trigger", [4.2, 9.5, 12], [-31.7, 17.0, -34], buttons, 1.0, [-0.18, -0.22, -0.18]);
-  box("upper-left-control-1", [4.2, 2.4, 11], [-23.8, 22.1, -46], polished, 0.65, [-0.2, 0, -0.32]);
-  box("upper-left-control-2", [4.2, 2.4, 10], [-26.0, 26.6, -33], polished, 0.65, [-0.25, 0, -0.25]);
+  box("side-button-forward", [3.2, 3.1, 16], [-28.5, 23.3, -28], shell, 0.75, [-0.26, -0.10, -0.15]);
+  box("side-button-back", [3.2, 3.1, 18], [-28.0, 27.0, -9], shell, 0.75, [-0.15, -0.09, -0.12]);
 
   const cablePath = new THREE.CatmullRomCurve3([
     [0,7,-65],[0,7.5,-72],[0,8,-78],[0,8.5,-82],

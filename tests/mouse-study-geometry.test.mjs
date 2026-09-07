@@ -40,4 +40,27 @@ describe("reference-led mouse geometry", () => {
     const barrel = wheel.children[0];
     expect(barrel.geometry.getAttribute("normal").getY(0)).toBeGreaterThan(0);
   });
+  it("removes the marked floating blocks while keeping the long side keys", () => {
+    const model = createMouseStudyModel();
+    for (const name of ["upper-left-control-1", "upper-left-control-2", "thumb-trigger"]) {
+      expect(Boolean(model.getObjectByName(name)), name).toBe(false);
+    }
+    expect(model.getObjectByName("side-button-forward")).toBeDefined();
+    expect(model.getObjectByName("side-button-back")).toBeDefined();
+  });
+  it("uses the palm plastic on the main and retained control buttons", () => {
+    const model = createMouseStudyModel();
+    const palm = model.getObjectByName("palm-shell").material;
+    for (const name of ["left-main-button", "right-main-button", "wheel-mode-button", "dpi-button", "side-button-forward", "side-button-back"]) {
+      expect(model.getObjectByName(name).material === palm, name).toBe(true);
+    }
+  });
+  it("keeps a slimmer wheel without losing its readable diameter", () => {
+    const wheel = createMouseStudyModel().getObjectByName("scroll-wheel");
+    const size = new THREE.Box3().setFromObject(wheel).getSize(new THREE.Vector3());
+    expect(size.x).toBeGreaterThan(0.05);
+    expect(size.x).toBeLessThan(0.075);
+    expect(size.y).toBeGreaterThan(0.11);
+    expect(size.y).toBeLessThan(0.13);
+  });
 });
