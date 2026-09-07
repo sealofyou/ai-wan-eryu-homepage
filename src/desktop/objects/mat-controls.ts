@@ -6,8 +6,11 @@ import { makeTextMaterial, roundedMesh, type DesktopMaterials } from "./primitiv
 
 export const createMatControlsObject = (
   materials: DesktopMaterials,
+  options: { visible?: boolean } = {},
 ): SceneObjectResult => {
   const group = new THREE.Group();
+  group.name = "mat-controls";
+  if (options.visible === false) return { group, interactiveTargets: [] };
   const buttonMeshes: Array<{ action: string; mesh: THREE.Mesh }> = [];
 
   DESK_LAYOUT.matControls.buttons.forEach(({ label, action, x }) => {

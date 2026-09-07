@@ -177,6 +177,19 @@ export function mountDesktopScene(
   }));
   const keyboard = keyboardObject.group;
   let sceneDisposed = false;
+  root.dataset.keyboardModel = "baseline";
+  if (new URLSearchParams(window.location.search).get("keyboard") === "study") {
+    void import("./studies/keyboard-study-model").then(({ createKeyboardStudyModel, KEYBOARD_STUDY_FLOOR_Y }) => {
+      if (sceneDisposed) return;
+      const visual = createKeyboardStudyModel({ withLegends: true });
+      if (keyboardObject.applyStudyVisual(visual, KEYBOARD_STUDY_FLOOR_Y)) root.dataset.keyboardModel = "study";
+    }).catch(() => {
+      if (!sceneDisposed) {
+        root.dataset.keyboardModel = "unavailable";
+        console.warn("Keyboard preview could not be applied; baseline retained.");
+      }
+    });
+  }
   root.dataset.monitorModel = "baseline";
   if (resolveMonitorVariant(window.location.search) === "study") {
     void import("./studies/monitor-visual-set").then(({ createMonitorVisualSet }) => {
@@ -195,7 +208,9 @@ export function mountDesktopScene(
     if (!sceneDisposed) root.dataset.mouseModel = resolvedVariant;
   });
 
-  const matControls = addSceneObject(createMatControlsObject(materials));
+  const matControls = addSceneObject(createMatControlsObject(materials, {
+    visible: resolveMonitorVariant(window.location.search) !== "study",
+  }));
   const interactiveTargets = sceneObjects.flatMap(
     (object) => object.interactiveTargets ?? [],
   );
@@ -466,6 +481,7 @@ export function mountDesktopScene(
     delete window.__ERYU_DESKTOP__;
     delete root.dataset.ready;
     delete root.dataset.mouseModel;
+    delete root.dataset.keyboardModel;
     delete root.dataset.monitorModel;
     delete root.dataset.finish;
   };
