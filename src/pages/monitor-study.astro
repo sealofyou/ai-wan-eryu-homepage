@@ -7,8 +7,8 @@ import "../styles/mouse-study.css";
   <section class="mouse-study monitor-study" data-monitor-study-root aria-label="Eryu 主显示器样件查看页">
     <header class="mouse-study__header">
       <a class="mouse-study__link" href="/">返回原主页</a>
-      <div class="mouse-study__title"><p>Eryu</p><h1>主显示器样件</h1></div>
-      <a class="mouse-study__link" href="/mouse-study/">已确认的鼠标</a>
+      <div class="mouse-study__title"><p>Eryu</p><h1 data-study-title>主显示器样件</h1></div>
+      <a class="mouse-study__link" href="/?monitors=study&mouse=study">放回桌面看</a>
     </header>
     <div class="mouse-study__viewer">
       <div class="mouse-study__canvas" data-monitor-canvas aria-label="拖动旋转主显示器，滚轮缩放"></div>
@@ -16,6 +16,10 @@ import "../styles/mouse-study.css";
       <div class="mouse-study__error" data-monitor-error hidden role="status"><h2>三维预览未能启动</h2><p>请检查浏览器硬件加速，或刷新后重试。</p></div>
     </div>
     <aside class="mouse-study__panel" aria-label="显示器样件控制台">
+      <nav class="monitor-study__objects" aria-label="选择显示器">
+        <a class="mouse-study__link" href="/monitor-study/">主显示器</a>
+        <a class="mouse-study__link" href="/monitor-study/?display=portrait">竖屏</a>
+      </nav>
       <section class="mouse-study__controls" aria-label="视角">
         <p class="mouse-study__label">视角</p>
         <div class="mouse-study__button-row">
@@ -55,6 +59,7 @@ import "../styles/mouse-study.css";
     .monitor-study { height: 100vh; min-height: 760px; }
     .monitor-study .mouse-study__viewer { min-height: 0; }
     .monitor-study__secondary-label { margin-top: 16px; }
+    .monitor-study__objects { display: flex; gap: 8px; }
   </style>
   <script>
     import { mountMonitorStudy } from "../desktop/studies/monitor-study";

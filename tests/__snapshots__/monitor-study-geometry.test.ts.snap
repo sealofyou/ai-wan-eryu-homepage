@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`main monitor study geometry > locks the accepted main-monitor geometry independently of future portrait variants 1`] = `
+{
+  "front-bezel": "10296e292070a31be765af86c52b6088edcc209154d6d28ed661a5dee109a3e1",
+  "panel-gasket": "2478961d1738002c5106cd274e23a589180eef378ab2480de45b55ab1f411a19",
+  "rear-housing": "b52f764ad7955f43c0df4eb8625514a4c6eed67cbaa35e0cc2376a15f0d3a5d5",
+  "rear-shell": "d12c8524070ddb6c04a494c998c5eb864735a0bb7a86358f38f67d529f99dd4a",
+  "stand-foot": "babbf5b3a99ab063f247f72dc36d3bfd6848a374bbcc39a29f6d6a4e6d0c889f",
+  "stand-hinge": "687388247767f6f7a6becde5055ff73f2c385bea844f1e87a87bd49acca6d558",
+  "stand-mount": "bd3d41d30f6989b8484fe180435436d6d22bb33ba0074fe5903db594a669cf60",
+  "stand-post": "eee6d9ebf7082e3145be1bcc755099a4438b277fe6c4aaf8fa97187f40d316e8",
+}
+`;

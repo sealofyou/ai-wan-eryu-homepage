@@ -33,7 +33,7 @@ const extrudedPlate = (
   curveSegments: 6,
 });
 
-const taperedRearHousing = () => {
+const taperedRearHousing = (widthScale = 1, heightScale = 1) => {
   const sections = [
     { width: 5.46, height: 3.24, radius: 0.25, z: -0.164 },
     { width: 5.40, height: 3.18, radius: 0.24, z: -0.19 },
@@ -72,15 +72,22 @@ const taperedRearHousing = () => {
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
+  if (widthScale !== 1 || heightScale !== 1) geometry.scale(widthScale, heightScale, 1);
   return geometry;
 };
 
 /** Structural visual only. The caller supplies content and interaction planes separately. */
-export const createMonitorStudyVisual = () => {
+export const createMonitorStudyVisual = (variant: "main" | "portrait" = "main") => {
   const group = new THREE.Group();
   group.name = "monitor-study-visual";
-  const { screen } = DESK_LAYOUT.mainMonitor;
+  const portrait = variant === "portrait";
+  const side = DESK_LAYOUT.leftMonitor;
+  const screen = portrait ? {
+    size: side.screen.size,
+    position: { x: side.center.x + Math.sin(side.yaw) * side.screen.z, y: side.center.y, z: side.center.z + Math.cos(side.yaw) * side.screen.z },
+  } : DESK_LAYOUT.mainMonitor.screen;
   group.position.set(screen.position.x, screen.position.y, screen.position.z);
+  if (portrait) { group.rotation.y = side.yaw; group.name = "portrait-monitor-study-visual"; }
   const floorY = DESK_LAYOUT.desk.surface.position.y
     + DESK_LAYOUT.desk.surface.size.height / 2 - screen.position.y;
 
@@ -101,24 +108,24 @@ export const createMonitorStudyVisual = () => {
     add(name, new RoundedBoxGeometry(w, h, d, 2, r), material, x, y, z);
 
   // The live screen remains at local z=0. A hollow forward lip creates recess without moving it.
-  const front = roundedOutline(8.32, 4.64, 0.065, -0.06);
+  const front = roundedOutline(portrait ? screen.size.width + 0.27 : 8.32, portrait ? screen.size.height + 0.30 : 4.64, 0.065, -0.06);
   front.holes.push(roundedOutline(screen.size.width + 0.046, screen.size.height + 0.046, 0.014));
   add("front-bezel", extrudedPlate(front, 0.074, 0.009), shell, 0, 0, -0.034);
 
-  const inset = roundedOutline(8.20, 4.53, 0.035, -0.035);
+  const inset = roundedOutline(portrait ? screen.size.width + 0.15 : 8.20, portrait ? screen.size.height + 0.19 : 4.53, 0.035, -0.035);
   inset.holes.push(roundedOutline(screen.size.width - 0.015, screen.size.height - 0.015, 0.01));
   add("panel-gasket", extrudedPlate(inset, 0.016, 0), inner, 0, 0, -0.024);
 
-  add("rear-shell", extrudedPlate(roundedOutline(8.29, 4.61, 0.068, -0.06), 0.095, 0.018), shell, 0, 0, -0.173);
-  add("rear-housing", taperedRearHousing(), shell);
+  add("rear-shell", extrudedPlate(roundedOutline(portrait ? screen.size.width + 0.24 : 8.29, portrait ? screen.size.height + 0.27 : 4.61, 0.068, -0.06), 0.095, 0.018), shell, 0, 0, -0.173);
+  add("rear-housing", portrait ? taperedRearHousing(screen.size.width / 8.05, screen.size.height / 4.34) : taperedRearHousing(), shell);
   box("stand-mount", 0.84, 0.86, 0.20, 0.065, support, 0, -0.89, -0.47);
 
   const hinge = add("stand-hinge", new THREE.CylinderGeometry(0.16, 0.16, 0.62, 24), inner, 0, -1.03, -0.61);
   hinge.rotation.z = Math.PI / 2;
   const baseTop = floorY + 0.16;
   const postTop = -1.02;
-  box("stand-post", 0.44, postTop - baseTop + 0.03, 0.24, 0.038, support, 0, (postTop + baseTop - 0.03) / 2, -0.69);
-  box("stand-foot", 2.95, 0.16, 1.78, 0.045, support, 0, floorY + 0.08, -0.40);
+  box("stand-post", portrait ? 0.30 : 0.44, postTop - baseTop + 0.03, 0.24, 0.038, support, 0, (postTop + baseTop - 0.03) / 2, -0.69);
+  box("stand-foot", portrait ? 1.58 : 2.95, 0.16, portrait ? 1.05 : 1.78, 0.045, support, 0, floorY + 0.08, -0.40);
 
   group.updateMatrixWorld(true);
   return group;

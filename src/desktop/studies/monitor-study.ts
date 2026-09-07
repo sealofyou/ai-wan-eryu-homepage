@@ -8,6 +8,7 @@ import { DESKTOP_IMAGE_URLS } from "../core/assets";
 import { makeCanvas } from "../screens/canvas-utils";
 import { renderMainScreen } from "../screens/main-screen";
 import { createInitialDesktopState } from "../model";
+import { renderSideScreen } from "../screens/side-screen";
 
 const TARGET = new THREE.Vector3(0.68, 3.28, -1.03);
 const PRESETS = {
@@ -20,6 +21,17 @@ const PRESETS = {
 export const mountMonitorStudy = (root: HTMLElement) => {
   const mount = root.querySelector<HTMLElement>("[data-monitor-canvas]");
   if (!mount) return undefined;
+  const portrait = new URLSearchParams(window.location?.search ?? "").get("display") === "portrait";
+  const target = portrait ? new THREE.Vector3(DESK_LAYOUT.leftMonitor.center.x, 3.1, DESK_LAYOUT.leftMonitor.center.z) : TARGET;
+  const cameraPosition = (preset: keyof typeof PRESETS) => PRESETS[preset].clone().sub(TARGET).multiplyScalar(portrait ? 0.9 : 1).add(target);
+  if (portrait) {
+    const title = root.querySelector("[data-study-title]");
+    if (title) title.textContent = "竖屏样件";
+    document.title = "竖屏样件查看 | AI玩尔玉";
+    root.setAttribute("aria-label", "Eryu 竖屏样件查看页");
+    mount.setAttribute("aria-label", "拖动旋转竖屏显示器，滚轮缩放");
+    document.querySelector('meta[name="description"]')?.setAttribute("content", "独立查看 Eryu 竖屏显示器的边框、后壳与支架结构。");
+  }
   const loading = root.querySelector<HTMLElement>("[data-monitor-loading]");
   const error = root.querySelector<HTMLElement>("[data-monitor-error]");
   const scene = new THREE.Scene();
@@ -58,8 +70,8 @@ export const mountMonitorStudy = (root: HTMLElement) => {
   try {
     scene.background = new THREE.Color("#edf0ee");
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 70);
-    camera.position.copy(PRESETS.real);
-    camera.lookAt(TARGET);
+    camera.position.copy(cameraPosition("real"));
+    camera.lookAt(target);
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -69,7 +81,7 @@ export const mountMonitorStudy = (root: HTMLElement) => {
     renderer.shadowMap.type = THREE.PCFShadowMap;
     mount.appendChild(renderer.domElement);
     controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.copy(TARGET);
+    controls.target.copy(target);
     controls.enableDamping = false;
     controls.enablePan = false;
     controls.minDistance = 8;
@@ -103,7 +115,7 @@ export const mountMonitorStudy = (root: HTMLElement) => {
     scene.add(ground);
 
     initializationStage = "geometry";
-    const model = createMonitorStudyVisual();
+    const model = createMonitorStudyVisual(portrait ? "portrait" : "main");
     scene.add(model);
     let triangles = 0;
     const materials = new Set<THREE.Material>();
@@ -115,10 +127,12 @@ export const mountMonitorStudy = (root: HTMLElement) => {
     });
     clay = new THREE.MeshStandardMaterial({ color: "#9ba3a1", roughness: 0.75, metalness: 0 });
     initializationStage = "screen";
-    const surface = makeCanvas(DESK_LAYOUT.mainMonitor.canvas.width, DESK_LAYOUT.mainMonitor.canvas.height);
+    const surface = makeCanvas(portrait ? 440 : DESK_LAYOUT.mainMonitor.canvas.width, portrait ? 880 : DESK_LAYOUT.mainMonitor.canvas.height);
     const screenMaterial = new THREE.MeshBasicMaterial({ map: surface.texture, toneMapped: false });
-    const screen = new THREE.Mesh(new THREE.PlaneGeometry(DESK_LAYOUT.mainMonitor.screen.size.width, DESK_LAYOUT.mainMonitor.screen.size.height), screenMaterial);
+    const screenSize = portrait ? DESK_LAYOUT.leftMonitor.screen.size : DESK_LAYOUT.mainMonitor.screen.size;
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(screenSize.width, screenSize.height), screenMaterial);
     screen.position.copy(model.position);
+    screen.rotation.copy(model.rotation);
     scene.add(screen);
     const brand = makeCanvas(256, 80);
     brand.context.clearRect(0, 0, 256, 80);
@@ -128,8 +142,9 @@ export const mountMonitorStudy = (root: HTMLElement) => {
     brand.context.fillStyle = "#a1a7a7";
     brand.context.fillText("Eryu", 128, 40);
     brand.texture.needsUpdate = true;
-    const label = new THREE.Mesh(new THREE.PlaneGeometry(0.68, 0.18), new THREE.MeshBasicMaterial({ map: brand.texture, transparent: true, depthWrite: false, toneMapped: false }));
-    label.position.copy(model.position).add(new THREE.Vector3(0, -2.29, 0.051));
+    const label = new THREE.Mesh(new THREE.PlaneGeometry(portrait ? 0.5 : 0.68, 0.18), new THREE.MeshBasicMaterial({ map: brand.texture, transparent: true, depthWrite: false, toneMapped: false }));
+    label.position.set(0, portrait ? -screenSize.height / 2 - 0.12 : -2.29, 0.051).applyMatrix4(model.matrixWorld);
+    label.rotation.copy(model.rotation);
     scene.add(label);
 
     const setStat = (key: string, value: string) => {
@@ -152,7 +167,8 @@ export const mountMonitorStudy = (root: HTMLElement) => {
     avatar.decoding = "async";
     const drawScreen = () => {
       if (disposed) return;
-      renderMainScreen({ surface, state: createInitialDesktopState(), avatarImage: avatar!, contentById: new Map(), itemsForSection: () => [] });
+      if (portrait) renderSideScreen(surface, "home");
+      else renderMainScreen({ surface, state: createInitialDesktopState(), avatarImage: avatar!, contentById: new Map(), itemsForSection: () => [] });
       render();
     };
     avatar.onload = drawScreen;
@@ -167,7 +183,7 @@ export const mountMonitorStudy = (root: HTMLElement) => {
       if (status) status.textContent = "人物图片暂未加载；可以继续检查显示器结构。";
       drawScreen();
     };
-    avatar.src = DESKTOP_IMAGE_URLS.avatar;
+    if (!portrait) avatar.src = DESKTOP_IMAGE_URLS.avatar;
     drawScreen();
 
     const pressed = (attribute: string, value: string) => root.querySelectorAll<HTMLButtonElement>(`[${attribute}]`).forEach(button => button.setAttribute("aria-pressed", String(button.getAttribute(attribute) === value)));
@@ -175,8 +191,8 @@ export const mountMonitorStudy = (root: HTMLElement) => {
       const preset = button.dataset.cameraPreset as keyof typeof PRESETS;
       if (!(preset in PRESETS)) return;
       button.addEventListener("click", () => {
-        camera.position.copy(PRESETS[preset]);
-        controls!.target.copy(TARGET);
+        camera.position.copy(cameraPosition(preset));
+        controls!.target.copy(target);
         controls!.update();
         pressed("data-camera-preset", preset);
         render();

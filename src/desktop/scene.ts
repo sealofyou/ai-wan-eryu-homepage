@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { resolveDesktopFinish } from "./core/finish-mode";
+import { resolveMonitorVariant } from "./core/monitor-variant";
 import {
   DAILY_QUOTES,
   createInitialDesktopState,
@@ -176,6 +177,19 @@ export function mountDesktopScene(
   }));
   const keyboard = keyboardObject.group;
   let sceneDisposed = false;
+  root.dataset.monitorModel = "baseline";
+  if (resolveMonitorVariant(window.location.search) === "study") {
+    void import("./studies/monitor-visual-set").then(({ createMonitorVisualSet }) => {
+      if (sceneDisposed) return;
+      const visuals = createMonitorVisualSet();
+      if (monitors.applyStudyVisuals(visuals)) root.dataset.monitorModel = "study";
+    }).catch(() => {
+      if (!sceneDisposed) {
+        root.dataset.monitorModel = "unavailable";
+        console.warn("Monitor preview could not be applied; baseline retained.");
+      }
+    });
+  }
   root.dataset.mouseModel = "procedural";
   void mouseObject.ready.then((resolvedVariant) => {
     if (!sceneDisposed) root.dataset.mouseModel = resolvedVariant;
@@ -452,6 +466,7 @@ export function mountDesktopScene(
     delete window.__ERYU_DESKTOP__;
     delete root.dataset.ready;
     delete root.dataset.mouseModel;
+    delete root.dataset.monitorModel;
     delete root.dataset.finish;
   };
 }

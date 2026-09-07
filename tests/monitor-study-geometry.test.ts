@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { DESK_LAYOUT } from "../src/desktop/layout";
 import { createMonitorStudyVisual } from "../src/desktop/studies/monitor-study-model";
 import { disposeObjectGraph } from "../src/desktop/core/renderer";
+import { createHash } from "node:crypto";
 
 const screenLayout = DESK_LAYOUT.mainMonitor.screen;
 const bounds = (root: THREE.Object3D, name: string) => {
@@ -12,6 +13,21 @@ const bounds = (root: THREE.Object3D, name: string) => {
 };
 
 describe("main monitor study geometry", () => {
+  it("locks the accepted main-monitor geometry independently of future portrait variants", () => {
+    const model = createMonitorStudyVisual();
+    const signature: Record<string, string> = {};
+    model.traverse(node => {
+      if (!(node instanceof THREE.Mesh)) return;
+      const hash = createHash("sha256");
+      for (const attribute of [node.geometry.getAttribute("position"), node.geometry.getAttribute("normal"), node.geometry.index]) {
+        if (attribute) hash.update(Buffer.from(attribute.array.buffer, attribute.array.byteOffset, attribute.array.byteLength));
+      }
+      hash.update(JSON.stringify([node.position.toArray(), node.rotation.toArray(), node.scale.toArray()]));
+      signature[node.name] = hash.digest("hex");
+    });
+    expect(signature).toMatchSnapshot();
+    disposeObjectGraph(model);
+  });
   it("preserves the screen reference and keeps the entire readable aperture open", () => {
     const model = createMonitorStudyVisual();
     expect(model.position.toArray()).toEqual(Object.values(screenLayout.position));

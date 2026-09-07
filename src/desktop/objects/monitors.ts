@@ -12,6 +12,7 @@ import type { DesktopState } from "../model";
 import type { CanvasSurface } from "../screens/canvas-utils";
 import { DESKTOP_SECTIONS } from "../screens/sections";
 import { makeTextMaterial, roundedMesh, type DesktopMaterials } from "./primitives";
+import { disposeObjectGraph } from "../core/renderer";
 
 interface MonitorObjectOptions {
   mainCanvas: CanvasSurface;
@@ -26,6 +27,7 @@ export interface MonitorObjectResult extends SceneObjectResult {
   updateMainActions: (state: DesktopState) => void;
   beginMainTransition: (reducedMotion: boolean) => void;
   updateMainTransition: (time: number) => void;
+  applyStudyVisuals: (visuals: { main: THREE.Group; portrait: THREE.Group }) => boolean;
 }
 
 const createHitMaterial = () =>
@@ -60,6 +62,7 @@ export const createMonitorsObject = ({
     mainMonitor.frame.position.z,
   );
   mainFrame.castShadow = true;
+  mainFrame.name = "baseline-main-frame";
   group.add(mainFrame);
 
   const mainScreenMaterial = new THREE.MeshBasicMaterial({
@@ -119,6 +122,8 @@ export const createMonitorsObject = ({
       mainMonitor.actionZ,
     );
     mainActionGroup.add(hit);
+    // Input can arrive before the next renderer pass after a content switch.
+    hit.updateWorldMatrix(true, false);
   };
 
   const updateMainActions = (state: DesktopState) => {
@@ -204,6 +209,7 @@ export const createMonitorsObject = ({
     mainMonitor.soundbar.position.z,
   );
   soundbar.castShadow = true;
+  soundbar.name = "monitor-soundbar";
   group.add(soundbar);
   const soundbarLabel = new THREE.Mesh(
     new THREE.PlaneGeometry(
@@ -260,6 +266,7 @@ export const createMonitorsObject = ({
     leftMonitor.center.z,
   );
   sideSupport.rotation.y = leftMonitor.yaw;
+  sideSupport.name = "baseline-side-support";
   const supportPost = roundedMesh(
     leftMonitor.support.postWidth,
     leftMonitor.support.height,
@@ -292,12 +299,32 @@ export const createMonitorsObject = ({
   sideSupport.add(supportFoot);
   group.add(sideSupport);
 
+  let disposed = false;
+  let studyRoots: THREE.Group[] = [];
+  const applyStudyVisuals: MonitorObjectResult["applyStudyVisuals"] = ({ main, portrait }) => {
+    if (disposed || studyRoots.length) {
+      [main, portrait].filter(root => !studyRoots.includes(root)).forEach(disposeObjectGraph);
+      return false;
+    }
+    group.add(main, portrait);
+    studyRoots = [main, portrait];
+    [mainFrame, stand, standFoot, sideFrame, sideSupport].forEach(root => { root.visible = false; });
+    const deskTop = DESK_LAYOUT.desk.surface.position.y + DESK_LAYOUT.desk.surface.size.height / 2;
+    const soundbarBottom = mainMonitor.soundbar.position.y - mainMonitor.soundbar.size.height / 2;
+    const adjustment = deskTop - soundbarBottom;
+    soundbar.position.y += adjustment;
+    soundbarLabel.position.y += adjustment;
+    return true;
+  };
+
   return {
     group,
     mainScreen,
     updateMainActions,
     beginMainTransition,
     updateMainTransition,
+    applyStudyVisuals,
+    dispose: () => { disposed = true; },
     interactiveTargets: [mainActionGroup, ...sideActionHits],
   };
 };
