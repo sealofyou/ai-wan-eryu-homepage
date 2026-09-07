@@ -598,3 +598,56 @@ Kimi已在用户明确授权下真实读取原构图、原版与三轮Demo截图
 #### 剩余问题与边界
 
 机箱、键盘、台灯和其他旧物件本轮没有重建；竖屏背面仍为合理近似。整桌本轮候选尚未获得用户主观验收，不能把鼠标/主屏已认可自动扩大为整站已完成。低端设备矩阵、手机版和线上均未处理。飞书写回仍因前次明确安全拒绝而未重试，当前阶段摘要仅保存在本地待补状态中。
+
+### 2026-09-07 键盘精修与四个桌垫实体按钮移除
+
+用户确认先做键盘，并要求同时删除鼠标垫左下四个小实体按钮，不再放替代图标。键盘样件提交 `f141664`，候选接入与按钮移除提交 `e40ee1b`。没有合并、推送或部署。
+
+#### 本地查看
+
+- 独立键盘：`http://127.0.0.1:4330/keyboard-study/`
+- 含新键盘的整桌候选：`http://127.0.0.1:4330/?monitors=study&mouse=study&keyboard=study`
+- 用户此前的双屏候选地址仍可用，刷新后四个按钮已消失：`http://127.0.0.1:4330/?monitors=study&mouse=study`。该地址未加keyboard参数，因此仍可对照旧键盘。
+- 无参数主页继续作为原物件对照，尚未切换新键盘或删除该对照里的四按钮。
+
+#### 实际修改
+
+- 保留104键布局、宽键比例、深色键帽/浅色外壳/低饱和绿强调色。键帽由两层圆角盒改为连续收分侧壁与浅凹顶面，空格采用更浅的凹面；上下壳与定位板分件保持清楚。
+- 同色键帽合并为批次，全部键名字与Eryu标识使用一张1024×1024本地产生图集。文字几何贴合键帽表面，不再让每个字牌投射阴影。
+- 键盘候选继续使用原拖拽容器与归一化边界；细节网格禁用raycast，统一简化代理负责拖动。视觉层校正落垫高度，X/Z映射不变。替换时旧图形释放；失败/迟到加载回退或清理。
+- 当前`monitors=study`候选不再创建四个实体按钮、四个标签或对应命中体，没有用另一排小图标替代。底层移动/画线/清空/留言状态能力以及既有无障碍键盘入口保留；右上便利贴和整体交互重新设计没有混入本轮。
+- 初期查看器镜头过近裁切键盘，已按包围盒适配视角；环境初始化和模型批次合并的异常路径均补了资源事务清理。
+
+#### 文件与简化
+
+- `src/desktop/studies/keyboard-study-model.ts`：一体键帽、共享材质、文字图集与构建失败回收。
+- `src/desktop/studies/keyboard-study.ts`、`src/pages/keyboard-study.astro`：四视角/材质/素模/手动旋转的按需查看器。
+- `src/desktop/objects/keyboard-object.ts`、`src/desktop/scene.ts`：显式候选加载、拖动代理和生命周期接入。
+- `src/desktop/objects/mat-controls.ts`：禁用时直接返回空物件，不仅隐藏绘制。
+- 新增键盘几何、真实图集预算、构建失败、查看器生命周期、键盘接入与按钮移除测试。没有新增依赖、GLB或照片贴图。
+
+#### 验证
+
+- 最后完整 `npm run verify:release`：32文件、163测试通过；Astro check 0 errors/0 warnings/0 hints；10页构建、资源、模型与发布检查通过。
+- 模型实际25,366三角面、8材质、10模型网格批次、1张1024图集。查看器的19次绘制调用包含地面/辅助线/阴影，不是19种材质。
+- 默认首页冷加载全部静态JS 566,523字节，低于625,000预算；全候选JS 702,491字节，另加载既有鼠标GLB 416,660字节。键盘没有新的模型/纹理下载，图集在本地生成；不能把默认JS当作全候选总量。
+- 同设备/浏览器/1440×900，原版与全候选暖态帧间隔中位数均约7.0ms，P95均约7.1ms；仅是本机相对结果，不保证所有硬件。
+- 浏览器通过四视角、材质/素模、手动旋转、两种视口与pagehide；闲置600ms内渲染计数12→12。
+- 实际键盘拖动后归一化位置变为(0.7,0.48)，鼠标与主屏光标同步正常。四个旧按钮位置点击不改变模式；通过既有语义键盘入口验证画线/清空/留言能力仍存在。
+- 键盘模块被强制拒绝时保留原键盘且屏幕可导航；延迟至pagehide后才放行模块时Canvas=0、键盘状态marker为空、debug API已移除。
+- 最后生产浏览器回归errors=[]、warnings=[]。早期开发期曾出现ANGLE精度warning和查看器中间态初始化错误；均未在最后回归复现，不写成从未发生。
+- 独立样件最终生产截图与被Kimi审查的图逐通道0差异；桌面图仅6个通道差1；未启用候选的原物件对照也仅6个通道差1，无可见变化。
+- 代码复核提出的构建异常清理、真实withLegends预算、Room构造失败PMREM回收均已先测后修；最终复核Critical/Important/Minor均0。
+
+#### 截图与剩余边界
+
+- `output/screenshots/keyboard-study/final-material.png`
+- `output/screenshots/keyboard-study/final-top.png`
+- `output/screenshots/keyboard-study/final-front.png`
+- `output/screenshots/keyboard-study/final-side.png`
+- `output/screenshots/keyboard-study/final-clay.png`
+- `output/screenshots/keyboard-study/final-1920x1080.png`
+- `output/screenshots/keyboard-study/final-desktop-1440x900.png`、`final-desktop-1920x1080.png`
+- 复现：`output/reviews/keyboard-study-browser-check.js`、`keyboard-resources-check.js`。
+
+visual-verdict从初期查看器58/revise到完整样件Kimi91/pass；Kimi确认键帽收分、文字贴合、完整构图与四按钮消失。该分数只表示可交用户本地看，不是用户审美确认。接缝粗细仍可按用户反馈进一步收敛；未知背面、接口和轴体没有虚构。机箱、台灯和便利贴交互仍留在后续，未默认为已完成。飞书回写仍保留前次安全拒绝，当前结果只在本地待补，不绕过拒绝。
