@@ -498,3 +498,56 @@ Kimi已在用户明确授权下真实读取原构图、原版与三轮Demo截图
 - 定向基线测试3文件22项通过；没有本轮完整release Gate或新样件通过的声明。
 - 制作前方案：`docs/superpowers/specs/2026-09-07-monitor-reconstruction-design.md`；截图：`output/screenshots/monitor-study/`。先等待用户确认具体外观目标，再实现独立主显示器样件。
 - 原飞书任务读取成功，但阶段摘要写回被安全审核拦截，未写入；已向用户单独请求继续回写授权，待补内容保存于本地状态文件。
+
+### 2026-09-07 主显示器独立样件
+
+用户确认制作方案后，已完成独立主显示器样件，代码提交 `88dbb37`。没有改默认主页、竖屏、鼠标、原布局或屏幕交互代码，没有合并、推送或部署。
+
+#### 查看入口
+
+- `http://127.0.0.1:4330/monitor-study/`
+- 默认“材质 + 亮屏 + 斜侧”；可切正面/侧面/背面、素模/材质、亮屏/熄屏，拖动旋转、滚轮缩放。
+- 这页只查看物件，屏内画面复用原主页绘制代码；原主页导航和交互没有被搬入样件页。
+
+#### 实际变化
+
+- 原来的圆角厚板改为薄前框、独立内框与微凹屏面。屏面中心、尺寸和朝向继续来自现有layout。
+- 支柱连接在背部，不再压到屏面下缘；扁平底座下表面与原桌面上表面一致。
+- 第一轮截图复核后，背部设备仓由简单盒体改为连续收分外形；增大字标纹理中文字的实际占比，使Eryu标识能在正常尺寸辨认。
+- 外壳与支架共用黑色ABS材质，保留自然朝向光影；没有新增接口、螺丝、发光Logo或实拍不可见的机械装饰。
+
+#### 文件与简化
+
+- `src/desktop/studies/monitor-study-model.ts`：纯视觉几何工厂，与屏幕内容和点击层分离。
+- `src/desktop/studies/monitor-study.ts`：独立查看器，复用原屏幕绘制与图片；按需渲染，支持故障诊断和完整释放。
+- `src/pages/monitor-study.astro`：独立页面，复用鼠标样件的控件样式，不改鼠标查看器。
+- `tests/monitor-study-geometry.test.ts`、`tests/monitor-study-lifecycle.test.ts`：几何与生命周期回归。
+- 不新增依赖或GLB，不使用实拍照片作贴图；结构材质从第一轮3种收敛为2种。
+
+#### 资源与回归证据
+
+- 结构：3,904三角面、2种材质；19次全场景绘制调用包含地面、屏面、字标和阴影，不能把它写成19种材质。
+- 独立页面入口JS：7,791字节，gzip 3,614字节。浏览器冷加载全部JS及静态依赖合计640,897字节，另复用230,910字节主头像；前述入口大小不是总下载量。
+- 默认主页冷加载全部JS为646,962字节，低于650,000字节上限，但相比前阶段618,216字节测量增加28,746字节。默认主页不请求monitor-study入口或新模型；多入口共享chunk的体积影响需要在正式接入前进一步收紧，不能宣称零包体影响。
+- `npm run verify:release`通过：23文件、138测试；Astro check为0 errors/0 warnings/0 hints；9个页面构建、资源、模型和发布检查通过。
+- TDD：几何入口先缺失而失败；收分形体测试先失败再转绿；初始化阶段诊断与PNG回退2项先失败再转绿。生命周期另覆盖熄屏/素模后贴图释放、按钮监听失效、observer/controls/renderer/environment清理与幂等dispose。
+- 真实浏览器完成四视角、两种外壳模式、亮/熄屏、手动旋转、两种视口、pagehide与刷新恢复；闲置700ms内渲染计数15→15，RAF回调0→0。
+- 强制WebP失败后请求既有PNG回退；强制2D Canvas初始化失败后得到screen阶段诊断、错误提示可见、loading隐藏、Canvas数0。
+- 原桌面候选截图对照：5,184,000个RGBA通道中6个通道差1，其余相同，无可见构图变化；不能写成严格0像素差。副屏“分享与活动”→主屏列表→返回首页的实际点击通过。
+- 最后生产预览回归为errors=[]、warnings=[]；最初开发浏览器冷启动出现一次ANGLE shader精度warning，未造成失败。不同GPU/低端硬件未覆盖。
+- 独立代码复核的3个Important已修复并再审：Critical/Important均0，适合本地查看；真实浏览器补强了mock生命周期测试不能覆盖的WebGL、图片与pagehide路径。
+
+#### 截图与视觉结论
+
+- `output/screenshots/monitor-study/final-real.png`
+- `output/screenshots/monitor-study/final-front.png`
+- `output/screenshots/monitor-study/final-side.png`
+- `output/screenshots/monitor-study/final-back.png`
+- `output/screenshots/monitor-study/final-clay-off.png`
+- `output/screenshots/monitor-study/final-1920x1080.png`
+- 可重复浏览器检查：`output/reviews/monitor-study-browser-check.js`。
+- Kimi本轮两次实际看图：84/revise → 92/pass；通过范围仅为独立样件可以交用户本地观看，不代替用户审美验收。没有把Gemini、Grok或Claude写成已审查本轮。
+
+#### 剩余边界
+
+背面只做合理近似；没有承诺实物扫描精度。整桌光照、竖屏、音箱着地与整桌资源收紧均尚未混入本轮。默认主页和线上保持原样；下一步由用户看样件，具体指出仍不对的部位。飞书写回仍沿用上一轮的安全拦截状态，未重试，待补摘要保存在本地。
