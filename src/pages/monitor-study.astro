@@ -1,0 +1,66 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import "../styles/mouse-study.css";
+---
+
+<SiteLayout title="主显示器样件查看" description="独立查看 Eryu 主显示器的边框、后壳与支架结构。" theme="soft" immersive>
+  <section class="mouse-study monitor-study" data-monitor-study-root aria-label="Eryu 主显示器样件查看页">
+    <header class="mouse-study__header">
+      <a class="mouse-study__link" href="/">返回原主页</a>
+      <div class="mouse-study__title"><p>Eryu</p><h1>主显示器样件</h1></div>
+      <a class="mouse-study__link" href="/mouse-study/">已确认的鼠标</a>
+    </header>
+    <div class="mouse-study__viewer">
+      <div class="mouse-study__canvas" data-monitor-canvas aria-label="拖动旋转主显示器，滚轮缩放"></div>
+      <div class="mouse-study__loading" data-monitor-loading><p>正在准备显示器</p></div>
+      <div class="mouse-study__error" data-monitor-error hidden role="status"><h2>三维预览未能启动</h2><p>请检查浏览器硬件加速，或刷新后重试。</p></div>
+    </div>
+    <aside class="mouse-study__panel" aria-label="显示器样件控制台">
+      <section class="mouse-study__controls" aria-label="视角">
+        <p class="mouse-study__label">视角</p>
+        <div class="mouse-study__button-row">
+          <button type="button" data-camera-preset="real">斜侧</button>
+          <button type="button" data-camera-preset="front">正面</button>
+          <button type="button" data-camera-preset="side">侧面</button>
+          <button type="button" data-camera-preset="back">背面</button>
+        </div>
+        <p class="mouse-study__note">拖动旋转，滚轮缩放。背壳为合理近似，不是实物背面复刻。</p>
+      </section>
+      <section class="mouse-study__controls" aria-label="显示模式">
+        <p class="mouse-study__label">外壳</p>
+        <div class="mouse-study__segmented" role="group" aria-label="外壳材质">
+          <button type="button" data-shading-mode="material">材质</button>
+          <button type="button" data-shading-mode="clay">素模</button>
+        </div>
+        <p class="mouse-study__label monitor-study__secondary-label">屏幕</p>
+        <div class="mouse-study__segmented" role="group" aria-label="屏幕显示">
+          <button type="button" data-screen-mode="on">亮屏</button>
+          <button type="button" data-screen-mode="off">熄屏</button>
+        </div>
+        <p class="mouse-study__note">屏内画面沿用主页内容；此页只检查物件，不改变主页交互。</p>
+      </section>
+      <section class="mouse-study__stats" aria-label="样件统计">
+        <p class="mouse-study__label">结构统计</p>
+        <dl>
+          <div><dt>三角面</dt><dd data-stat="triangles">—</dd></div>
+          <div><dt>结构材质</dt><dd data-stat="materials">—</dd></div>
+          <div><dt>场景绘制调用</dt><dd data-stat="calls">—</dd></div>
+        </dl>
+        <p class="mouse-study__note">无新增模型下载。绘制调用包含地面、屏面、标识与阴影；静止时按需渲染。</p>
+      </section>
+      <p class="mouse-study__note" data-study-status role="status">仅本地样件，尚未替换主页。</p>
+    </aside>
+  </section>
+  <style>
+    .monitor-study { height: 100vh; min-height: 760px; }
+    .monitor-study .mouse-study__viewer { min-height: 0; }
+    .monitor-study__secondary-label { margin-top: 16px; }
+  </style>
+  <script>
+    import { mountMonitorStudy } from "../desktop/studies/monitor-study";
+    const root = document.querySelector<HTMLElement>("[data-monitor-study-root]");
+    const dispose = root ? mountMonitorStudy(root) : undefined;
+    window.addEventListener("pagehide", () => dispose?.(), { once: true });
+    import.meta.hot?.dispose(() => dispose?.());
+  </script>
+</SiteLayout>
