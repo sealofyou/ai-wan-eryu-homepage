@@ -474,3 +474,17 @@ Kimi已在用户明确授权下真实读取原构图、原版与三轮Demo截图
 - 三项回归先红后绿；完整release Gate通过，21个文件、128项测试通过，Astro check为0 errors/0 warnings/0 hints。浏览器实际鼠标拖动与主屏光标同步通过。
 - 截图位于 `output/screenshots/mouse-study/refinement-20260907/`：`front-left.png`、`side.png`、`overview.png`。
 - 查看地址不变：`http://127.0.0.1:4330/mouse-study/`，刷新后切换“材质”查看；没有合并、部署或替换默认主页。
+
+### 2026-09-07 用户接受大形后的细节收口
+
+用户确认当前方向可以接受，要求更精致，并新红框指定删除剩余两条长侧键。本轮延续已接受的轮廓和材质，不增加装饰，不改变网页交互。
+
+- 删除 `side-button-forward` / `side-button-back`；保留中央滚轮后方两键。
+- 主键与掌托使用同一条接缝边界，收窄并统一间隙；增加细小倒角与局部边缘采样，提高放大后的连续性。
+- 主键/掌托交界检查发现旧 `front-seam-liner` 高于面板。新增射线回归先复现命中内衬而非主键，再统一高度函数，将内衬压回面板下方并平顺连接掌托前沿。
+- 中线按钮降低突出高度；滚轮保持上一轮认可的宽度/外径，只增加轮缘圆顺度。
+- 新GLB：416,660字节、19,016三角面、12,333顶点、6材质批次、0纹理；局部细分增加约53KB，仍低于500KB模型预算。
+- `npm run verify:release`通过：21文件、130测试；Astro check为0 errors/0 warnings/0 hints，8页构建、资源、模型与发布检查通过。真实浏览器拖动/光标同步通过。
+- Kimi只读对照本轮与上一轮截图，给92/pass，范围为细节收口；主代理另看纯左侧图确认红框区域无残留键体。
+- 截图：`output/screenshots/mouse-study/polish-20260907/final-front-left.png`、`final-top.png`、`final-left.png`、`final-real.png`。
+- 用户尚未确认本轮细化结果；默认主页和显示器均未变，未合并或部署。

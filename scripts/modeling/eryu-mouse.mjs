@@ -23,6 +23,7 @@ const interpolate = (t, column) => {
   return (2*f*f*f-3*f*f+1)*b + (f*f*f-2*f*f+f)*dt*m0 + (-2*f*f*f+3*f*f)*c + (f*f*f-f*f)*dt*m1;
 };
 const widths = (t) => ({ left: interpolate(t, 1), right: interpolate(t, 2) });
+const frontSeam = (lateral) => 0.445 + 0.09 * Math.abs(lateral);
 const surface = (u, t, lift = 0) => {
   const w = widths(t);
   const center = (w.right - w.left) / 2;
@@ -32,8 +33,16 @@ const surface = (u, t, lift = 0) => {
   return [center + half * u, edge + (interpolate(t, 3) - edge) * Math.pow(Math.max(0, 1 - u * u), exponent) + lift, -66 + 132 * t];
 };
 const worldPoint = ([x, y, z]) => [x / 100, y / 100 - 0.30, z / 100];
+const buttonDeckHeight = (lateral, t) => {
+  const side = lateral < 0 ? -1 : 1;
+  const outer = THREE.MathUtils.clamp((Math.abs(lateral) - 0.215) / 0.74, 0, 1);
+  const innerY = surface(side * 0.215, t, 1.05)[1];
+  const outerY = surface(side * 0.955, t, 1.05)[1];
+  return THREE.MathUtils.lerp(innerY, outerY, outer) + Math.sin(Math.PI * outer) * 0.7
+    - 0.65 * (1 - smooth(Math.min(outer, 1 - outer) / 0.10));
+};
 
-const gridSurface = (sample, across, along, thickness = 0, reverse = false) => {
+const gridSurface = (sample, across, along, thickness = 0, reverse = false, bevel = 0) => {
   const vertices = [], indices = [];
   for (let v = 0; v <= along; v += 1) {
     for (let u = 0; u <= across; u += 1) vertices.push(...worldPoint(sample(u / across, v / along)));
@@ -51,13 +60,32 @@ const gridSurface = (sample, across, along, thickness = 0, reverse = false) => {
     for (let u = across - 1; u >= 0; u -= 1) perimeter.push(along * (across + 1) + u);
     for (let v = along - 1; v > 0; v -= 1) perimeter.push(v * (across + 1));
     const start = vertices.length / 3;
-    for (const index of perimeter) {
-      const x = vertices[index * 3], y = vertices[index * 3 + 1], z = vertices[index * 3 + 2];
-      vertices.push(x, y, z, x, y - thickness / 100, z);
+    const rows = bevel > 0 ? 3 : 2;
+    const boundary = perimeter.map((index) => vertices.slice(index * 3, index * 3 + 3));
+    for (let i = 0; i < perimeter.length; i += 1) {
+      const index = perimeter[i];
+      const [x, y, z] = boundary[i];
+      if (bevel > 0) {
+        const row = Math.floor(index / (across + 1));
+        const column = index % (across + 1);
+        const inside = (THREE.MathUtils.clamp(row, 1, along - 1) * (across + 1) + THREE.MathUtils.clamp(column, 1, across - 1)) * 3;
+        const direction = new THREE.Vector3(vertices[inside] - x, vertices[inside + 1] - y, vertices[inside + 2] - z);
+        const distance = direction.length();
+        direction.multiplyScalar(distance > 0 ? Math.min(bevel / 100, distance * 0.45) / distance : 0);
+        const top = [x + direction.x, y + direction.y, z + direction.z];
+        vertices[index * 3] = top[0];
+        vertices[index * 3 + 1] = top[1];
+        vertices[index * 3 + 2] = top[2];
+        vertices.push(...top, x, y - bevel / 100, z, x, y - thickness / 100, z);
+      } else {
+        vertices.push(x, y, z, x, y - thickness / 100, z);
+      }
     }
     for (let i = 0; i < perimeter.length; i += 1) {
-      const a = start + i * 2, b = start + ((i + 1) % perimeter.length) * 2;
-      indices.push(a, b, a + 1, b, b + 1, a + 1);
+      for (let row = 0; row < rows - 1; row += 1) {
+        const a = start + i * rows + row, b = start + ((i + 1) % perimeter.length) * rows + row;
+        indices.push(a, b, a + 1, b, b + 1, a + 1);
+      }
     }
   }
   const geometry = new THREE.BufferGeometry();
@@ -124,10 +152,15 @@ export const createMouseStudyModel = () => {
 
   mesh("lower-chassis", chassisGeometry(), rubber);
   mesh("palm-shell", gridSurface((u, v) => {
-    const front = 0.445 + 0.09 * Math.abs(u * 2 - 1);
+    const frontLateral = THREE.MathUtils.lerp(-0.95, 0.955, u);
+    const front = frontSeam(frontLateral);
     const t = THREE.MathUtils.lerp(front, 0.995, v);
-    return surface(THREE.MathUtils.lerp(tailSeam(t), 0.955, u), t, 0.7);
-  }, 26, 34, 1.15), shell);
+    const p = surface(THREE.MathUtils.lerp(tailSeam(t), 0.955, u), t, 0.7);
+    const originalFrontY = surface(frontLateral, front, 0.7)[1];
+    const alignedFrontY = buttonDeckHeight(frontLateral, front) - 0.35;
+    p[1] += (alignedFrontY - originalFrontY) * (1 - smooth(v / 0.12)) * smooth((Math.abs(frontLateral) - 0.16) / 0.10);
+    return p;
+  }, 30, 40, 1.15, false, 0.25), shell);
   mesh("rear-left-shell", gridSurface((u, v) => {
     const t = THREE.MathUtils.lerp(0.615, 0.991, v);
     const p = surface(THREE.MathUtils.lerp(-0.985, tailSeam(t) - 0.023, u), t, 0.5);
@@ -140,15 +173,12 @@ export const createMouseStudyModel = () => {
       const lateral = side < 0 ? THREE.MathUtils.lerp(-0.955, -0.215, u) : THREE.MathUtils.lerp(0.215, 0.955, u);
       const outer = side < 0 ? 1 - u : u;
       const start = 0.016 + 0.016 * outer;
-      const end = 0.425 + 0.090 * outer;
+      const end = frontSeam(lateral) - 0.009;
       const t = THREE.MathUtils.lerp(start, end, v);
       const p = surface(lateral, t, 1.05);
-      const innerY = surface(side * 0.215, t, 1.05)[1];
-      const outerY = surface(side * 0.955, t, 1.05)[1];
-      p[1] = THREE.MathUtils.lerp(innerY, outerY, outer) + Math.sin(Math.PI * u) * 0.7;
-      p[1] -= 0.65 * (1-smooth(Math.min(u,1-u)/0.10)) + 0.55 * (1-smooth(v/0.07));
+      p[1] = buttonDeckHeight(lateral, t) - 0.55 * (1 - smooth(v / 0.07));
       return p;
-    }, 16, 24, 2.4), shell);
+    }, 22, 30, 2.4, false, 0.20), shell);
   }
 
   // Thin outer case walls support the separate upper panels without a second dome.
@@ -166,7 +196,9 @@ export const createMouseStudyModel = () => {
   mesh("front-seam-liner", gridSurface((u, v) => {
     const lateral = -0.985 + u * 1.97;
     const t = 0.405 + 0.09 * Math.abs(lateral) + v * 0.075;
-    return surface(lateral, t, -1.8);
+    const p = surface(lateral, t, -1.8);
+    p[1] = Math.min(p[1], buttonDeckHeight(lateral, t) - 1.2);
+    return p;
   }, 28, 8), polished);
   mesh("tail-seam-liner", gridSurface((u, v) => {
     const t = 0.59 + v * 0.405;
@@ -203,8 +235,8 @@ export const createMouseStudyModel = () => {
     }, 3, 26, 0.9), polished);
   }
   box("wheel-well-front-rim", [12.5, 1.5, 4], [0.5, 17.8, -56], polished, 0.6);
-  box("wheel-mode-button", [9, 2.4, 8], [0.5, 30.5, -24], shell, 0.8, [-0.2, 0, 0]);
-  box("dpi-button", [8, 2.6, 10], [0.5, 33.5, -11], shell, 0.8, [-0.12, 0, 0]);
+  box("wheel-mode-button", [9, 1.4, 8], [0.5, 29.9, -24], shell, 0.5, [-0.2, 0, 0]);
+  box("dpi-button", [8, 1.5, 10], [0.5, 33.0, -11], shell, 0.5, [-0.12, 0, 0]);
 
   const wheel = new THREE.Group();
   wheel.name = "scroll-wheel";
@@ -228,18 +260,15 @@ export const createMouseStudyModel = () => {
   barrel.setIndex(wheelIndices); barrel.computeVertexNormals();
   wheel.add(new THREE.Mesh(barrel, metal));
   for (const side of [-1, 1]) {
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.058, 0.004, 6, 32), metal);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.058, 0.004, 8, 48), metal);
     rim.rotation.y = Math.PI / 2; rim.position.x = side * 0.027;
     wheel.add(rim);
-    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.049, 0.049, 0.007, 24), polished);
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.049, 0.049, 0.007, 32), polished);
     disc.rotation.z = Math.PI / 2; disc.position.x = side * 0.021;
     wheel.add(disc);
   }
   const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.010, 0.010, 0.065, 16), metal);
   axle.rotation.z = Math.PI / 2; wheel.add(axle);
-
-  box("side-button-forward", [3.2, 3.1, 16], [-28.5, 23.3, -28], shell, 0.75, [-0.26, -0.10, -0.15]);
-  box("side-button-back", [3.2, 3.1, 18], [-28.0, 27.0, -9], shell, 0.75, [-0.15, -0.09, -0.12]);
 
   const cablePath = new THREE.CatmullRomCurve3([
     [0,7,-65],[0,7.5,-72],[0,8,-78],[0,8.5,-82],
