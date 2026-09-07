@@ -1,0 +1,98 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import "../styles/mouse-study.css";
+---
+
+<SiteLayout
+  title="鼠标样件查看"
+  description="独立查看 Eryu 鼠标样件的曲面、比例和结构细节。"
+  theme="soft"
+  immersive
+>
+  <section class="mouse-study" data-mouse-study-root aria-label="Eryu 鼠标样件查看页">
+    <header class="mouse-study__header">
+      <a class="mouse-study__link" href="/">返回原主页</a>
+      <div class="mouse-study__title">
+        <p>Eryu</p>
+        <h1>鼠标样件查看</h1>
+      </div>
+      <a class="mouse-study__link" href="/?mouse=study">放回桌面看大小</a>
+    </header>
+
+    <div class="mouse-study__viewer" data-mouse-viewer>
+      <div class="mouse-study__canvas" data-mouse-canvas aria-label="可旋转的三维鼠标样件"></div>
+
+      <div class="mouse-study__loading" data-mouse-loading>
+        <span></span>
+        <p>正在加载鼠标样件</p>
+      </div>
+
+      <div class="mouse-study__error" data-mouse-error hidden role="status">
+        <h2>模型暂时没有加载成功</h2>
+        <p data-mouse-error-message>
+          请确认 public/models/desktop/eryu-mouse-study.glb 已生成后再刷新。
+        </p>
+      </div>
+    </div>
+
+    <aside class="mouse-study__panel" aria-label="鼠标样件控制台">
+      <section class="mouse-study__controls" aria-label="视角">
+        <p class="mouse-study__label">视角</p>
+        <div class="mouse-study__button-row">
+          <button type="button" data-camera-preset="real">实物角度</button>
+          <button type="button" data-camera-preset="top">俯视</button>
+          <button type="button" data-camera-preset="left">左侧</button>
+          <button type="button" data-camera-preset="back">后方</button>
+        </div>
+      </section>
+
+      <section class="mouse-study__controls" aria-label="显示模式">
+        <p class="mouse-study__label">显示模式</p>
+        <div class="mouse-study__segmented" role="group" aria-label="切换素模或材质">
+          <button type="button" data-shading-mode="clay" aria-pressed="true">素模</button>
+          <button type="button" data-shading-mode="material" aria-pressed="false">材质</button>
+        </div>
+      </section>
+
+      <section class="mouse-study__stats" aria-label="预览场景统计">
+        <p class="mouse-study__label">统计</p>
+        <dl>
+          <div>
+            <dt>下载体积</dt>
+            <dd data-stat="bytes">等待加载</dd>
+          </div>
+          <div>
+            <dt>三角面</dt>
+            <dd data-stat="triangles">等待加载</dd>
+          </div>
+          <div>
+            <dt>绘制调用数</dt>
+            <dd data-stat="calls">等待渲染</dd>
+          </div>
+        </dl>
+        <p class="mouse-study__note">绘制调用数为全预览场景统计，包含地面、辅助线与模型。</p>
+      </section>
+    </aside>
+  </section>
+
+  <script>
+    import { mountMouseStudy } from "../desktop/studies/mouse-study";
+
+    let dispose: (() => void) | undefined;
+
+    const mount = () => {
+      const root = document.querySelector<HTMLElement>("[data-mouse-study-root]");
+      dispose = root ? mountMouseStudy(root) : undefined;
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", mount, { once: true });
+    } else {
+      mount();
+    }
+
+    const cleanup = () => dispose?.();
+    window.addEventListener("pagehide", cleanup, { once: true });
+    import.meta.hot?.dispose(cleanup);
+  </script>
+</SiteLayout>

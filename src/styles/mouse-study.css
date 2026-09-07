@@ -1,0 +1,246 @@
+.mouse-study {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+  padding: 22px;
+  color: #242421;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(238, 238, 233, 0.9)),
+    #f1f2ef;
+}
+
+.mouse-study__header {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+}
+
+.mouse-study__title {
+  text-align: center;
+}
+
+.mouse-study__title p,
+.mouse-study__label,
+.mouse-study__note {
+  margin: 0;
+  color: #6b6d66;
+}
+
+.mouse-study__title p {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mouse-study__title h1 {
+  margin: 2px 0 0;
+  font-size: 1.4rem;
+  font-weight: 650;
+}
+
+.mouse-study__link {
+  width: fit-content;
+  color: #2f423a;
+  text-decoration: none;
+  border: 1px solid #cfd2c9;
+  border-radius: 7px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.mouse-study__link:last-child {
+  justify-self: end;
+}
+
+.mouse-study__link:focus-visible,
+.mouse-study button:focus-visible {
+  outline: 3px solid rgba(92, 129, 111, 0.32);
+  outline-offset: 3px;
+}
+
+.mouse-study__viewer {
+  position: relative;
+  min-height: 600px;
+  overflow: hidden;
+  border: 1px solid #d8dad3;
+  border-radius: 8px;
+  background: #f1f2ef;
+}
+
+.mouse-study__canvas,
+.mouse-study__canvas canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mouse-study__loading,
+.mouse-study__error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  background: rgba(241, 242, 239, 0.82);
+}
+
+.mouse-study__loading[hidden],
+.mouse-study__error[hidden] {
+  display: none;
+}
+
+.mouse-study__loading span {
+  width: 34px;
+  height: 34px;
+  border: 3px solid #d6d8d1;
+  border-top-color: #67786d;
+  border-radius: 999px;
+  animation: mouse-study-spin 0.9s linear infinite;
+}
+
+.mouse-study__loading p,
+.mouse-study__error p {
+  margin: 0;
+  color: #575953;
+}
+
+.mouse-study__error h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.mouse-study__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-self: start;
+}
+
+.mouse-study__controls,
+.mouse-study__stats {
+  border: 1px solid #d8dad3;
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.mouse-study__label {
+  font-size: 0.86rem;
+  margin-bottom: 10px;
+}
+
+.mouse-study__button-row,
+.mouse-study__segmented {
+  display: grid;
+  gap: 8px;
+}
+
+.mouse-study__button-row {
+  grid-template-columns: 1fr 1fr;
+}
+
+.mouse-study button {
+  min-height: 38px;
+  border: 1px solid #c9ccc3;
+  border-radius: 7px;
+  color: #252622;
+  background: #f8f8f5;
+  font: inherit;
+  cursor: pointer;
+}
+
+.mouse-study button:hover {
+  background: #ffffff;
+}
+
+.mouse-study button[aria-pressed="true"] {
+  color: #f7f7f2;
+  border-color: #41564b;
+  background: #41564b;
+}
+
+.mouse-study__segmented {
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-radius: 8px;
+  background: #e8e9e3;
+}
+
+.mouse-study__segmented button {
+  border-color: transparent;
+  background: transparent;
+}
+
+.mouse-study__stats dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.mouse-study__stats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e1e2dd;
+}
+
+.mouse-study__stats div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.mouse-study__stats dt {
+  color: #696b65;
+}
+
+.mouse-study__stats dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: #22231f;
+}
+
+.mouse-study__note {
+  margin-top: 14px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+@keyframes mouse-study-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mouse-study__loading span {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .mouse-study {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+
+  .mouse-study__header {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .mouse-study__link:last-child {
+    justify-self: center;
+  }
+
+  .mouse-study__viewer {
+    min-height: 64vh;
+  }
+}
