@@ -13,6 +13,14 @@ npm run dev
 
 默认地址：`http://127.0.0.1:4321/`
 
+当前桌面视觉候选（本地检查，未替换正式站）：
+
+- `/?desktop=refined`：全部精修模型组合。
+- `/model-gallery/`：统一检查机箱、台灯、音箱、键鼠、双屏和桌面环境；支持旋转与材质/素模。
+- `/`：保留原物件对照。旧的`monitors=study&mouse=study&keyboard=study`参数仍可用。
+
+本工作树当前开发服务为`http://127.0.0.1:4330/`。阶段证据与已知边界见`IMPLEMENTATION_RESULT.md`。未获用户明确确认前，不合并或部署视觉候选。
+
 ## 检查与构建
 
 ```powershell

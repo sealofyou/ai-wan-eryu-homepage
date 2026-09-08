@@ -13,3 +13,7 @@
 预算：默认静态JS<=625KB、完整候选冷JS目标<=800KB（既有鼠标GLB/图片另计）；单机箱/台灯各<=8000面，音箱<=5000面，新增环境几何<=8000面；新贴图单张<=1024²，总base-level生成纹理<=8MiB，不新增依赖或远程资产。
 
 具体实施/测试合同位于 `.omx/plans/prd-remaining-desktop.md` 和 `.omx/plans/test-spec-remaining-desktop.md`。Architect提出的入口优先级、原对象句柄、正常卸载恢复、真实冷加载计量四项已补齐，Critic复核APPROVE。按用户授权直接进入Ralph实现，不额外请求阶段确认。
+
+外部模型状态：Gemini稳定入口为`gemini-cpa`（Gemini CLI 0.57.0 / Node 22.23.2 / gemini-3.1-pro），系统默认Node24入口不用于关键自动化；Claude未接通。此批关键截图实际由Kimi只读复核，不将未调用的Gemini/Grok/Claude写成已审查。项目非凭据内容经用户授权可共享，密码、Bitwarden等始终排除。
+
+实施中发现并修复的边界：音箱格栅需显式归一化ShapeGeometry UV且避开外壳共面；机箱侧玻璃不能埋入外壳；背景墙只在整桌候选延伸到镜头外，不改相机与前景物体。模型检查页使用独立归一化wrapper，不改模型工厂返回的世界锚点。

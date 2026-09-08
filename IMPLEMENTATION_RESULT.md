@@ -651,3 +651,52 @@ Kimi已在用户明确授权下真实读取原构图、原版与三轮Demo截图
 - 复现：`output/reviews/keyboard-study-browser-check.js`、`keyboard-resources-check.js`。
 
 visual-verdict从初期查看器58/revise到完整样件Kimi91/pass；Kimi确认键帽收分、文字贴合、完整构图与四按钮消失。该分数只表示可交用户本地看，不是用户审美确认。接缝粗细仍可按用户反馈进一步收敛；未知背面、接口和轴体没有虚构。机箱、台灯和便利贴交互仍留在后续，未默认为已完成。飞书回写仍保留前次安全拒绝，当前结果只在本地待补，不绕过拒绝。
+
+### 2026-09-08 剩余物件统一精修与模型总览
+
+用户已认可键盘，要求不再逐件等待，把剩余模型做完后一起看。本轮已完成可统一观看的本地候选；未把Kimi评分当作用户最终审美验收，未合并、推送或部署。
+
+分阶段代码提交：`fbd9815`剩余硬件/环境，`55eb9ab`统一候选接入，`fad1d40`统一模型页；设计提交`3a598fc`。
+
+#### 统一入口
+
+- 整桌：`http://127.0.0.1:4330/?desktop=refined`
+- 八项统一模型检查：`http://127.0.0.1:4330/model-gallery/`
+- 原物件对照：`http://127.0.0.1:4330/`。旧的`?monitors=study&mouse=study&keyboard=study`组合仍保留，逐像素未变。
+
+#### 本轮完成
+
+- 机箱：分层薄板、前脸接缝、玻璃侧板与框、落桌脚垫、通风条、灯带槽及E标；删除了初稿突兀的斜板。
+- 台灯：落桌椭圆底座、成对细杆、球头连接、内外灯罩、卷边和可见灯泡；原点击代理及调亮/调暗保留，没有增加灯光数量。
+- 音箱：脚垫、凹入穿孔格栅、独立前框与Eryu铭牌；修复共面闪烁与ShapeGeometry未归一化UV。
+- 环境：更小的桌沿倒角、低对比无缝木纹、桌垫织物法线与缝线、洞洞板孔边和固定件、纸片厚度、徽章边缘、立牌亚克力边和底座。背景墙延伸到镜头外，避免边界入画；相机与桌上摆位未改。
+- 整桌只用一张小尺寸本地产生环境反射，没有SSAO/SSR、额外阴影灯或新远程图片。已认可屏幕/键鼠形体、内容Canvas、UV和交互边界保留。
+- 统一检查页：机箱、台灯、音箱、键盘、鼠标、主屏、竖屏、桌面环境；五视角、材质/素模、手动旋转、按需渲染。独立wrapper适配包围盒，不改工厂返回的模型锚点。
+
+#### 文件与简化
+
+- `src/desktop/studies/computer-study-model.ts`、`lamp-study-model.ts`、`soundbar-study-model.ts`、`environment-finish.ts`：剩余物件与环境模型。
+- `src/desktop/core/preview-options.ts`、`studies/remaining-visuals.ts`、`remaining-reflections.ts`、`scene.ts`和对象工厂具名refs：统一候选、借用资源恢复与生命周期保护。
+- `src/desktop/studies/model-gallery.ts`、`model-gallery-catalog.ts`、`src/pages/model-gallery.astro`：统一模型页。
+- `tests/*remaining*`、`*environment-finish*`、`*model-gallery*`及对应几何测试：资源、端点、纹理、预算、迟到/失败、释放与幂等回归。
+- 按限定清理计划删除未用材质、合并重复teardown、共享类型；没有新增依赖，没把现有失败恢复当成冗余代码删掉。
+
+#### 验证与资源
+
+- 最后完整release Gate：42文件、211测试通过；Astro check 0 errors/0 warnings/0 hints；11页构建与全部资源/模型/release检查通过。
+- 最新生产浏览器实测点击导航/返回、格言、徽章、台灯、键鼠拖动、书写/清空/留言、两种动效、resize/pagehide全部通过。四个桌垫实体按钮仍不创建、不进入射线命中列表。
+- 完整新候选冷加载JS731,499B；旧组合705,533B；默认569,331B，均在对应预算内。鼠标GLB416,660B、两张首屏图365,512B不变。新增生成纹理base-level2,850,816B（约2.72MiB），无新GLB/纹理网络下载。
+- 同机暖态RAF间隔三版本中位5.9ms/P95 6.0ms，未见相对恶化；不是低端设备或所有浏览器FPS保证。
+- 统一模型页八项、五视角和素模均截图；静止600ms渲染计数132→132。模块/GLB强制失败、恢复重试、卸载后迟到、模型快速切换均通过。
+- 旧组合两尺寸、旧物件对照、清理前后最终v4截图均逐RGBA通道0差异。Kimi审查68/revise→84/revise→92/pass；最终Architect为APPROVE/CLEAR。
+
+#### 截图与仍存边界
+
+- `output/screenshots/remaining-desktop/final-1440x900.png`
+- `output/screenshots/remaining-desktop/final-1920x1080.png`
+- `output/screenshots/remaining-desktop/gallery-final-1920x1080.png`
+- `output/screenshots/remaining-desktop/gallery-{物件}-{视角}.png`
+- 复现脚本：`output/reviews/remaining-browser-check.js`、`remaining-gallery-check.js`、`remaining-failure-check.js`、`remaining-resources-check.js`。
+- 最终审查说明：`docs/reviews/2026-09-08-remaining-final-review.md`。
+
+背部/内部隐藏硬件仍为合理近似，不是实物扫描；人物保持原图立牌。便利贴和工具入口的交互重设计仍后置。木纹可按用户观看反馈进一步偏深/偏红棕，当前不是照片级复刻。低端硬件/手机版未覆盖。PMREM阶段出现过ANGLE非致命精度warning，未隐瞒或屏蔽，未见page errors/context loss。飞书回写仍待此前安全限制解除，未绕过。
