@@ -9,7 +9,7 @@ import { roundedMesh, type DesktopMaterials } from "./primitives";
 export const createDecorationsObject = (
   noteCanvas: CanvasSurface,
   materials: DesktopMaterials,
-): SceneObjectResult => {
+): SceneObjectResult & { note: THREE.Mesh; toyBase: THREE.Mesh; toyBacking: THREE.Mesh; toySurface: THREE.Mesh } => {
   const group = new THREE.Group();
   const { note, toy } = DESK_LAYOUT.decorations;
 
@@ -78,5 +78,5 @@ export const createDecorationsObject = (
   toyMesh.position.set(toy.screen.position.x, toy.screen.position.y, toy.screen.position.z);
   group.add(toyMesh);
 
-  return { group, interactiveTargets: [noteMesh, toyMesh] };
+  return { group, note: noteMesh, toyBase, toyBacking, toySurface: toyMesh, interactiveTargets: [noteMesh, toyMesh] };
 };

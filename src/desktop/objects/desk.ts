@@ -6,6 +6,9 @@ import { makeCanvas, type CanvasSurface } from "../screens/canvas-utils";
 import { roundedMesh, type DesktopMaterials } from "./primitives";
 
 export interface DeskObjectResult extends SceneObjectResult {
+  deskBody: THREE.Mesh;
+  deskApron: THREE.Mesh;
+  matBase: THREE.Mesh;
   matCanvas: CanvasSurface;
   matSurface: THREE.Mesh;
 }
@@ -65,5 +68,5 @@ export const createDeskObject = (materials: DesktopMaterials): DeskObjectResult 
   );
   group.add(matSurface);
 
-  return { group, matCanvas, matSurface, interactiveTargets: [matSurface] };
+  return { group, deskBody: desk, deskApron, matBase, matCanvas, matSurface, interactiveTargets: [matSurface] };
 };

@@ -7,7 +7,7 @@ import { roundedMesh } from "./primitives";
 
 export const createPegboardsObject = (
   messageBoardCanvas: CanvasSurface,
-): SceneObjectResult => {
+): SceneObjectResult & { board: THREE.Mesh; holes: THREE.Mesh[]; messagePaper: THREE.Mesh; badges: THREE.Mesh[] } => {
   const group = new THREE.Group();
   const { small } = DESK_LAYOUT.pegboards;
 
@@ -21,6 +21,7 @@ export const createPegboardsObject = (
   board.position.set(small.x, small.y, small.z);
   board.castShadow = true;
   group.add(board);
+  const holes: THREE.Mesh[] = [];
   for (let x = small.holes.xStart; x <= small.holes.xEnd; x += small.holes.xStep) {
     for (let y = small.holes.yStart; y <= small.holes.yEnd; y += small.holes.yStep) {
       const hole = new THREE.Mesh(
@@ -29,6 +30,7 @@ export const createPegboardsObject = (
       );
       hole.position.set(small.x + x, small.y + y, small.holes.z);
       group.add(hole);
+      holes.push(hole);
     }
   }
 
@@ -48,7 +50,7 @@ export const createPegboardsObject = (
   group.add(messageBoard);
 
   const badgeColors = ["#8ea391", "#b39a8f"];
-  const badges: THREE.Object3D[] = [];
+  const badges: THREE.Mesh[] = [];
   badgeColors.forEach((color, index) => {
     const badge = addAction(
       roundedMesh(
@@ -69,5 +71,5 @@ export const createPegboardsObject = (
     badges.push(badge);
   });
 
-  return { group, interactiveTargets: [messageBoard, ...badges] };
+  return { group, board, holes, messagePaper: messageBoard, badges, interactiveTargets: [messageBoard, ...badges] };
 };

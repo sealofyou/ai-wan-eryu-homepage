@@ -1,6 +1,5 @@
 import * as THREE from "three";
-import { resolveDesktopFinish } from "./core/finish-mode";
-import { resolveMonitorVariant } from "./core/monitor-variant";
+import { resolveDesktopPreview } from "./core/preview-options";
 import {
   DAILY_QUOTES,
   createInitialDesktopState,
@@ -22,7 +21,6 @@ import {
 import { createDesktopImage, DESKTOP_IMAGE_URLS } from "./core/assets";
 import {
   createGlbAssetStore,
-  resolveDesktopMouseVariant,
 } from "./core/model-assets";
 import {
   createDesktopRendererEnvironment,
@@ -124,7 +122,8 @@ export function mountDesktopScene(
   };
 
   const materials = createDesktopMaterials();
-  addSceneObject(createRoomObject());
+  const preview = resolveDesktopPreview(window.location.search);
+  const roomObject = addSceneObject(createRoomObject());
   const deskObject = addSceneObject(createDeskObject(materials));
   const { matCanvas, matSurface } = deskObject;
   const mousepad = createMousepadController(matCanvas);
@@ -163,13 +162,13 @@ export function mountDesktopScene(
   }));
   const { mainScreen } = monitors;
 
-  addSceneObject(createComputerObject(materials));
-  addSceneObject(createDecorationsObject(noteCanvas, materials));
-  addSceneObject(createPegboardsObject(messageBoardCanvas));
+  const computerObject = addSceneObject(createComputerObject(materials));
+  const decorationsObject = addSceneObject(createDecorationsObject(noteCanvas, materials));
+  const pegboardsObject = addSceneObject(createPegboardsObject(messageBoardCanvas));
   const lampObject = addSceneObject(createLampObject(materials));
 
   const keyboardObject = addSceneObject(createKeyboardObject());
-  const mouseVariant = resolveDesktopMouseVariant(window.location.search);
+  const mouseVariant = preview.mouse;
   const modelAssets = mouseVariant !== "procedural" ? createGlbAssetStore() : undefined;
   const mouseObject = addSceneObject(createMouseObject(materials, {
     variant: mouseVariant,
@@ -177,9 +176,10 @@ export function mountDesktopScene(
   }));
   const keyboard = keyboardObject.group;
   let sceneDisposed = false;
+  const previewReady: Promise<unknown>[] = [mouseObject.ready];
   root.dataset.keyboardModel = "baseline";
-  if (new URLSearchParams(window.location.search).get("keyboard") === "study") {
-    void import("./studies/keyboard-study-model").then(({ createKeyboardStudyModel, KEYBOARD_STUDY_FLOOR_Y }) => {
+  if (preview.keyboard === "study") {
+    previewReady.push(import("./studies/keyboard-study-model").then(({ createKeyboardStudyModel, KEYBOARD_STUDY_FLOOR_Y }) => {
       if (sceneDisposed) return;
       const visual = createKeyboardStudyModel({ withLegends: true });
       if (keyboardObject.applyStudyVisual(visual, KEYBOARD_STUDY_FLOOR_Y)) root.dataset.keyboardModel = "study";
@@ -188,11 +188,11 @@ export function mountDesktopScene(
         root.dataset.keyboardModel = "unavailable";
         console.warn("Keyboard preview could not be applied; baseline retained.");
       }
-    });
+    }));
   }
   root.dataset.monitorModel = "baseline";
-  if (resolveMonitorVariant(window.location.search) === "study") {
-    void import("./studies/monitor-visual-set").then(({ createMonitorVisualSet }) => {
+  if (preview.monitors === "study") {
+    previewReady.push(import("./studies/monitor-visual-set").then(({ createMonitorVisualSet }) => {
       if (sceneDisposed) return;
       const visuals = createMonitorVisualSet();
       if (monitors.applyStudyVisuals(visuals)) root.dataset.monitorModel = "study";
@@ -201,7 +201,7 @@ export function mountDesktopScene(
         root.dataset.monitorModel = "unavailable";
         console.warn("Monitor preview could not be applied; baseline retained.");
       }
-    });
+    }));
   }
   root.dataset.mouseModel = "procedural";
   void mouseObject.ready.then((resolvedVariant) => {
@@ -209,14 +209,44 @@ export function mountDesktopScene(
   });
 
   const matControls = addSceneObject(createMatControlsObject(materials, {
-    visible: resolveMonitorVariant(window.location.search) !== "study",
+    visible: preview.matControls,
   }));
   const interactiveTargets = sceneObjects.flatMap(
     (object) => object.interactiveTargets ?? [],
   );
   let disposeFinish: (() => void) | undefined;
+  let remainingVisuals: ReturnType<typeof import("./studies/remaining-visuals").applyRemainingVisuals> | undefined;
+  root.dataset.desktopModel = preview.full ? "loading" : "baseline";
+  if (preview.full) {
+    void Promise.all([import("./studies/remaining-visuals"), ...previewReady]).then(([{ applyRemainingVisuals }]) => {
+      if (sceneDisposed) return;
+      if (root.dataset.keyboardModel !== "study" || root.dataset.monitorModel !== "study" || root.dataset.mouseModel !== "study") {
+        throw new Error("An accepted model was unavailable; remaining preview not applied.");
+      }
+      remainingVisuals = applyRemainingVisuals({
+        world, lampLight,
+        reflectionEnvironment: environment,
+        originals: [computerObject.group, lampObject.group, monitors.soundbar, monitors.soundbarLabel],
+        refs: {
+          deskBody: deskObject.deskBody, deskApron: deskObject.deskApron,
+          matBase: deskObject.matBase, matSurface, wall: roomObject.wall,
+          pegboard: pegboardsObject.board, pegHoles: pegboardsObject.holes,
+          messagePaper: pegboardsObject.messagePaper, badges: pegboardsObject.badges,
+          quotePaper: decorationsObject.note, toyBase: decorationsObject.toyBase,
+          toyBacking: decorationsObject.toyBacking, toySurface: decorationsObject.toySurface,
+        },
+      });
+      root.dataset.desktopModel = "refined";
+      root.dataset.remainingTextureBytes = String(remainingVisuals.stats.textureBytes);
+      root.dataset.remainingTriangles = String(remainingVisuals.stats.triangles);
+    }).catch((error: unknown) => {
+      if (sceneDisposed) return;
+      root.dataset.desktopModel = "unavailable";
+      console.warn("Complete desk preview could not be applied; existing visuals retained.", error);
+    });
+  }
   root.dataset.finish = "baseline";
-  if (resolveDesktopFinish(window.location.search) === "studio") {
+  if (preview.studio) {
     void import("./finishes/studio").then(({ applyStudioFinish }) => {
       if (sceneDisposed) return;
       disposeFinish = applyStudioFinish({
@@ -335,6 +365,7 @@ export function mountDesktopScene(
       clearDrawing();
     } else if (action === "lamp") {
       lampLight.intensity = lampLight.intensity > 30 ? 14 : 55;
+      remainingVisuals?.setLampBrightness(lampLight.intensity);
       announce(lampLight.intensity > 30 ? "台灯已调亮" : "台灯已调暗");
     }
   };
@@ -463,6 +494,7 @@ export function mountDesktopScene(
   });
 
   return () => {
+    if (sceneDisposed) return;
     sceneDisposed = true;
     cancelAnimationFrame(animationFrame);
     cancelAnimationFrame(readyFrame);
@@ -473,8 +505,9 @@ export function mountDesktopScene(
     window.removeEventListener("resize", environment.resize);
     avatarImage.removeEventListener("load", drawMainScreen);
     window.clearTimeout(statusTimer);
-    sceneObjects.forEach((object) => object.dispose?.());
+    remainingVisuals?.dispose();
     disposeFinish?.();
+    sceneObjects.forEach((object) => object.dispose?.());
     disposeObjectGraph(world);
     renderer.dispose();
     renderer.domElement.remove();
@@ -484,5 +517,8 @@ export function mountDesktopScene(
     delete root.dataset.keyboardModel;
     delete root.dataset.monitorModel;
     delete root.dataset.finish;
+    delete root.dataset.desktopModel;
+    delete root.dataset.remainingTextureBytes;
+    delete root.dataset.remainingTriangles;
   };
 }

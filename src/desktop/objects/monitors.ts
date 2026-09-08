@@ -23,6 +23,8 @@ interface MonitorObjectOptions {
 }
 
 export interface MonitorObjectResult extends SceneObjectResult {
+  soundbar: THREE.Mesh;
+  soundbarLabel: THREE.Mesh;
   mainScreen: THREE.Mesh;
   updateMainActions: (state: DesktopState) => void;
   beginMainTransition: (reducedMotion: boolean) => void;
@@ -319,6 +321,8 @@ export const createMonitorsObject = ({
 
   return {
     group,
+    soundbar,
+    soundbarLabel,
     mainScreen,
     updateMainActions,
     beginMainTransition,

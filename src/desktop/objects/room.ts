@@ -3,7 +3,7 @@ import { DESK_LAYOUT } from "../layout";
 import type { SceneObjectResult } from "../core/types";
 import { roundedMesh } from "./primitives";
 
-export const createRoomObject = (): SceneObjectResult => {
+export const createRoomObject = (): SceneObjectResult & { wall: THREE.Mesh } => {
   const group = new THREE.Group();
   const { wall } = DESK_LAYOUT.room;
   const wallMesh = roundedMesh(
@@ -16,5 +16,5 @@ export const createRoomObject = (): SceneObjectResult => {
   wallMesh.position.set(wall.position.x, wall.position.y, wall.position.z);
   wallMesh.receiveShadow = true;
   group.add(wallMesh);
-  return { group };
+  return { group, wall: wallMesh };
 };
