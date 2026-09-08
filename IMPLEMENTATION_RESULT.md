@@ -700,3 +700,11 @@ visual-verdict从初期查看器58/revise到完整样件Kimi91/pass；Kimi确认
 - 最终审查说明：`docs/reviews/2026-09-08-remaining-final-review.md`。
 
 背部/内部隐藏硬件仍为合理近似，不是实物扫描；人物保持原图立牌。便利贴和工具入口的交互重设计仍后置。木纹可按用户观看反馈进一步偏深/偏红棕，当前不是照片级复刻。低端硬件/手机版未覆盖。PMREM阶段出现过ANGLE非致命精度warning，未隐瞒或屏蔽，未见page errors/context loss。飞书回写仍待此前安全限制解除，未绕过。
+
+### 2026-09-08 用户确认与源码同步授权
+
+用户观看统一模型页后回复“可以”，要求将这一版更新并推送，再更新到vps2代码端。此次确认记为当前剩余模型批次的阶段认可，不扩大为允许合并主分支或部署正式站点。
+
+已重新执行完整`npm run verify:release`：211测试与全部门禁通过，功能代码没有新改动。GitHub目标为当前`codex/v0.12-visual-rescue`分支，采用普通快进推送，不force push。
+
+服务器只读检查发现原来仅有`/srv/eryu-homepage/releases`和`current`，未找到本项目源码仓库；Caddy文档根为`/srv/eryu-homepage/current`。按“代码同步”范围使用独立的`/srv/eryu-homepage/source`，保留原发布软链接及服务。同步方法见`docs/runbooks/vps2-source-sync.md`，完成后需核对本机/GitHub/VPS源码提交一致。
