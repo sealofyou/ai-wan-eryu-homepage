@@ -1632,3 +1632,36 @@ main {
     transition-duration: 0.01ms !important;
   }
 }
+
+.site-footer {
+  padding: 20px 16px 24px;
+  color: rgba(29, 32, 35, 0.62);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.site-footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
+
+body.is-immersive .site-footer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 40;
+  padding: 6px 16px 8px;
+  color: rgba(255, 253, 248, 0.7);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+body.is-immersive .site-footer a {
+  pointer-events: auto;
+}
