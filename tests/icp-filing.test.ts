@@ -1,10 +1,11 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 // 备案号必须出现在每一个公开页面底部。去掉过一次，收到过整改通知。
 const ICP = "豫ICP备2024077892号-2";
-const root = new URL("..", import.meta.url).pathname;
+const root = fileURLToPath(new URL("..", import.meta.url));
 
 const walk = (dir: string): string[] =>
   readdirSync(dir).flatMap((name) => {
