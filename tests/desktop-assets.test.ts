@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const root = process.cwd();
-const pageSource = readFileSync(join(root, "src/pages/index.astro"), "utf8");
+const pageSource = readFileSync(join(root, "src/pages/desk.astro"), "utf8");
 const sceneSource = readFileSync(join(root, "src/desktop/scene.ts"), "utf8");
 const assetSource = readFileSync(join(root, "src/desktop/core/assets.ts"), "utf8");
 

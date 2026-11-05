@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const pageSource = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
+const pageSource = readFileSync(new URL("../src/pages/desk.astro", import.meta.url), "utf8");
 const scenePath = new URL("../src/desktop/scene.ts", import.meta.url);
 const canvasUtilsPath = new URL(
   "../src/desktop/screens/canvas-utils.ts",

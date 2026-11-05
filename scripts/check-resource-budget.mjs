@@ -52,7 +52,7 @@ const astroDir = join(root, "dist/_astro");
 if (existsSync(astroDir)) {
   const desktopEntry = readdirSync(astroDir).find(
     (name) =>
-      name.startsWith("index.astro_astro_type_script_index_0_lang.") &&
+      name.startsWith("desk.astro_astro_type_script_index_0_lang.") &&
       name.endsWith(".js"),
   );
   if (desktopEntry) {

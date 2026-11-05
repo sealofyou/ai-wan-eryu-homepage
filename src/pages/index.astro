@@ -1,97 +1,145 @@
 ---
-import { getCollection } from "astro:content";
-import SiteLayout from "../layouts/SiteLayout.astro";
-import {
-  createDesktopContentItem,
-  serializeDesktopContentPayload,
-} from "../lib/content";
-import { sortDesktopItems, type DesktopContentItem } from "../desktop/content";
-import "../styles/desktop.css";
+import HomeLayout from "../layouts/HomeLayout.astro";
+import { allFootprints, type Kind } from "../data/footprints";
 
-const articles = await getCollection("articles");
-const notes = await getCollection("notes");
-const projects = await getCollection("projects");
+const kindLabel: Record<Kind, string> = {
+  attend: "参加",
+  compete: "参赛",
+  volunteer: "志愿者",
+  share: "分享",
+};
 
-const desktopItems = [
-  ...articles.map((entry) => createDesktopContentItem("articles", entry)),
-  ...notes.map((entry) =>
-    createDesktopContentItem(
-      entry.data.type === "project" ? "recent" : "activities",
-      entry,
-    ),
-  ),
-  ...projects.map((entry) => createDesktopContentItem("recent", entry)),
-].filter((item): item is DesktopContentItem => item !== null);
+const highlights: { date: string; title: string; kind: Kind; award?: string; thumb?: string; dense?: boolean }[] = [
+  { date: "2025.02", title: "飞桨开发者沙龙", kind: "attend" },
+  { date: "2025.08", title: "书生实战营 论文微调", kind: "compete", award: "二等奖" },
+  { date: "2025.12", title: "模法黑客松 S1 金融赛道", kind: "compete", award: "三等奖" },
+  { date: "2026.01", title: "AI 切磋大会", kind: "volunteer" },
+  { date: "2026.03", title: "高校黑客松 入选决赛", kind: "compete" },
+  { date: "2026.04", title: "杭州 2050 大会", kind: "share", thumb: "/home/thumb-a.webp" },
+  { date: "2026.05–08", title: "WaytoAGI、Nova AI Club 5 场分享", kind: "share", thumb: "/home/thumb-b.webp", dense: true },
+  { date: "2026.09", title: "YOLO Vision 深圳 展位", kind: "compete" },
+  { date: "2026.10", title: "Nova AI Club 团队", kind: "share" },
+];
 
-const desktopContentJson = serializeDesktopContentPayload({
-  items: sortDesktopItems(desktopItems),
-});
+const total = allFootprints.length;
+const shares = 6;
+const awards = 2;
 ---
 
-<SiteLayout
-  title="AI玩尔玉"
-  description="一张可以把玩的三维电脑桌面：在屏幕、键鼠、便利贴与徽章之间认识 AI玩尔玉。"
-  immersive
+<HomeLayout
+  title="尔玉 | AI玩尔玉"
+  description="我是尔玉，把有意思的想法做成能跑起来的东西。Nova AI Club 分享人、杭州 2050 大会分享者、FSHD 早筛项目开发者。"
 >
-  <section class="desktop-experience" data-desktop-root aria-label="AI玩尔玉三维桌面主页">
-    <script is:inline type="application/json" data-desktop-content set:html={desktopContentJson}></script>
-    <div class="scene-mount" data-scene-mount aria-hidden="true"></div>
-
-    <div class="scene-loading" data-scene-loading>
-      <span></span>
-      <p>正在点亮桌面</p>
-    </div>
-
-    <div class="webgl-fallback" data-webgl-fallback hidden>
-      <img
-        data-fallback-image
-        data-src="/desktop/fallback-composition.png"
-        alt="AI玩尔玉三维电脑桌面构图预览"
-        decoding="async"
-      />
-      <p>当前浏览器未能启动三维场景，请尝试开启硬件加速后刷新。</p>
-    </div>
-
-    <form class="mat-message-panel" data-message-panel hidden>
-      <label for="mat-message">留言板</label>
-      <div>
-        <input id="mat-message" maxlength="48" autocomplete="off" placeholder="留下一句话" />
-        <button type="submit">写下</button>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="/">
+        <img src="/home/avatar.webp" width="56" height="56" alt="" />
+        <span>AI玩尔玉</span>
+      </a>
+      <div class="topbar-actions">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换日间 / 夜间">
+          <span class="sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" /></svg>
+          </span>
+          <span class="moon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1Z" /></svg>
+          </span>
+        </button>
+        <details class="menu">
+          <summary aria-label="菜单">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+          </summary>
+          <nav>
+            <a href="#footprint">活动足迹</a>
+            <a href="/portfolio">作品集</a>
+            <a href="/desk">3D 桌面</a>
+          </nav>
+        </details>
       </div>
-    </form>
+    </header>
 
-    <p class="interaction-status" data-interaction-status aria-live="polite"></p>
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <h1 id="hero-title"><span class="mark">我是尔玉</span></h1>
+        <p class="lead">把有意思的想法，<br /><span class="mark">做成能跑起来的东西</span></p>
+        <ul class="tags">
+          <li>Nova AI Club<br />分享人</li>
+          <li>杭州 2050 大会<br />分享者</li>
+          <li>FSHD 早筛项目<br />开发者</li>
+        </ul>
 
-    <div class="semantic-controls" aria-label="桌面键盘操作入口">
-      <button type="button" data-section="articles">文章</button>
-      <button type="button" data-section="activities">分享与活动</button>
-      <button type="button" data-section="recent">最近在做</button>
-      <button type="button" data-screen="home">返回主屏首页</button>
-      <button type="button" data-action="quote">更换每日格言</button>
-      <button type="button" data-action="badge">打开徽章故事</button>
-      <button type="button" data-mode="move">物件拖动模式</button>
-      <button type="button" data-mode="draw">鼠标垫书写模式</button>
-      <button type="button" data-mode="message">鼠标垫留言模式</button>
-      <button type="button" data-action="clear">清空鼠标垫笔迹</button>
-    </div>
+        <figure class="photo">
+          <img src="/home/talk-placeholder.webp" width="1400" height="788" alt="线下分享现场（占位图）" />
+          <figcaption class="note note-pin">2050 大会 · 2026.04</figcaption>
+        </figure>
 
-    <div class="desktop-only-note">桌面版体验准备中</div>
-  </section>
+        <dl class="stats">
+          <div><dt>场线下活动</dt><dd><span class="mark">{total}</span></dd></div>
+          <div><dt>场分享</dt><dd><span class="mark">{shares}</span></dd></div>
+          <div><dt>次获奖</dt><dd><span class="mark">{awards}</span></dd></div>
+        </dl>
 
-  <script>
-    import { mountDesktopScene } from "../desktop/scene";
-    import type { DesktopContentPayload } from "../desktop/content";
+        <a class="scroll-hint" href="#footprint">往下看看我做过什么 ↓</a>
+      </section>
 
-    const root = document.querySelector<HTMLElement>("[data-desktop-root]");
-    const contentNode = root?.querySelector<HTMLScriptElement>("[data-desktop-content]");
-    const desktopContent = JSON.parse(
-      contentNode?.textContent || '{"items":[]}',
-    ) as DesktopContentPayload;
+      <section class="footprint" id="footprint" aria-labelledby="footprint-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">No.02 活动足迹</p>
+            <h2 id="footprint-title">两年，<br /><span class="mark">从台下到台上</span></h2>
+          </div>
+          <p class="note note-pin note-side">从听众变成<br />讲的人</p>
+        </div>
 
-    const dispose = root ? mountDesktopScene(root, desktopContent) : undefined;
-    if (dispose) {
-      window.addEventListener("pagehide", dispose, { once: true });
-      import.meta.hot?.dispose(dispose);
-    }
+        <ul class="legend" aria-label="图例">
+          {(Object.keys(kindLabel) as Kind[]).map((k) => (
+            <li><i class={`dot ${k}`}></i>{kindLabel[k]}</li>
+          ))}
+        </ul>
+
+        <ol class="timeline">
+          {highlights.map((h) => (
+            <li class:list={[{ dense: h.dense, "has-thumb": h.thumb }]}>
+              <time>{h.date}</time>
+              <i class={`dot ${h.kind}`} aria-label={kindLabel[h.kind]}></i>
+              <span class="title">{h.title}</span>
+              {h.award && <span class="stamp">{h.award}</span>}
+              {h.thumb && <img class="thumb" src={h.thumb} width="180" height="128" alt="" loading="lazy" />}
+            </li>
+          ))}
+        </ol>
+
+        <details class="all">
+          <summary>看全部 {total} 场 <span aria-hidden="true">→</span></summary>
+          <ol class="timeline compact">
+            {allFootprints.map((f) => (
+              <li>
+                <time>{f.date}</time>
+                <i class={`dot ${f.kind}`} aria-label={kindLabel[f.kind]}></i>
+                <span class="title">{f.title}</span>
+                {f.award && <span class="stamp">{f.award}</span>}
+              </li>
+            ))}
+          </ol>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <script is:inline>
+    (() => {
+      const root = document.documentElement;
+      const btn = document.querySelector("[data-theme-toggle]");
+      const sync = () => {
+        btn.setAttribute("aria-pressed", String(root.dataset.theme === "night"));
+        document.querySelector('meta[name="theme-color"]').content = root.dataset.theme === "night" ? "#1d2023" : "#f7f4eb";
+      };
+      sync();
+      btn.addEventListener("click", () => {
+        root.dataset.theme = root.dataset.theme === "night" ? "day" : "night";
+        try { localStorage.setItem("eryu-theme", root.dataset.theme); } catch (_) {}
+        sync();
+      });
+    })();
   </script>
-</SiteLayout>
+</HomeLayout>

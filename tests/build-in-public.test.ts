@@ -14,7 +14,7 @@ const readOptional = (relativePath: string) => {
 };
 
 const contentConfig = readOptional("src/content.config.ts");
-const homepage = readOptional("src/pages/index.astro");
+const homepage = readOptional("src/pages/desk.astro");
 const projectPage = readOptional("src/pages/projects/[id].astro");
 const mainScreen = readOptional("src/desktop/screens/main-screen.ts");
 const project = readOptional(
