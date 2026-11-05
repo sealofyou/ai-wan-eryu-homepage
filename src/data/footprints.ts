@@ -11,9 +11,9 @@ export const allFootprints: Footprint[] = [
   },
   {
     "date": "2026.10",
-    "title": "WaytoAGI AI切磋大会南京站",
+    "title": "WaytoAGI AI切磋大会南京站 · 查个底 线上侦探赛道",
     "kind": "compete",
-    "award": null
+    "award": "优秀奖"
   },
   {
     "date": "2026.10",
