@@ -55,7 +55,7 @@ fi
 rm -f '__REMOTE_SCRIPT__'
 printf 'version=%s previous=%s current=%s\n' '__VERSION__' "$previous" "$(readlink -f /srv/eryu-homepage/current)"
 '@
-  $remoteScriptBody = $remoteScriptBody.Replace("__REMOTE_RELEASE__", $remoteRelease).Replace("__REMOTE_ARCHIVE__", $remoteArchive).Replace("__REMOTE_SCRIPT__", $remoteScript).Replace("__REQUIRED_PATH__", $RequiredPath).Replace("__VERSION__", $version)
+  $remoteScriptBody = $remoteScriptBody.Replace("__REMOTE_RELEASE__", $remoteRelease).Replace("__REMOTE_ARCHIVE__", $remoteArchive).Replace("__REMOTE_SCRIPT__", $remoteScript).Replace("__REQUIRED_PATH__", $RequiredPath).Replace("__VERSION__", $version).Replace("`r`n", "`n")
   [System.IO.File]::WriteAllText($remoteScriptPath, $remoteScriptBody, (New-Object System.Text.UTF8Encoding($false)))
 
   scp $remoteScriptPath "vps2:$remoteScript"
