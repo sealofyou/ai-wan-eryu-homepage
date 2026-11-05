@@ -85,6 +85,7 @@ img { display: block; max-width: 100%; height: auto; }
 :root[data-theme="night"] .stats .mark { color: #1d2023; }
 :root[data-theme="night"] .lead .mark { background-image: none; background-color: var(--mark); }
 :root[data-theme="night"] h1 .mark { background-image: none; }
+:root[data-theme="night"] h2 .mark { background-image: none; color: var(--accent); }
 
 /* 顶栏 */
 .topbar {
@@ -169,7 +170,7 @@ img { display: block; max-width: 100%; height: auto; }
   border-radius: 18px;
   box-shadow: var(--shadow);
 }
-.photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: 30% 50%; border-radius: 12px; }
+.photo img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 0; border-radius: 12px; }
 
 .note {
   margin: 0;
