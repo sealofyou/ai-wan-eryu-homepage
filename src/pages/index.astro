@@ -16,7 +16,7 @@ const highlights: { date: string; title: string; kind: Kind; award?: string; thu
   { date: "2026.01", title: "AI 切磋大会", kind: "volunteer" },
   { date: "2026.03", title: "高校黑客松 入选决赛", kind: "compete" },
   { date: "2026.04", title: "杭州 2050 大会", kind: "share", thumb: "/home/thumb-2050.webp" },
-  { date: "2026.05–08", title: "WaytoAGI、Nova AI Club 5 场分享", kind: "share", thumb: "/home/thumb-b.webp", dense: true },
+  { date: "2026.05–08", title: "WaytoAGI、Nova 5 场分享", kind: "share", thumb: "/home/thumb-b.webp", dense: true },
   { date: "2026.09", title: "YOLO Vision 深圳 展位", kind: "compete" },
   { date: "2026.10", title: "WaytoAGI 南京站 查个底", kind: "compete", award: "优秀奖" },
   { date: "2026.10", title: "Nova AI Club 团队", kind: "share" },
@@ -71,7 +71,7 @@ const awards = allFootprints.filter((f) => f.award).length;
 
         <figure class="photo">
           <img src="/home/talk-2050.webp" width="1000" height="1250" alt="尔玉在杭州 2050 大会上分享 FSHD 面部早筛" />
-          <figcaption class="note note-pin">2050 大会 · 2026.04</figcaption>
+          <figcaption class="note note-pin">2050 大会<br />2026.04</figcaption>
         </figure>
 
         <dl class="stats">
@@ -103,8 +103,7 @@ const awards = allFootprints.filter((f) => f.award).length;
             <li class:list={[{ dense: h.dense, "has-thumb": h.thumb }]}>
               <time>{h.date}</time>
               <i class={`dot ${h.kind}`} aria-label={kindLabel[h.kind]}></i>
-              <span class="title">{h.title}</span>
-              {h.award && <span class="stamp">{h.award}</span>}
+              <span class="title">{h.title}{h.award && <span class="stamp">{h.award}</span>}</span>
               {h.thumb && <img class="thumb" src={h.thumb} width="180" height="128" alt="" loading="lazy" />}
             </li>
           ))}
@@ -117,8 +116,7 @@ const awards = allFootprints.filter((f) => f.award).length;
               <li>
                 <time>{f.date}</time>
                 <i class={`dot ${f.kind}`} aria-label={kindLabel[f.kind]}></i>
-                <span class="title">{f.title}</span>
-                {f.award && <span class="stamp">{f.award}</span>}
+                <span class="title">{f.title}{f.award && <span class="stamp">{f.award}</span>}</span>
               </li>
             ))}
           </ol>
