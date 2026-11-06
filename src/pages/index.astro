@@ -38,6 +38,11 @@ const awards = allFootprints.filter((f) => f.award).length;
         <span>AI玩尔玉</span>
       </a>
       <div class="topbar-actions">
+        <nav class="topnav" aria-label="主导航">
+          <a href="#footprint">活动足迹</a>
+          <a href="/portfolio">作品集</a>
+          <a href="/desk">3D 桌面</a>
+        </nav>
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换日间 / 夜间">
           <span class="sun" aria-hidden="true">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" /></svg>
@@ -84,20 +89,21 @@ const awards = allFootprints.filter((f) => f.award).length;
       </section>
 
       <section class="footprint" id="footprint" aria-labelledby="footprint-title">
-        <div class="section-head">
-          <div>
+        <div class="fp-side">
+          <div class="section-head">
             <p class="eyebrow">No.02 活动足迹</p>
             <h2 id="footprint-title">两年，<br /><span class="mark">从台下到台上</span></h2>
           </div>
+          <p class="fp-intro">两年里参加了 {total} 场线下活动：从台下听，到参赛、做志愿者，再到上台分享。</p>
+          <ul class="legend" aria-label="图例">
+            {(Object.keys(kindLabel) as Kind[]).map((k) => (
+              <li><i class={`dot ${k}`}></i>{kindLabel[k]}</li>
+            ))}
+          </ul>
           <p class="note note-pin note-side">从听众变成<br />讲的人</p>
         </div>
 
-        <ul class="legend" aria-label="图例">
-          {(Object.keys(kindLabel) as Kind[]).map((k) => (
-            <li><i class={`dot ${k}`}></i>{kindLabel[k]}</li>
-          ))}
-        </ul>
-
+        <div class="fp-main">
         <ol class="timeline">
           {highlights.map((h) => (
             <li class:list={[{ dense: h.dense, "has-thumb": h.thumb }]}>
@@ -121,6 +127,7 @@ const awards = allFootprints.filter((f) => f.award).length;
             ))}
           </ol>
         </details>
+        </div>
       </section>
     </main>
   </div>

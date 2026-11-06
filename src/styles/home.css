@@ -223,7 +223,10 @@ img { display: block; max-width: 100%; height: auto; }
 
 /* 活动足迹 */
 .footprint { padding: 56px 0 30px; }
-.section-head { position: relative; padding-right: 0; }
+.fp-side { position: relative; }
+.section-head { padding-right: 0; }
+.fp-intro { display: none; }
+.topnav { display: none; }
 .eyebrow {
   display: inline-block;
   margin: 0 0 10px;
@@ -356,6 +359,80 @@ img { display: block; max-width: 100%; height: auto; }
   .theme-toggle span { width: 30px; }
   .photo .note { width: 46%; font-size: 15px; }
   .note-side { width: 100px; font-size: 14px; }
+}
+
+/* ===== 电脑宽屏（稿子：desk_hero_day / desk_footprint_day / desk_hero_night） ===== */
+@media (min-width: 960px) {
+  .page { width: min(100%, 1240px); padding: 0 48px; }
+  .topbar { padding: 22px 0 16px; }
+  .brand { font-size: 26px; }
+  .brand img { width: 60px; height: 60px; }
+  .topbar-actions { gap: 28px; }
+  .menu { display: none; }
+  .topnav { display: flex; gap: 10px; }
+  .topnav a { padding: 6px 16px; border-radius: 999px; font-size: 18px; font-weight: 700; text-decoration: none; }
+  .topnav a:hover { background: var(--mark); }
+  :root[data-theme="night"] .topnav a:hover { color: #1d2023; }
+
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    grid-template-areas:
+      "title photo"
+      "lead  photo"
+      "tags  photo"
+      "stats photo"
+      "hint  photo";
+    grid-template-rows: auto auto auto auto 1fr;
+    column-gap: 72px;
+    padding: 56px 0 72px;
+  }
+  .hero h1 { grid-area: title; font-size: clamp(96px, 9.5vw, 136px); margin-top: 8px; }
+  .lead { grid-area: lead; margin-top: 28px; font-size: clamp(30px, 3vw, 40px); line-height: 1.45; }
+  .tags { grid-area: tags; margin-top: 36px; max-width: 640px; gap: 14px; }
+  .tags li { min-height: 68px; font-size: 17px; }
+  .stats { grid-area: stats; margin-top: 44px; max-width: 640px; }
+  .stats dd { font-size: 64px; }
+  .stats dt { font-size: 19px; }
+  .scroll-hint { grid-area: hint; margin-top: 36px; max-width: 640px; align-self: start; }
+  .photo {
+    grid-area: photo;
+    align-self: start;
+    justify-self: end;
+    width: 100%;
+    max-width: 480px;
+    margin: 18px 0 0;
+    padding: 10px;
+    transform: rotate(1.5deg);
+  }
+  .photo .note { top: -22px; right: -26px; width: 190px; padding: 20px 14px 16px; font-size: 20px; }
+
+  .footprint {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    column-gap: 40px;
+    align-items: start;
+    padding: 24px 0 40px;
+  }
+  .fp-side, .fp-main {
+    border: 1.5px solid var(--line);
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+  }
+  .fp-side { position: sticky; top: 24px; padding: 32px 32px 36px; }
+  .fp-main { padding: 18px 32px 28px; }
+  .footprint h2 { font-size: 42px; }
+  .fp-intro { display: block; margin: 24px 0 0; font-size: 17px; line-height: 1.8; color: var(--ink-soft); }
+  .legend { flex-direction: column; gap: 14px; margin: 28px 0 0; font-size: 17px; }
+  .note-side { position: relative; top: auto; right: auto; margin: 32px 0 0 auto; width: 190px; font-size: 19px; padding: 24px 12px 18px; }
+  .timeline { --date-w: 110px; }
+  .timeline li { min-height: 60px; column-gap: 22px; }
+  .timeline time { font-size: 16px; }
+  .timeline .title { font-size: 19px; }
+  .stamp { font-size: 16px; }
+  .thumb { width: 104px; height: 72px; }
+
+  .home-footer { width: min(100%, 1240px); padding: 32px 48px 40px; border-top: 1.5px solid var(--line); }
 }
 
 @media (prefers-reduced-motion: reduce) {
