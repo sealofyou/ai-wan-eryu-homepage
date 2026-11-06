@@ -43,7 +43,7 @@ tar -xzf '__REMOTE_ARCHIVE__' -C '__REMOTE_RELEASE__'
 rm -f '__REMOTE_ARCHIVE__'
 test -f '__REMOTE_RELEASE__/index.html'
 test -f '__REMOTE_RELEASE____REQUIRED_PATH__index.html'
-caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null 2>&1
 ln -sfn '__REMOTE_RELEASE__' /srv/eryu-homepage/current.next
 mv -Tf /srv/eryu-homepage/current.next /srv/eryu-homepage/current
 if ! curl -fsS -H 'Host: eryu.fun' 'http://127.0.0.1__REQUIRED_PATH__' >/dev/null; then
