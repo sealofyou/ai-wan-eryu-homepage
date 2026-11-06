@@ -1,0 +1,215 @@
+---
+import HomeLayout from "../layouts/HomeLayout.astro";
+import HomeTopbar from "../components/HomeTopbar.astro";
+
+// 正文照飞书「尔玉｜个人说明书」revision 283；比赛按主页口径补查个底优秀奖、高校黑客松写入选决赛。
+const toc = [
+  { id: "intro", label: "30 秒认识我" },
+  { id: "skills", label: "核心能力" },
+  { id: "experience", label: "经历" },
+  { id: "awards", label: "比赛" },
+  { id: "shares", label: "分享" },
+  { id: "vision", label: "视觉模型" },
+  { id: "llm", label: "大模型" },
+  { id: "fshd", label: "FSHD" },
+  { id: "contact", label: "联系我" },
+];
+
+const skills = [
+  { icon: "vision", title: "视觉模型", lines: ["检测、跟踪、计数、行为识别、SOP 检测、零件识别"] },
+  { icon: "llm", title: "大语言模型与小模型", lines: ["模型选型、微调、本地部署评测。", "数据清洗、自动标注。"] },
+  { icon: "code", title: "全栈开发", lines: ["把想法做成网页和应用", "Agent 实现，前后端部署。"] },
+  { icon: "api", title: "AI API", lines: ["自己的 GPT 中转站，朋友的 AI 账号小铺", "辅助 AI 环境搭建"] },
+];
+
+const experience = [
+  { when: "2026.05 – 至今", text: "运营商短信风控模型：fastText 做语义、LightGBM 做行为，从数据清洗到上线维护" },
+  { when: "2026", text: "FSHD 罕见病早筛辅助：用人脸关键点识别面部动作；4 月在杭州 2050 大会分享，9 月在深圳 YV26 展位展出" },
+  { when: "2026", text: "在 WaytoAGI、Nova AI Club 讲了 5 场分享" },
+  { when: "2026.07", text: "让 WorkBuddy 打科大讯飞课堂行为检测赛，九轮实验，线上分数 0.515 → 0.799" },
+  { when: "2024.07 – 2026.07", text: "视觉项目：目标检测、跟踪、计数，行为识别，SOP 检测，穿戴检查，零件识别，自动标注，OCR" },
+];
+
+const awards = [
+  { text: "书生·浦语实战营第五期 论文微调", stamp: "二等奖" },
+  { text: "模法黑客松 S1 南京 金融赛道", stamp: "三等奖" },
+  { text: "WaytoAGI 南京站 查个底 · 线上侦探赛道", stamp: "优秀奖" },
+  { text: "高校黑客松", stamp: "入选决赛", soft: true },
+];
+
+const shares = [
+  { when: "04 月底", where: "杭州 2050 大会", title: "大模型为什么看不懂“表情”？FSHD 面部早筛的量化路径" },
+  { when: "05/31", where: "WaytoAGI", title: "做自己的 AI 架构师" },
+  { when: "06/13", where: "Nova AI Club", title: "用 Vibe Coding 解决自己的问题" },
+  { when: "07/04", where: "Nova AI Club", title: "不用 Skill vs 用 Skill，AI Agent 工作质量为什么会不一样" },
+  { when: "07/18", where: "Nova AI Club", title: "让 AI 帮我打了一次算法比赛" },
+  { when: "08/22", where: "Nova AI Club", title: "我让 AI 做一条 90 秒视频，结果改了四天" },
+];
+
+const vision = [
+  { k: "安防行为识别", v: "闯入、打架、跌倒、睡岗，模型跑在现场设备上" },
+  { k: "产线与洁净车间", v: "SOP 步骤、穿戴检查" },
+  { k: "工业零件识别", v: "几千种零件，大多只有数模图" },
+  { k: "表计与表格 OCR", v: "表计读数、超宽表格识别" },
+];
+
+const llm = [
+  { k: "模型微调", v: "书生·浦语实战营论文分类微调，拿了二等奖；在公司用多卡对 Qwen 做过情感分析微调" },
+  { k: "部署评测", v: "本地部署书生 Intern-Decision，七项评测复现官方平均分（差距不超过 0.25），再用短信数据自训一版做对比" },
+  { k: "大模型标注", v: "短信类别从 7 类扩到 9 类时，把分类规则跟大模型讲清楚，让它来标，结果直接用于训练" },
+  { k: "视觉大模型", v: "用 Qwen-VL 等做识别，和 YOLO 小模型对比后选型" },
+];
+---
+
+<HomeLayout
+  title="尔玉｜个人说明书 | AI玩尔玉"
+  description="尔玉的个人说明书：做过什么、擅长什么、怎么联系。"
+  noindex
+>
+  <div class="page manual-page">
+    <HomeTopbar current="manual" />
+
+    <div class="manual">
+      <aside class="manual-toc" aria-label="目录">
+        <ol>
+          {toc.map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}
+        </ol>
+        <p class="note note-pin toc-note">这页可以<br />直接转发</p>
+      </aside>
+
+      <main class="manual-body">
+        <header class="manual-head">
+          <p class="eyebrow">个人说明书</p>
+          <div class="manual-title">
+            <h1><span class="mark">尔玉</span></h1>
+            <p class="updated">2026.11 更新</p>
+          </div>
+        </header>
+
+        <section id="intro" class="m-sec">
+          <h2>30 秒认识我</h2>
+          <ul class="tags m-tags">
+            <li>Nova AI Club<br />分享人</li>
+            <li>杭州 2050 大会<br />分享者</li>
+            <li>FSHD 早筛项目<br />主要开发者</li>
+          </ul>
+          <p class="m-lead">把视觉和文本模型从数据做到上线，也用 AI 把想法快速<span class="mark">做成能用的东西</span>。</p>
+          <p>我喜欢把有意思的想法做成能跑起来的东西：从数据、训练到网页和部署，先自己跑通一版。</p>
+        </section>
+
+        <section id="skills" class="m-sec">
+          <h2>核心能力</h2>
+          <ul class="skills">
+            {skills.map((s) => (
+              <li>
+                <h3>
+                <span class={`skill-icon ${s.icon}`} aria-hidden="true">
+                  {s.icon === "vision" && <svg viewBox="0 0 40 40"><rect x="6" y="9" width="28" height="22" rx="2" /><path d="M9 28l8-9 6 6 4-4 5 7" /><circle cx="27" cy="15" r="2.4" /></svg>}
+                  {s.icon === "llm" && <svg viewBox="0 0 40 40"><path d="M20 7l13 6-13 6-13-6z" /><path d="M7 20l13 6 13-6" /><path d="M7 27l13 6 13-6" /></svg>}
+                  {s.icon === "code" && <svg viewBox="0 0 40 40"><rect x="5" y="8" width="30" height="20" rx="2" /><path d="M3 32h34" /><path d="M16 14l-4 4 4 4M24 14l4 4-4 4" /></svg>}
+                  {s.icon === "api" && <svg viewBox="0 0 40 40"><path d="M12 22a6 6 0 0 1 1-12 8 8 0 0 1 15 2 5 5 0 0 1 0 10z" /><path d="M20 22v6M12 28h16M12 28v4M20 28v4M28 28v4" /></svg>}
+                </span>
+                {s.title}
+                </h3>
+                {s.lines.map((l) => <p>{l}</p>)}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section id="experience" class="m-sec">
+          <h2>经历</h2>
+          <ol class="m-list">
+            {experience.map((e) => (
+              <li><time>{e.when}</time><span>{e.text}</span></li>
+            ))}
+          </ol>
+        </section>
+
+        <section id="awards" class="m-sec">
+          <h2>比赛</h2>
+          <ul class="m-awards">
+            {awards.map((a) => (
+              <li><span>{a.text}</span><span class:list={["stamp", { soft: a.soft }]}>{a.stamp}</span></li>
+            ))}
+          </ul>
+        </section>
+
+        <section id="shares" class="m-sec">
+          <h2>分享</h2>
+          <div class="two-col">
+            <ol class="m-list share-list">
+              {shares.map((s) => (
+                <li><time>{s.when}</time><span><b>{s.where}</b>｜{s.title}</span></li>
+              ))}
+            </ol>
+            <figure class="m-fig"><img src="/manual/share.webp" width="900" height="602" alt="分享现场：杭州 2050 大会、WaytoAGI 切磋大会、Nova AI Club" decoding="async" /></figure>
+          </div>
+        </section>
+
+        <section id="vision" class="m-sec">
+          <h2>视觉模型</h2>
+          <div class="two-col">
+            <div>
+              <p>2024 年 7 月起做视觉模型项目，做过这些场景：</p>
+              <ul class="kv">
+                {vision.map((x) => <li><b>{x.k}</b>：{x.v}</li>)}
+              </ul>
+            </div>
+            <figure class="m-fig"><img src="/manual/vision.webp" width="900" height="600" alt="视觉模型能做的场景：目标检测、跟踪、计数、行为识别、SOP 检测、穿戴检查、零件识别、自动标注、OCR" decoding="async" /></figure>
+          </div>
+        </section>
+
+        <section id="llm" class="m-sec">
+          <h2>大模型</h2>
+          <div class="two-col">
+            <ul class="kv">
+              {llm.map((x) => <li><b>{x.k}</b>：{x.v}</li>)}
+            </ul>
+            <figure class="m-fig"><img src="/manual/llm.webp" width="900" height="600" alt="大模型相关：模型微调、部署评测、大模型标注、视觉大模型" decoding="async" /></figure>
+          </div>
+        </section>
+
+        <section id="fshd" class="m-sec">
+          <h2>FSHD 罕见病早筛辅助</h2>
+          <div class="two-col">
+            <div>
+              <h3>面部动作识别</h3>
+              <p>手机拍几张脸部动作照片，AI 识别用力闭眼、抬眉、噘嘴、鼓腮四个动作。用于研究和科普辅助，不做诊断。</p>
+              <h3>手机端采集</h3>
+              <p>手机拍动作照片 → AI 分析 → 结构化结果。4 月在杭州 2050 大会分享，9 月在深圳 YV26 展位展出。</p>
+              <p class="pill">2050 大会分享 · YV26 展位</p>
+            </div>
+            <figure class="m-fig"><img src="/manual/fshd.webp" width="1000" height="374" alt="FSHD 面部测量图与手机采集页截图" decoding="async" /></figure>
+          </div>
+        </section>
+
+        <section id="contact" class="m-sec">
+          <h2>联系我</h2>
+          <div class="contact-card">
+            <img src="/manual/wechat-qr.png" width="595" height="595" alt="尔玉的微信二维码" />
+            <div>
+              <p class="contact-title"><span class="mark">扫码加微信</span></p>
+              <p>说明来意，我会尽快回。</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script is:inline>
+    (() => {
+      const links = [...document.querySelectorAll(".manual-toc a")];
+      if (!links.length || !("IntersectionObserver" in window)) return;
+      const byId = new Map(links.map((a) => [a.getAttribute("href").slice(1), a]));
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          links.forEach((a) => a.classList.remove("active"));
+          byId.get(e.target.id)?.classList.add("active");
+        }
+      }, { rootMargin: "-20% 0px -70% 0px" });
+      byId.forEach((_, id) => { const el = document.getElementById(id); if (el) io.observe(el); });
+    })();
+  </script>
+</HomeLayout>

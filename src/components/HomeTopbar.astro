@@ -1,0 +1,62 @@
+---
+interface Props {
+  current?: "home" | "manual";
+}
+const { current = "home" } = Astro.props;
+const links = [
+  { key: "home", href: "/", label: "首页" },
+  { key: "footprint", href: "/#footprint", label: "活动足迹" },
+  { key: "manual", href: "/manual", label: "说明书" },
+  { key: "portfolio", href: "/portfolio", label: "作品集" },
+  { key: "desk", href: "/desk", label: "3D 桌面" },
+];
+---
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <img src="/home/avatar.webp" width="56" height="56" alt="" />
+    <span>AI玩尔玉</span>
+  </a>
+  <div class="topbar-actions">
+    <nav class="topnav" aria-label="主导航">
+      {links.map((l) => (
+        <a href={l.href} aria-current={l.key === current ? "page" : undefined}>{l.label}</a>
+      ))}
+    </nav>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换日间 / 夜间">
+      <span class="sun" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" /></svg>
+      </span>
+      <span class="moon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1Z" /></svg>
+      </span>
+    </button>
+    <details class="menu">
+      <summary aria-label="菜单">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+      </summary>
+      <nav>
+        {links.map((l) => (
+          <a href={l.href} aria-current={l.key === current ? "page" : undefined}>{l.label}</a>
+        ))}
+      </nav>
+    </details>
+  </div>
+</header>
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const btn = document.querySelector("[data-theme-toggle]");
+    const sync = () => {
+      btn.setAttribute("aria-pressed", String(root.dataset.theme === "night"));
+      document.querySelector('meta[name="theme-color"]').content = root.dataset.theme === "night" ? "#1d2023" : "#f7f4eb";
+    };
+    sync();
+    btn.addEventListener("click", () => {
+      root.dataset.theme = root.dataset.theme === "night" ? "day" : "night";
+      try { localStorage.setItem("eryu-theme", root.dataset.theme); } catch (_) {}
+      sync();
+    });
+  })();
+</script>
